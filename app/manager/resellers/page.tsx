@@ -82,18 +82,29 @@ export default function MyClientsPage() {
             if (data.resellers && data.resellers.length > 0) {
                 const resellerIds = data.resellers.map((r: any) => r.id)
                 const resellerEmails = data.resellers.map((r: any) => r.user?.email).filter(Boolean)
+                const hasGlobalDigital = data.resellers.some((r: any) =>
+                    r.company_name?.toUpperCase().includes('DIGITAUX') ||
+                    r.company_name?.toUpperCase().includes('DIGITAL GLOBAL')
+                )
 
                 let query = supabase
                     .from('orders')
                     .select('total, status, reseller_id, customer_email')
 
-                // Use OR logic matching Dashboard: ID is in list OR Email is in list
+                // Build the OR logic
+                const orParts = []
+                if (resellerIds.length > 0) orParts.push(`reseller_id.in.(${resellerIds.join(',')})`)
                 if (resellerEmails.length > 0) {
-                    const idsStr = resellerIds.join(',')
                     const emailsStr = resellerEmails.map((e: string) => `"${e}"`).join(',')
-                    query = query.or(`reseller_id.in.(${idsStr}),customer_email.in.(${emailsStr})`)
+                    orParts.push(`customer_email.in.(${emailsStr})`)
+                }
+                if (hasGlobalDigital) orParts.push(`reseller_id.is.null`)
+
+                if (orParts.length > 0) {
+                    query = query.or(orParts.join(','))
                 } else {
-                    query = query.in('reseller_id', resellerIds)
+                    setTotalRevenue(0)
+                    return
                 }
 
                 const { data: orders, error: ordersError } = await query

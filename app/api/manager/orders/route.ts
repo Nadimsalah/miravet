@@ -10,33 +10,52 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: 'Account Manager ID required' }, { status: 400 })
         }
 
-        // Fetch assigned reseller IDs
+        // Fetch assigned IDs with metadata to identify "Global Digital" assignments
+        console.log('Fetching orders for AM:', accountManagerId)
         const { data: assignments, error: amError } = await supabaseAdmin
             .from('account_manager_assignments')
-            .select('reseller_id')
+            .select(`
+                reseller_id, 
+                customer_id,
+                reseller:resellers(company_name)
+            `)
             .eq('account_manager_id', accountManagerId)
             .is('soft_deleted_at', null)
 
         if (amError) throw amError
 
-        const resellerIds = assignments?.map(r => r.reseller_id) || []
+        console.log('AM Assignments:', JSON.stringify(assignments))
 
-        if (resellerIds.length === 0) {
+        const resellerIds = assignments?.map((r: any) => r.reseller_id).filter(Boolean) || []
+        const customerIds = assignments?.map((r: any) => r.customer_id).filter(Boolean) || []
+
+        // Special logic: If assigned to "CLIENTS DIGITAUX", also fetch guest orders (reseller_id IS NULL)
+        const isGlobalDigitalManager = assignments?.some((r: any) =>
+            r.reseller?.company_name?.toUpperCase().includes('DIGITAUX') ||
+            r.reseller?.company_name?.toUpperCase().includes('DIGITAL GLOBAL')
+        )
+
+        console.log('Is Global Manager:', isGlobalDigitalManager)
+
+        if (resellerIds.length === 0 && customerIds.length === 0 && !isGlobalDigitalManager) {
+            console.log('No assignments found for AM')
             return NextResponse.json({ orders: [] })
         }
 
-        // Smart Discovery: Also fetch emails associated with these resellers
-        // This handles cases where orders are created without a reseller_id but belong to the user
-        const { data: resellerProfiles } = await supabaseAdmin
-            .from('resellers')
-            .select('user_id, profile:profiles(email)')
-            .in('id', resellerIds)
+        // Fetch emails associated with resellers
+        let resellerEmails: string[] = []
+        if (resellerIds.length > 0) {
+            const { data: resellerProfiles } = await supabaseAdmin
+                .from('resellers')
+                .select('user_id, profile:profiles(email)')
+                .in('id', resellerIds)
 
-        const resellerEmails = resellerProfiles
-            ?.map((r: any) => r.profile?.email)
-            .filter(Boolean) || []
+            resellerEmails = resellerProfiles
+                ?.map((r: any) => r.profile?.email)
+                .filter(Boolean) || []
+        }
 
-        // Fetch orders belonging to these resellers via ID match OR Email match
+        // Build the query
         let query = supabaseAdmin
             .from('orders')
             .select(`
@@ -45,15 +64,33 @@ export async function GET(req: Request) {
             `)
             .order('created_at', { ascending: false })
 
-        if (resellerEmails.length > 0) {
-            // Use OR logic: ID is in list OR Email is in list
-            const idsStr = resellerIds.join(',')
-            const emailsStr = resellerEmails.map(e => `"${e}"`).join(',')
+        // Combine all filters using OR
+        const orConditions: string[] = []
 
-            query = query.or(`reseller_id.in.(${idsStr}),customer_email.in.(${emailsStr})`)
+        if (resellerIds.length > 0) {
+            orConditions.push(`reseller_id.in.(${resellerIds.join(',')})`)
+        }
+
+        if (customerIds.length > 0) {
+            orConditions.push(`customer_id.in.(${customerIds.join(',')})`)
+        }
+
+        if (resellerEmails.length > 0) {
+            const emailsStr = resellerEmails.map(e => `"${e}"`).join(',')
+            orConditions.push(`customer_email.in.(${emailsStr})`)
+        }
+
+        // If global, include null reseller_id
+        if (isGlobalDigitalManager) {
+            orConditions.push(`reseller_id.is.null`)
+        }
+
+        console.log('OR Conditions:', orConditions.join(','))
+
+        if (orConditions.length > 0) {
+            query = query.or(orConditions.join(','))
         } else {
-            // Fallback if no emails found (rare)
-            query = query.in('reseller_id', resellerIds)
+            return NextResponse.json({ orders: [] })
         }
 
         const { data, error } = await query
