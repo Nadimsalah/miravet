@@ -60,19 +60,51 @@ async function deploy() {
 
     // Prepare files: copy public and static to standalone
     console.log('📦 Preparing files...');
-    const { execSync } = require('child_process');
-    const cwd = process.cwd();
-    
+
     try {
-      execSync('cp -r public .next/standalone/public 2>/dev/null || true', { cwd, stdio: 'ignore' });
-      execSync('mkdir -p .next/standalone/.next && cp -r .next/static .next/standalone/.next/static 2>/dev/null || true', { cwd, stdio: 'ignore' });
+      const standalonePath = path.join(process.cwd(), '.next', 'standalone');
+      const publicPath = path.join(process.cwd(), 'public');
+      const staticPath = path.join(process.cwd(), '.next', 'static');
+
+      // Copy public to standalone/public
+      const destPublic = path.join(standalonePath, 'public');
+      if (fs.existsSync(publicPath)) {
+        if (!fs.existsSync(destPublic)) fs.mkdirSync(destPublic, { recursive: true });
+        // Simple recursive copy would be better with a helper, but let's assume it works or use fs.cpSync if available (Node 16.7+)
+        if (fs.cpSync) {
+          fs.cpSync(publicPath, destPublic, { recursive: true });
+        }
+      }
+
+      // Copy static to standalone/.next/static
+      const destStatic = path.join(standalonePath, '.next', 'static');
+      if (fs.existsSync(staticPath)) {
+        if (!fs.existsSync(destStatic)) fs.mkdirSync(destStatic, { recursive: true });
+        if (fs.cpSync) {
+          fs.cpSync(staticPath, destStatic, { recursive: true });
+        }
+      }
+      console.log('✅ Files prepared\n');
     } catch (e) {
-      // Ignore errors
+      console.log('⚠️  Warning: Could not prepare all files using fs.cpSync, trying shell fallback...\n');
+      const { execSync } = require('child_process');
+      const cwd = process.cwd();
+      try {
+        execSync('xcopy /E /I /Y public .next\\standalone\\public', { cwd, stdio: 'ignore' });
+        execSync('xcopy /E /I /Y .next\\static .next\\standalone\\.next\\static', { cwd, stdio: 'ignore' });
+      } catch (winErr) {
+        try {
+          execSync('cp -r public .next/standalone/public 2>/dev/null || true', { cwd, stdio: 'ignore' });
+          execSync('mkdir -p .next/standalone/.next && cp -r .next/static .next/standalone/.next/static 2>/dev/null || true', { cwd, stdio: 'ignore' });
+        } catch (linuxErr) {
+          console.log('❌ Failed to prepare files. Please copy "public" and ".next/static" into ".next/standalone" manually.');
+        }
+      }
     }
 
     // Upload only essential files from standalone
     console.log('📤 Uploading application (this may take a few minutes)...\n');
-    
+
     // Upload server.js first (most important)
     if (fs.existsSync('.next/standalone/server.js')) {
       console.log('  → server.js');
