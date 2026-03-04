@@ -25,7 +25,8 @@ import {
     MapPin,
     Trash2,
     Copy,
-    Lock
+    Lock,
+    Globe
 } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { formatPrice } from "@/lib/utils"
@@ -570,13 +571,21 @@ export default function AccountManagersPage() {
                                                     r.name.toLowerCase().includes(resellerSearchQuery.toLowerCase())
                                                 )
                                                 .map((r) => (
-                                                    <div key={r.id} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 hover:border-white/10 transition-all group/item">
+                                                    <div key={r.id} className={`flex items-center justify-between p-4 rounded-2xl border transition-all group/item ${r.id === '00000000-0000-0000-0000-000000000001' ? 'bg-violet-500/10 border-violet-500/20 hover:border-violet-500/40' : 'bg-white/5 border-white/5 hover:border-white/10'}`}>
                                                         <div className="flex items-center gap-4">
-                                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors \${r.assigned_to_id === m.id ? 'bg-primary/20 text-primary' : 'bg-white/10 text-muted-foreground'}`}>
-                                                                <Briefcase className="w-5 h-5" />
+                                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${r.id === '00000000-0000-0000-0000-000000000001' ? 'bg-violet-500/20 text-violet-400' : r.assigned_to_id === m.id ? 'bg-primary/20 text-primary' : 'bg-white/10 text-muted-foreground'}`}>
+                                                                {r.id === '00000000-0000-0000-0000-000000000001'
+                                                                    ? <Globe className="w-5 h-5" />
+                                                                    : <Briefcase className="w-5 h-5" />
+                                                                }
                                                             </div>
                                                             <div>
-                                                                <p className="font-bold text-foreground text-sm">{r.company_name}</p>
+                                                                <div className="flex items-center gap-2">
+                                                                    <p className="font-bold text-foreground text-sm">{r.company_name}</p>
+                                                                    {r.id === '00000000-0000-0000-0000-000000000001' && (
+                                                                        <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-violet-500/20 text-violet-400 border border-violet-500/30">Digital</span>
+                                                                    )}
+                                                                </div>
                                                                 <p className="text-xs text-muted-foreground">{r.name}</p>
                                                             </div>
                                                         </div>

@@ -70,7 +70,21 @@ export async function GET() {
     }
   }
 
-  const combined = [...(resellersData || []), ...virtualResellers]
+  // Special virtual entry: "Client Digital"
+  // Represents all orders placed without a login/account (guest orders, reseller_id IS NULL)
+  // Uses a fixed sentinel UUID so it can be stored in account_manager_assignments
+  const CLIENT_DIGITAL_ID = "00000000-0000-0000-0000-000000000001"
+  const clientDigital = {
+    id: CLIENT_DIGITAL_ID,
+    user_id: CLIENT_DIGITAL_ID,
+    company_name: "Client Digital",
+    phone: null,
+    city: null,
+    user: { name: "Commandes sans compte", email: "—", phone: null },
+    is_virtual: true  // flag so UI can style it differently
+  }
+
+  const combined = [clientDigital, ...(resellersData || []), ...virtualResellers]
 
   return NextResponse.json({ resellers: combined })
 }
