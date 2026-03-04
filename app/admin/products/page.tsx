@@ -626,7 +626,7 @@ export default function AdminProductsPage() {
                                             </div>
 
                                             <div className="flex justify-between items-end mt-2">
-                                                <p className="font-bold text-foreground">MAD {formatPrice(product.price)}</p>
+                                                <p className="font-bold text-foreground">{formatPrice(product.price)}</p>
                                                 <div className="flex gap-2">
                                                     <Link href={`/admin/products/edit/${product.id}`}>
                                                         <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-white/10">
@@ -660,7 +660,7 @@ export default function AdminProductsPage() {
                                     <tr className="border-b border-white/10 bg-white/5 text-left">
                                         <th className="py-4 pl-4 sm:pl-6 text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("admin.products.table.product")}</th>
                                         <th className="py-4 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden sm:table-cell">{t("admin.products.table.category")}</th>
-                                        <th className="py-4 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("admin.products.table.price")}</th>
+                                        <th className="py-4 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Prix en Dirham</th>
                                         <th className="py-4 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden md:table-cell">{t("admin.products.table.stock")}</th>
                                         <th className="py-4 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("admin.products.table.status")}</th>
                                         <th className="py-4 pr-6 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("admin.products.table.actions")}</th>
@@ -695,7 +695,7 @@ export default function AdminProductsPage() {
                                                     </div>
                                                 </td>
                                                 <td className="py-4 px-4 text-sm text-foreground/80 hidden sm:table-cell">{product.category}</td>
-                                                <td className="py-4 px-4 text-sm font-bold text-foreground">MAD {formatPrice(product.price)}</td>
+                                                <td className="py-4 px-4 text-sm font-bold text-foreground">{formatPrice(product.price)}</td>
                                                 <td className="py-4 px-4 text-sm text-muted-foreground hidden md:table-cell font-medium">
                                                     {product.stock} {t("admin.products.units")}
                                                 </td>
