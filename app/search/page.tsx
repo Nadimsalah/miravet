@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { useLanguage } from "@/components/language-provider"
 import { supabase } from "@/lib/supabase"
 import { getProducts, type Product } from "@/lib/supabase-api"
+import { formatPrice } from "@/lib/utils"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -98,10 +99,10 @@ function BestSellersGrid() {
                                         return (
                                             <>
                                                 <span className="text-lg sm:text-xl font-black text-primary">
-                                                    {t("common.currency")} {(tierPrice / 1.2).toFixed(2)} <span className="text-xs font-normal text-muted-foreground">HT</span>
+                                                    {t("common.currency")} {formatPrice(tierPrice / 1.2)} <span className="text-xs font-normal text-muted-foreground">HT</span>
                                                 </span>
                                                 <span className="text-xs text-muted-foreground line-through opacity-70">
-                                                    {t("common.currency")} {product.price} <span className="text-[10px]">TTC</span>
+                                                    {t("common.currency")} {formatPrice(product.price)} <span className="text-[10px]">TTC</span>
                                                 </span>
                                             </>
                                         )
@@ -110,11 +111,11 @@ function BestSellersGrid() {
                                     return (
                                         <>
                                             <span className="text-lg sm:text-xl font-black text-primary">
-                                                {t("common.currency")} {product.price} <span className="text-xs font-normal text-muted-foreground">TTC</span>
+                                                {t("common.currency")} {formatPrice(product.price)} <span className="text-xs font-normal text-muted-foreground">TTC</span>
                                             </span>
                                             {(product.compare_at_price ?? 0) > 0 && (
                                                 <span className="text-xs text-muted-foreground line-through opacity-70">
-                                                    {t("common.currency")} {product.compare_at_price}
+                                                    {t("common.currency")} {formatPrice(product.compare_at_price || 0)}
                                                 </span>
                                             )}
                                         </>
@@ -273,10 +274,10 @@ export default function SearchPage() {
                                                     return (
                                                         <>
                                                             <span className="text-lg sm:text-xl font-black text-primary">
-                                                                {t('common.currency')} {(tierPrice / 1.2).toFixed(2)} <span className="text-xs font-normal text-muted-foreground">HT</span>
+                                                                {t('common.currency')} {formatPrice(tierPrice / 1.2)} <span className="text-xs font-normal text-muted-foreground">HT</span>
                                                             </span>
                                                             <span className="text-xs text-muted-foreground line-through opacity-70">
-                                                                {t('common.currency')} {product.price} <span className="text-[10px]">TTC</span>
+                                                                {t('common.currency')} {formatPrice(product.price)} <span className="text-[10px]">TTC</span>
                                                             </span>
                                                         </>
                                                     )
@@ -285,11 +286,11 @@ export default function SearchPage() {
                                                 return (
                                                     <>
                                                         <span className="text-lg sm:text-xl font-black text-primary">
-                                                            {t('common.currency')} {product.price} <span className="text-xs font-normal text-muted-foreground">TTC</span>
+                                                            {t('common.currency')} {formatPrice(product.price)} <span className="text-xs font-normal text-muted-foreground">TTC</span>
                                                         </span>
                                                         {(product.compare_at_price ?? 0) > 0 && (
                                                             <span className="text-xs text-muted-foreground line-through opacity-70">
-                                                                {t('common.currency')} {product.compare_at_price}
+                                                                {t('common.currency')} {formatPrice(product.compare_at_price || 0)}
                                                             </span>
                                                         )}
                                                     </>

@@ -26,6 +26,7 @@ import { Notifications } from "@/components/admin/notifications"
 import Link from "next/link"
 import Image from "next/image"
 import Papa from "papaparse"
+import { formatPrice } from "@/lib/utils"
 import {
     Dialog,
     DialogContent,
@@ -536,23 +537,23 @@ export default function AdminProductsPage() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                     <div className="glass-strong rounded-2xl p-4 flex flex-col">
                         <span className="text-sm text-muted-foreground font-medium">{t("admin.products.stats.total_products")}</span>
-                        <span className="text-2xl font-bold text-foreground mt-1">{products.length}</span>
+                        <span className="text-xl font-bold text-foreground mt-1">{products.length}</span>
                     </div>
                     <div className="glass-strong rounded-2xl p-4 flex flex-col">
                         <span className="text-sm text-muted-foreground font-medium">{t("admin.products.stats.total_inventory")}</span>
-                        <span className="text-2xl font-bold text-foreground mt-1">
-                            {products.reduce((acc, curr) => acc + curr.stock, 0).toLocaleString()}
+                        <span className="text-xl font-bold text-foreground mt-1">
+                            {products.reduce((acc, curr) => acc + curr.stock, 0).toLocaleString('en-US')}
                         </span>
                     </div>
                     <div className="glass-strong rounded-2xl p-4 flex flex-col">
                         <span className="text-sm text-muted-foreground font-medium">{t("admin.products.stats.low_stock")}</span>
-                        <span className="text-2xl font-bold text-orange-500 mt-1">
+                        <span className="text-xl font-bold text-orange-500 mt-1">
                             {products.filter(p => p.stock < 10 && p.stock > 0).length}
                         </span>
                     </div>
                     <div className="glass-strong rounded-2xl p-4 flex flex-col">
                         <span className="text-sm text-muted-foreground font-medium">{t("admin.products.stats.out_of_stock")}</span>
-                        <span className="text-2xl font-bold text-red-500 mt-1">
+                        <span className="text-xl font-bold text-red-500 mt-1">
                             {products.filter(p => p.stock === 0).length}
                         </span>
                     </div>
@@ -625,7 +626,7 @@ export default function AdminProductsPage() {
                                             </div>
 
                                             <div className="flex justify-between items-end mt-2">
-                                                <p className="font-bold text-foreground">MAD {product.price}</p>
+                                                <p className="font-bold text-foreground">MAD {formatPrice(product.price)}</p>
                                                 <div className="flex gap-2">
                                                     <Link href={`/admin/products/edit/${product.id}`}>
                                                         <Button size="icon" variant="ghost" className="h-8 w-8 hover:bg-white/10">
@@ -694,7 +695,7 @@ export default function AdminProductsPage() {
                                                     </div>
                                                 </td>
                                                 <td className="py-4 px-4 text-sm text-foreground/80 hidden sm:table-cell">{product.category}</td>
-                                                <td className="py-4 px-4 text-sm font-bold text-foreground">MAD {product.price}</td>
+                                                <td className="py-4 px-4 text-sm font-bold text-foreground">MAD {formatPrice(product.price)}</td>
                                                 <td className="py-4 px-4 text-sm text-muted-foreground hidden md:table-cell font-medium">
                                                     {product.stock} {t("admin.products.units")}
                                                 </td>

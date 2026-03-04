@@ -3,6 +3,7 @@
 
 import { useLanguage } from "@/components/language-provider"
 import { Users, Crown, Mail, ShoppingBag } from "lucide-react"
+import { formatPrice } from "@/lib/utils"
 
 interface TopClient {
     email: string
@@ -67,7 +68,7 @@ export function TopPerformers({
                             </div>
                             <div className="text-right">
                                 <p className="text-sm font-bold text-gray-900">
-                                    {item.totalSpent.toLocaleString()} MAD
+                                    {formatPrice(item.totalSpent)} MAD
                                 </p>
                             </div>
                         </div>

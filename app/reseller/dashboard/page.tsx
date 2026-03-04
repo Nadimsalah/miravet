@@ -10,6 +10,7 @@ import { Loader2, Package, ShoppingBag, CreditCard, User, Building2, FileText, G
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
+import { formatPrice } from "@/lib/utils"
 
 export default function ResellerDashboard() {
     const { t, language, setLanguage } = useLanguage()
@@ -229,7 +230,7 @@ export default function ResellerDashboard() {
                                     <CreditCard className="w-6 h-6" />
                                 </div>
                                 <div className="text-xl sm:text-2xl font-black text-foreground tabular-nums truncate">
-                                    {orders.reduce((sum, o) => sum + Number(o.total), 0).toLocaleString()} <span className="text-xs">MAD</span>
+                                    {formatPrice(orders.reduce((sum, o) => sum + Number(o.total), 0))} <span className="text-xs">MAD</span>
                                 </div>
                                 <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">
                                     {t("reseller.dashboard.total_value")}
@@ -376,7 +377,7 @@ export default function ResellerDashboard() {
                                                         <div>
                                                             <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">{t("reseller.dashboard.total")}</div>
                                                             <div className="font-black text-xl text-foreground">
-                                                                {order.total.toLocaleString()} <span className="text-[10px] text-muted-foreground">MAD</span>
+                                                                {formatPrice(order.total)} <span className="text-[10px] text-muted-foreground">MAD</span>
                                                             </div>
                                                         </div>
                                                         <Link href={`/reseller/orders/${order.id}`}>
@@ -419,7 +420,7 @@ export default function ResellerDashboard() {
                                                             </td>
                                                             <td className="bg-white/5 py-5 px-4 border-y border-white/5 group-hover:border-primary/20 group-hover:bg-primary/[0.02] text-right">
                                                                 <span className="font-black text-foreground">
-                                                                    {order.total.toLocaleString()} <span className="text-[10px] text-muted-foreground mr-1">MAD</span>
+                                                                    {formatPrice(order.total)} <span className="text-[10px] text-muted-foreground mr-1">MAD</span>
                                                                 </span>
                                                             </td>
                                                             <td className="bg-white/5 py-5 px-4 rounded-r-[1.5rem] border-y border-r border-white/5 group-hover:border-primary/20 group-hover:bg-primary/[0.02] text-center">

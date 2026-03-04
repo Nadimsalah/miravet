@@ -21,19 +21,19 @@ export async function DELETE(
 
         if (assignError) throw assignError
 
-        // 2. Remove the profile
-        // Note: Profiles has a FK to auth.users. 
-        // We should delete the auth user as well to fully "delete" the account.
-        const { error: profileError } = await supabaseAdmin
-            .from('profiles')
-            .delete()
-            .eq('id', id)
-
-        if (profileError) throw profileError
-
-        // 3. Delete the auth user
+        // 2. Delete the auth user
+        // This will automatically delete the profile due to ON DELETE CASCADE
         const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(id)
-        if (authError) throw authError
+
+        if (authError) {
+            // If user doesn't exist in Auth, we still try to delete profile as fallback
+            if (authError.message.includes('User not found')) {
+                const { error: profileError } = await supabaseAdmin.from('profiles').delete().eq('id', id)
+                if (profileError) throw profileError
+            } else {
+                throw authError
+            }
+        }
 
         return NextResponse.json({
             success: true,

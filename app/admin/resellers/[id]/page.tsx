@@ -28,6 +28,8 @@ import { supabase } from "@/lib/supabase"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import Link from "next/link"
+import { formatPrice } from "@/lib/utils"
+import { useLanguage } from "@/components/language-provider"
 import {
     Select,
     SelectContent,
@@ -37,6 +39,7 @@ import {
 } from "@/components/ui/select"
 
 export default function ResellerProfilePage() {
+    const { t } = useLanguage()
     const params = useParams()
     const router = useRouter()
     const resellerId = params.id as string
@@ -181,7 +184,7 @@ export default function ResellerProfilePage() {
                                 <h1 className="text-3xl font-black text-foreground tracking-tight">{reseller.name}</h1>
                                 <Badge className={`rounded-lg h-6 px-2.5 border-0 ${reseller.status === 'active' ? 'bg-green-500/10 text-green-500' : 'bg-amber-500/10 text-amber-500'
                                     }`}>
-                                    {reseller.status?.replace('_', ' ')}
+                                    {reseller.status === 'pending_approval' ? t("admin.resellers.pending_approval") : reseller.status?.replace('_', ' ')}
                                 </Badge>
                             </div>
                             <p className="text-muted-foreground font-medium mt-1">
@@ -217,7 +220,7 @@ export default function ResellerProfilePage() {
                             <p className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">
                                 Commandes totales
                             </p>
-                            <h3 className="text-3xl font-black text-foreground">{orders.length}</h3>
+                            <h3 className="text-2xl font-black text-foreground">{orders.length}</h3>
                         </div>
 
                         <div className="glass-strong p-6 rounded-[2.5rem] border border-white/10 shadow-xl group text-emerald-500">
@@ -227,7 +230,7 @@ export default function ResellerProfilePage() {
                             <p className="text-xs font-black text-emerald-500/70 uppercase tracking-widest mb-1">
                                 Volume total
                             </p>
-                            <h3 className="text-3xl font-black text-foreground">MAD {totalSpent.toLocaleString()}</h3>
+                            <h3 className="text-2xl font-black text-foreground">MAD {formatPrice(totalSpent)}</h3>
                         </div>
 
                     </div>
@@ -337,9 +340,9 @@ export default function ResellerProfilePage() {
                                                 </div>
                                                 <div>
                                                     <div className="flex items-center gap-2 mb-1">
-                                                        <span className="font-bold text-foreground">MAD {order.total.toLocaleString()}</span>
+                                                        <span className="font-bold text-foreground">MAD {formatPrice(order.total)}</span>
                                                         <Badge variant="outline" className="text-[10px] rounded-md px-1.5 py-0 border-white/10 uppercase font-black text-muted-foreground">
-                                                            {order.status}
+                                                            {order.status === 'pending_approval' ? t("admin.resellers.pending_approval") : order.status}
                                                         </Badge>
                                                     </div>
                                                     <div className="flex items-center gap-3 text-xs text-muted-foreground">

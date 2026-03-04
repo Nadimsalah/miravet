@@ -151,7 +151,7 @@ const translations = {
         "cart.discount_applied": "Remise appliquée !",
         "cart.add_more_shipping": "Ajoutez plus pour la livraison gratuite",
         "cart.continue_shopping": "Continuer vos achats",
-        "cart.trust.shipping": "Livraison Gratuite > 750 MAD",
+        "cart.trust.shipping": "Livraison Rapide",
         "cart.trust.secure": "Paiement Sécurisé",
         "cart.trust.returns": "Retours sous 30 jours",
 
@@ -593,6 +593,7 @@ const translations = {
         "admin.resellers.partner_network": "Réseau de Partenaires",
         "admin.resellers.total_spend": "Dépenses Totales",
         "admin.resellers.all_partners": "Tous les Partenaires",
+        "admin.resellers.pending_approval": "En attente d'approbation",
         "admin.resellers.top_spend": "Meilleures Dépenses",
         "admin.resellers.search_placeholder": "Filtrer les partenaires par nom ou entreprise...",
         "admin.resellers.loading": "Initialisation des Données Partenaires...",

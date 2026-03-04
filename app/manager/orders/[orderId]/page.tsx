@@ -25,6 +25,7 @@ import {
     Loader2,
     CheckCircle2
 } from "lucide-react"
+import { formatPrice } from "@/lib/utils"
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
 import Link from "next/link"
@@ -289,7 +290,7 @@ export default function OrderDetailsPage() {
                                 </div>
                                 <span className="text-sm font-bold text-slate-600">{t("manager.order_details.total")}</span>
                             </div>
-                            <span className="text-xl font-black text-slate-900">MAD {order.total.toLocaleString()}</span>
+                            <span className="text-xl font-black text-slate-900">MAD {formatPrice(order.total)}</span>
                         </div>
                         <div className="flex items-center justify-between">
                             <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t("manager.order_details.location")}</span>
@@ -330,8 +331,8 @@ export default function OrderDetailsPage() {
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <p className="font-black text-lg text-slate-900">MAD {item.subtotal.toLocaleString()}</p>
-                                            <p className="text-xs text-slate-400 font-medium">MAD {item.final_price?.toLocaleString()} {t("manager.order_details.each")}</p>
+                                            <p className="font-black text-lg text-slate-900">MAD {formatPrice(item.subtotal)}</p>
+                                            <p className="text-xs text-slate-400 font-medium">MAD {formatPrice(item.final_price)} {t("manager.order_details.each")}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -513,8 +514,8 @@ export default function OrderDetailsPage() {
                                     <p className="text-[10px] text-blue-600 font-medium mt-1">📍 {item.warehouse_name}</p>
                                 </td>
                                 <td className="py-3 text-center text-sm font-medium">{item.quantity}</td>
-                                <td className="py-3 text-right text-sm text-gray-600">{item.final_price?.toLocaleString('fr-FR')} MAD</td>
-                                <td className="py-3 text-right text-sm font-bold text-gray-900">{item.subtotal.toLocaleString('fr-FR')} MAD</td>
+                                <td className="py-3 text-right text-sm text-gray-600">{formatPrice(item.final_price)} MAD</td>
+                                <td className="py-3 text-right text-sm font-bold text-gray-900">{formatPrice(item.subtotal)} MAD</td>
                             </tr>
                         ))}
                     </tbody>
@@ -525,15 +526,15 @@ export default function OrderDetailsPage() {
                     <div className="w-1/3 space-y-2">
                         <div className="flex justify-between text-sm text-gray-600">
                             <span>{t("print.subtotal")}</span>
-                            <span>{order.subtotal.toLocaleString('fr-FR')} MAD</span>
+                            <span>{formatPrice(order.subtotal)} MAD</span>
                         </div>
                         <div className="flex justify-between text-sm text-gray-600">
                             <span>{t("print.shipping")}</span>
-                            <span>{order.shipping_cost.toLocaleString('fr-FR')} MAD</span>
+                            <span>{formatPrice(order.shipping_cost)} MAD</span>
                         </div>
                         <div className="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t border-gray-200">
                             <span>{t("print.total")}</span>
-                            <span>{order.total.toLocaleString('fr-FR')} MAD</span>
+                            <span>{formatPrice(order.total)} MAD</span>
                         </div>
                     </div>
                 </div>

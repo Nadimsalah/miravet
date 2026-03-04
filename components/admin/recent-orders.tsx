@@ -7,6 +7,7 @@ import { Eye } from "lucide-react"
 import Link from "next/link"
 import { getOrders, type Order } from "@/lib/supabase-api"
 import { useLanguage } from "@/components/language-provider"
+import { formatPrice } from "@/lib/utils"
 
 export function RecentOrders() {
     const { t } = useLanguage()
@@ -75,7 +76,7 @@ export function RecentOrders() {
                                 </Badge>
                             </div>
                             <div className="flex justify-between items-end">
-                                <div className="font-semibold text-foreground">MAD {order.total}</div>
+                                <div className="font-semibold text-foreground">MAD {formatPrice(order.total)}</div>
                                 <Link href={`/admin/orders/${order.id}`}>
                                     <Button size="sm" variant="outline" className="h-8 text-xs">View</Button>
                                 </Link>
@@ -127,7 +128,7 @@ export function RecentOrders() {
                                     <td className="py-4 pl-2 font-medium text-foreground text-xs sm:text-base">{order.order_number}</td>
                                     <td className="py-4 text-foreground/80 hidden sm:table-cell">{order.customer_name}</td>
                                     <td className="py-4 text-sm text-muted-foreground max-w-[200px] truncate hidden md:table-cell">{order.customer_email}</td>
-                                    <td className="py-4 font-semibold text-foreground text-xs sm:text-base">MAD {order.total}</td>
+                                    <td className="py-4 font-semibold text-foreground text-xs sm:text-base">MAD {formatPrice(order.total)}</td>
                                     <td className="py-4">
                                         <Badge variant="outline" className={`border-0 ${getStatusColor(order.status)} text-[10px] sm:text-xs`}>
                                             {getStatusLabel(order.status)}

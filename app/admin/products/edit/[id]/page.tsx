@@ -85,7 +85,7 @@ export default function EditProductPage() {
             const [product, categoriesData, warehousesData] = await Promise.all([
                 getProductById(productId),
                 supabase.from('categories').select('id, name, slug').order('name'),
-                supabase.from('profiles').select('id, name, city').eq('role', 'DELIVERY_MAN').eq('is_blocked', false).order('city')
+                supabase.from('warehouses').select('id, name').order('name')
             ])
 
             if (product) {
@@ -313,7 +313,7 @@ export default function EditProductPage() {
                 title,
                 description,
                 category,
-                price: parseFloat(price),
+                price: price ? parseFloat(price) : 0,
                 compare_at_price: compareAtPrice ? parseFloat(compareAtPrice) : null,
                 reseller_price: resellerPrice ? parseFloat(resellerPrice) * 1.2 : null,
                 partner_price: partnerPrice ? parseFloat(partnerPrice) * 1.2 : null,
@@ -321,15 +321,14 @@ export default function EditProductPage() {
                 reseller_min_qty: resellerMinQty ? parseInt(resellerMinQty) : null,
                 partner_min_qty: partnerMinQty ? parseInt(partnerMinQty) : null,
                 wholesaler_min_qty: wholesalerMinQty ? parseInt(wholesalerMinQty) : null,
-                stock: parseInt(stock),
+                stock: stock ? parseInt(stock) : 0,
                 sku,
                 status,
                 benefits,
                 ingredients,
                 how_to_use: howToUse,
                 images,
-                warehouse_id: selectedWarehouse || null,
-                updated_at: new Date().toISOString()
+                warehouse_id: selectedWarehouse || null
             })
             .eq('id', productId)
 
@@ -480,16 +479,6 @@ export default function EditProductPage() {
                                         className="h-12 text-base bg-gray-50/50 border-gray-200 focus:bg-white transition-colors pr-12"
                                     />
                                     <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                                        {title.trim() && (
-                                            <button
-                                                onClick={() => handleRewrite('title', title, setTitle)}
-                                                disabled={rewriting === 'title'}
-                                                className="text-purple-400 hover:text-purple-600 p-1 rounded-full transition-all"
-                                                title="Improve with AI"
-                                            >
-                                                {rewriting === 'title' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                                            </button>
-                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -504,16 +493,6 @@ export default function EditProductPage() {
                                         className="min-h-[150px] text-base bg-gray-50/50 border-gray-200 focus:bg-white transition-colors resize-none pr-10"
                                     />
                                     <div className="absolute right-2 top-2 flex flex-col gap-2">
-                                        {description.trim() && (
-                                            <button
-                                                onClick={() => handleRewrite('description', description, setDescription)}
-                                                disabled={rewriting === 'description'}
-                                                className="text-purple-400 hover:text-purple-600 p-1 rounded-full transition-all bg-white/50 backdrop-blur-sm"
-                                                title="Improve with AI"
-                                            >
-                                                {rewriting === 'description' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                                            </button>
-                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -604,15 +583,6 @@ export default function EditProductPage() {
                                 <div className="flex justify-between items-center">
                                     <label className="text-sm font-semibold text-gray-700">Spécifications Techniques</label>
                                     <div className="flex gap-2">
-                                        {ingredients.trim() && (
-                                            <button
-                                                onClick={() => handleRewrite('ingredients', ingredients, setIngredients)}
-                                                disabled={rewriting === 'ingredients'}
-                                                className="text-xs text-purple-500 hover:text-purple-700 flex items-center gap-1"
-                                            >
-                                                {rewriting === 'ingredients' ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />} Peaufiner
-                                            </button>
-                                        )}
                                     </div>
                                 </div>
                                 <Textarea
@@ -627,15 +597,6 @@ export default function EditProductPage() {
                                 <div className="flex justify-between items-center">
                                     <label className="text-sm font-semibold text-gray-700">Garantie & Support</label>
                                     <div className="flex gap-2">
-                                        {howToUse.trim() && (
-                                            <button
-                                                onClick={() => handleRewrite('how_to_use', howToUse, setHowToUse)}
-                                                disabled={rewriting === 'how_to_use'}
-                                                className="text-xs text-purple-500 hover:text-purple-700 flex items-center gap-1"
-                                            >
-                                                {rewriting === 'how_to_use' ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />} Peaufiner
-                                            </button>
-                                        )}
                                     </div>
                                 </div>
                                 <Textarea
@@ -853,14 +814,7 @@ export default function EditProductPage() {
                                     <RefreshCw className="w-4 h-4 text-pink-500" />
                                     Produits suggérés
                                 </h3>
-                                <button
-                                    onClick={handleAutoRecommend}
-                                    disabled={rewriting === 'recommend'}
-                                    className="text-xs flex items-center gap-1 text-pink-600 hover:text-pink-700 font-medium px-2 py-1 rounded-lg hover:bg-pink-50 transition-colors"
-                                >
-                                    {rewriting === 'recommend' ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
-                                    Sélection auto
-                                </button>
+
                             </div>
                             <div className="p-6">
                                 <div className="flex flex-col gap-4 mb-4">

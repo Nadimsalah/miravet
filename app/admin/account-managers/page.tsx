@@ -28,6 +28,7 @@ import {
     Lock
 } from "lucide-react"
 import { supabase } from "@/lib/supabase"
+import { formatPrice } from "@/lib/utils"
 import { toast } from "sonner"
 import {
     Dialog,
@@ -530,7 +531,7 @@ export default function AccountManagersPage() {
                                         <div className="absolute top-0 right-0 w-12 h-12 bg-violet-500/10 rounded-full blur-xl -translate-y-1/2 translate-x-1/2" />
                                         <p className="text-[10px] font-bold text-violet-500/80 uppercase tracking-wider mb-1">Target</p>
                                         <div className="flex items-center gap-1">
-                                            <span className="text-sm font-black text-foreground">{(m.prime_target_revenue || 200000).toLocaleString()}</span>
+                                            <span className="text-sm font-black text-foreground">{formatPrice(m.prime_target_revenue || 200000)}</span>
                                             <span className="text-[10px] font-medium text-muted-foreground">DH</span>
                                         </div>
                                     </div>
@@ -702,28 +703,30 @@ export default function AccountManagersPage() {
                                 <Trash2 className="w-5 h-5" />
                                 {t("account_managers.delete_account")}
                             </DialogTitle>
-                            <DialogDescription>
-                                {managerToDelete?.reseller_count && managerToDelete.reseller_count > 0 ? (
-                                    <div className="space-y-3 pt-2">
-                                        <p className="font-medium text-foreground">
-                                            {t("account_managers.delete_warning_start")} <strong>{managerToDelete.name}</strong> {t("account_managers.delete_warning_end")}
-                                        </p>
-                                        <div className="bg-destructive/10 p-4 rounded-xl border border-destructive/20">
-                                            <p className="text-destructive text-sm font-bold flex items-center gap-2">
-                                                <Users className="w-4 h-4" />
-                                                Attention:
+                            <DialogDescription asChild>
+                                <div className="space-y-4 pt-4">
+                                    {managerToDelete?.reseller_count && managerToDelete.reseller_count > 0 ? (
+                                        <>
+                                            <p className="font-medium text-foreground">
+                                                {t("account_managers.delete_warning_start")} <strong>{managerToDelete.name}</strong> {t("account_managers.delete_warning_end")}
                                             </p>
-                                            <p className="text-destructive/80 text-sm mt-1">
-                                                Cet utilisateur gère actuellement <strong>{managerToDelete.reseller_count} revendeur(s)</strong>.
-                                                La suppression de ce compte désassignera automatiquement ces revendeurs.
-                                            </p>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <p>
-                                        {t("account_managers.delete_confirm").replace("{name}", managerToDelete?.name || "")}
-                                    </p>
-                                )}
+                                            <div className="bg-destructive/10 p-4 rounded-xl border border-destructive/20 text-left">
+                                                <p className="text-destructive text-sm font-bold flex items-center gap-2">
+                                                    <Users className="w-4 h-4" />
+                                                    Attention:
+                                                </p>
+                                                <p className="text-destructive/80 text-sm mt-1 leading-relaxed">
+                                                    Cet utilisateur gère actuellement <strong>{managerToDelete.reseller_count} revendeur(s)</strong>.
+                                                    La suppression de ce compte désassignera automatiquement ces revendeurs.
+                                                </p>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <span className="block">
+                                            {t("account_managers.delete_confirm").replace("{name}", managerToDelete?.name || "")}
+                                        </span>
+                                    )}
+                                </div>
                             </DialogDescription>
                         </DialogHeader>
                         <DialogFooter className="gap-2 sm:gap-0">

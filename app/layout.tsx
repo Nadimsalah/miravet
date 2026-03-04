@@ -5,6 +5,7 @@ import { Analytics } from '@vercel/analytics/next'
 import { CartProvider } from "@/components/cart-provider"
 import { LanguageProvider } from "@/components/language-provider"
 import { Toaster } from "sonner"
+import { VoiceAssistantWidget } from "@/components/voice-assistant-widget"
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -38,7 +39,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`font-sans antialiased ${almarai.variable}`}>
         <LanguageProvider>
           <CartProvider>

@@ -22,6 +22,7 @@ import {
 } from "lucide-react"
 import { DateRange } from "react-day-picker"
 import { format } from "date-fns"
+import { formatPrice } from "@/lib/utils"
 import { cn } from "@/lib/utils"
 import { Calendar } from "@/components/ui/calendar"
 import {
@@ -262,7 +263,7 @@ export default function AdminOrdersPage() {
                                         <div className="flex justify-between items-end pt-2 border-t border-white/5">
                                             <div>
                                                 <div className="text-[10px] text-muted-foreground uppercase">{t("admin.orders.table.total")}</div>
-                                                <div className="font-bold text-foreground">MAD {order.total}</div>
+                                                <div className="font-bold text-foreground">MAD {formatPrice(order.total)}</div>
                                             </div>
                                             <Link href={`/admin/orders/${order.id}`}>
                                                 <Button size="sm" variant="outline" className="h-8 text-xs bg-white/5 hover:bg-white/10 border-white/10">
@@ -312,7 +313,7 @@ export default function AdminOrdersPage() {
                                                 <td className="py-4 px-4 text-sm text-muted-foreground hidden lg:table-cell">
                                                     {order.customer_email}
                                                 </td>
-                                                <td className="py-4 px-4 text-sm font-bold text-foreground">MAD {order.total}</td>
+                                                <td className="py-4 px-4 text-sm font-bold text-foreground">MAD {formatPrice(order.total)}</td>
                                                 <td className="py-4 px-4">
                                                     <Badge variant="outline" className={`border ${getStatusColor(order.status)} text-[10px] sm:text-xs py-0.5 px-2`}>
                                                         {getStatusLabel(order.status)}

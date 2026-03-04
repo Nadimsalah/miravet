@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Package, Users, Briefcase } from "lucide-react"
 import { getDashboardStats } from "@/lib/supabase-api"
 import { useLanguage } from "@/components/language-provider"
+import { formatPrice } from "@/lib/utils"
 
 export function DashboardStats() {
     const { t } = useLanguage()
@@ -32,7 +33,7 @@ export function DashboardStats() {
     const stats = [
         {
             label: t("admin.dashboard.stats.total_revenue"),
-            value: `MAD ${statsData?.totalRevenue?.toLocaleString()}`,
+            value: `MAD ${formatPrice(statsData?.totalRevenue || 0)}`,
             change: "+12.5%", // Mock change for now
             trend: "up",
             icon: DollarSign,
@@ -87,7 +88,7 @@ export function DashboardStats() {
 
                         <div>
                             <p className="text-sm text-muted-foreground font-medium mb-1">{stat.label}</p>
-                            <h3 className="text-2xl lg:text-3xl font-bold text-foreground">{stat.value}</h3>
+                            <h3 className="text-xl lg:text-2xl font-bold text-foreground">{stat.value}</h3>
                         </div>
                     </div>
                 </div>

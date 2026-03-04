@@ -8,6 +8,7 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { CheckCircle2, ArrowRight, Copy, ShoppingBag, PhoneCall } from "lucide-react"
 import { toast } from "sonner"
+import { formatPrice } from "@/lib/utils"
 
 interface OrderData {
     items: any[]
@@ -125,7 +126,7 @@ export default function CheckoutSuccessPage() {
                                             {item.size && <p className="text-xs text-muted-foreground">{item.size}</p>}
                                         </div>
                                         <p className="text-sm font-semibold text-primary">
-                                            {t('common.currency')} {(item.price * item.quantity).toFixed(2)}
+                                            {t('common.currency')} {formatPrice(item.price * item.quantity)}
                                         </p>
                                     </div>
                                 </div>
@@ -137,17 +138,17 @@ export default function CheckoutSuccessPage() {
                         <div className="space-y-3 text-sm">
                             <div className="flex justify-between text-muted-foreground">
                                 <span>{t('cart.subtotal')}</span>
-                                <span className="font-medium text-foreground">{t('common.currency')} {order.subtotal.toFixed(2)}</span>
+                                <span className="font-medium text-foreground">{t('common.currency')} {formatPrice(order.subtotal)}</span>
                             </div>
                             <div className="flex justify-between text-muted-foreground">
                                 <span>{t('cart.shipping')}</span>
                                 <span className="font-medium text-foreground">
-                                    {order.shipping === 0 ? t('cart.free') : `${t('common.currency')} ${order.shipping}`}
+                                    {order.shipping === 0 ? t('cart.free') : `${t('common.currency')} ${formatPrice(order.shipping)}`}
                                 </span>
                             </div>
                             <div className="flex justify-between text-lg font-bold text-foreground pt-3 border-t border-border/50">
                                 <span>{t('cart.total')}</span>
-                                <span>{t('common.currency')} {order.total.toFixed(2)}</span>
+                                <span className="font-medium text-foreground">{t('common.currency')} {formatPrice(order.total)}</span>
                             </div>
                         </div>
                     </div>

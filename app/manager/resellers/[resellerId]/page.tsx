@@ -29,6 +29,7 @@ import { toast } from "sonner"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import { useLanguage } from "@/components/language-provider"
+import { formatPrice } from "@/lib/utils"
 
 export default function ResellerProfilePage() {
     const { resellerId } = useParams()
@@ -244,7 +245,7 @@ export default function ResellerProfilePage() {
                             </h3>
                             <div className="space-y-8">
                                 <div>
-                                    <p className="text-3xl font-black mb-1">MAD {totalRevenue.toLocaleString()}</p>
+                                    <p className="text-3xl font-black mb-1">MAD {formatPrice(totalRevenue)}</p>
                                     <p className="text-xs text-slate-400 font-bold flex items-center gap-1">
                                         <TrendingUp className="w-3 h-3 text-emerald-400" />
                                         {isFrench ? "Chiffre d’affaires total" : "Lifetime Revenue"}
@@ -309,7 +310,7 @@ export default function ResellerProfilePage() {
                                                     <td className="py-5 px-6">
                                                         <Badge variant="outline" className="rounded-lg capitalize font-bold text-[10px]">{o.status}</Badge>
                                                     </td>
-                                                    <td className="py-5 px-6 font-black text-slate-900">MAD {o.total.toLocaleString()}</td>
+                                                    <td className="py-5 px-6 font-black text-slate-900">MAD {formatPrice(o.total)}</td>
                                                     <td className="py-5 px-6 text-sm text-slate-500">{new Date(o.created_at).toLocaleDateString()}</td>
                                                     <td className="py-5 px-8 text-right">
                                                         <Link href={`/manager/orders/${o.id}`}>

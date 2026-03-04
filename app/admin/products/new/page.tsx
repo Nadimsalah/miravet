@@ -104,13 +104,11 @@ export default function NewProductPage() {
 
             if (catData) setCategories(catData)
 
-            // Logisticiens (Warehouses)
+            // Warehouses
             const { data: logData } = await supabase
-                .from('profiles')
-                .select('id, name, city')
-                .eq('role', 'DELIVERY_MAN')
-                .eq('is_blocked', false)
-                .order('city')
+                .from('warehouses')
+                .select('id, name')
+                .order('name')
 
             if (logData) setWarehouses(logData)
         }
@@ -514,16 +512,6 @@ export default function NewProductPage() {
                                             className="bg-white border-gray-200 h-12 text-base focus:ring-blue-500/20 focus:border-blue-500 rounded-xl shadow-sm text-gray-900 placeholder:text-gray-400 pr-12"
                                         />
                                         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                                            {title.trim() && (
-                                                <button
-                                                    onClick={() => handleRewrite('title', title, setTitle)}
-                                                    disabled={rewriting === 'title'}
-                                                    className="text-purple-400 hover:text-purple-600 p-1 rounded-full transition-all"
-                                                    title="Improve with AI"
-                                                >
-                                                    {rewriting === 'title' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                                                </button>
-                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -539,16 +527,6 @@ export default function NewProductPage() {
                                             placeholder="Description"
                                         />
                                         <div className="absolute right-2 top-2 flex flex-col gap-2">
-                                            {description.trim() && (
-                                                <button
-                                                    onClick={() => handleRewrite('description', description, setDescription)}
-                                                    disabled={rewriting === 'description'}
-                                                    className="text-purple-400 hover:text-purple-600 p-1 rounded-full transition-all bg-white/50 backdrop-blur-sm shadow-sm"
-                                                    title="Improve with AI"
-                                                >
-                                                    {rewriting === 'description' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                                                </button>
-                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -615,16 +593,7 @@ export default function NewProductPage() {
                                         <Button onClick={addBenefit} className="h-11 w-11 bg-blue-600 hover:bg-blue-700 text-white shrink-0 shadow-sm">
                                             <Plus className="w-5 h-5" />
                                         </Button>
-                                        {newBenefit.trim() && (
-                                            <Button
-                                                onClick={handleGenerateBenefits}
-                                                disabled={rewriting === 'benefits'}
-                                                className="h-11 px-4 bg-purple-600 hover:bg-purple-700 text-white shadow-sm flex items-center gap-2"
-                                            >
-                                                {rewriting === 'benefits' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                                                Peaufiner
-                                            </Button>
-                                        )}
+
                                     </div>
                                     <div className="grid grid-cols-1 gap-3">
                                         {benefits.map((benefit, i) => (
@@ -657,17 +626,7 @@ export default function NewProductPage() {
                                             <label className="text-sm font-semibold text-gray-700 uppercase tracking-wider">
                                                 Spécifications techniques
                                             </label>
-                                            <div className="flex items-center gap-2">
-                                                {ingredients.trim() && (
-                                                    <button
-                                                        onClick={() => handleRewrite('ingredients', ingredients, setIngredients)}
-                                                        disabled={rewriting === 'ingredients'}
-                                                        className="text-xs flex items-center gap-1 text-purple-500 hover:text-purple-700 transition-colors bg-purple-50 px-2 py-1 rounded-md"
-                                                    >
-                                                        {rewriting === 'ingredients' ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
-                                                        <span>Peaufiner</span>
-                                                    </button>
-                                                )}
+                                            <div className="flex gap-2">
                                             </div>
                                         </div>
                                         <textarea
@@ -685,16 +644,6 @@ export default function NewProductPage() {
                                                 Garantie & support
                                             </label>
                                             <div className="flex items-center gap-2">
-                                                {howToUse.trim() && (
-                                                    <button
-                                                        onClick={() => handleRewrite('how_to_use', howToUse, setHowToUse)}
-                                                        disabled={rewriting === 'how_to_use'}
-                                                        className="text-xs flex items-center gap-1 text-purple-500 hover:text-purple-700 transition-colors bg-purple-50 px-2 py-1 rounded-md"
-                                                    >
-                                                        {rewriting === 'how_to_use' ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
-                                                        <span>Peaufiner</span>
-                                                    </button>
-                                                )}
                                             </div>
                                         </div>
                                         <textarea
@@ -968,14 +917,7 @@ export default function NewProductPage() {
                                     <RefreshCw className="w-4 h-4 text-pink-500" />
                                     Produits suggérés
                                 </h3>
-                                <button
-                                    onClick={handleAutoRecommend}
-                                    disabled={rewriting === 'recommend'}
-                                    className="text-xs flex items-center gap-1 text-pink-600 hover:text-pink-700 font-medium px-2 py-1 rounded-lg hover:bg-pink-50 transition-colors"
-                                >
-                                    {rewriting === 'recommend' ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
-                                    Sélection auto
-                                </button>
+
                             </div>
                             <div className="p-6">
                                 <div className="flex flex-col gap-4 mb-4">

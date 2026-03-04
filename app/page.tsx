@@ -15,6 +15,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
+import { cn, formatPrice } from "@/lib/utils"
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet"
 import {
   Search,
@@ -158,10 +159,10 @@ function ProductCard({ product, userRole, resellerTier }: { product: Product, us
                   return (
                     <>
                       <span className="text-sm sm:text-lg font-bold text-foreground">
-                        {t('common.currency')} {(tierPrice / 1.2).toFixed(2)} <span className="text-[10px] font-normal text-muted-foreground">HT</span>
+                        {t('common.currency')} {formatPrice(tierPrice / 1.2)} <span className="text-[10px] font-normal text-muted-foreground">HT</span>
                       </span>
                       <span className="text-[9px] sm:text-xs text-muted-foreground line-through decoration-destructive/30">
-                        {t('common.currency')} {product.price} <span className="text-[8px] font-normal">TTC</span>
+                        {t('common.currency')} {formatPrice(product.price)} <span className="text-[8px] font-normal">TTC</span>
                       </span>
                     </>
                   )
@@ -169,13 +170,13 @@ function ProductCard({ product, userRole, resellerTier }: { product: Product, us
 
                 return (
                   <span className="text-sm sm:text-lg font-bold text-foreground">
-                    {t('common.currency')} {product.price} <span className="text-[10px] font-normal text-muted-foreground">TTC</span>
+                    {t('common.currency')} {formatPrice(product.price)} <span className="text-[10px] font-normal text-muted-foreground">TTC</span>
                   </span>
                 )
               })()
             ) : (
               <span className="text-sm sm:text-lg font-bold text-foreground">
-                {t('common.currency')} {product.price} <span className="text-[10px] font-normal text-muted-foreground">TTC</span>
+                {t('common.currency')} {formatPrice(product.price)} <span className="text-[10px] font-normal text-muted-foreground">TTC</span>
               </span>
             )}
           </div>
@@ -487,17 +488,7 @@ export default function HomePage() {
         <div className="absolute bottom-1/4 left-0 w-72 h-72 bg-primary/3 rounded-full blur-3xl" />
       </div>
 
-      {/* Announcement Bar */}
-      <div className="bg-primary text-primary-foreground py-2 text-center text-sm">
-        <p>
-          {language === 'ar'
-            ? (settings.announcement_bar_ar || settings.announcement_bar || "شحن مجاني للطلبات فوق ٧٥٠ د.م")
-            : language === 'fr'
-              ? (settings.announcement_bar || "Livraison gratuite > 750 MAD")
-              : (settings.announcement_bar || "Free shipping on orders over MAD 750")
-          }
-        </p>
-      </div>
+
 
       {/* Header */}
       <header
@@ -681,7 +672,7 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
-              <h1 className="text-4xl sm:text-5xl lg:text-5xl font-bold text-foreground leading-tight text-balance">
+              <h1 className="text-4xl sm:text-5xl lg:text-5xl font-bold text-foreground leading-tight text-balance" suppressHydrationWarning>
                 {language === 'ar' ? (
                   settings.hero_title_ar || settings.hero_title || (
                     <>
@@ -696,7 +687,7 @@ export default function HomePage() {
                   )
                 )}
               </h1>
-              <p className="text-lg text-muted-foreground max-w-lg">
+              <p className="text-lg text-muted-foreground max-w-lg" suppressHydrationWarning>
                 {language === 'ar'
                   ? (settings.hero_subtitle_ar || settings.hero_subtitle || t('hero.subtitle'))
                   : (settings.hero_subtitle || t('hero.subtitle'))

@@ -27,6 +27,7 @@ import {
 import { getCustomers, updateCustomerStatus, type Customer } from "@/lib/supabase-api"
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
+import { formatPrice } from "@/lib/utils"
 import Link from "next/link"
 
 export default function ResellersPage() {
@@ -119,7 +120,7 @@ export default function ResellersPage() {
 
     const stats = [
         { label: t("admin.resellers.partner_network"), value: resellers.length, icon: Users, color: "text-blue-500", bg: "bg-blue-500/10" },
-        { label: t("admin.resellers.total_spend"), value: `${t("common.currency")} ${totalSpend.toLocaleString()}`, icon: DollarSign, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+        { label: t("admin.resellers.total_spend"), value: `${t("common.currency")} ${formatPrice(totalSpend)}`, icon: DollarSign, color: "text-emerald-500", bg: "bg-emerald-500/10" },
     ]
 
     return (
@@ -156,7 +157,7 @@ export default function ResellersPage() {
                                 </div>
                                 <div>
                                     <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">{stat.label}</p>
-                                    <h3 className="text-2xl font-black text-foreground">{stat.value}</h3>
+                                    <h3 className="text-xl font-black text-foreground">{stat.value}</h3>
                                 </div>
                             </div>
                             <div className="absolute right-[-20px] bottom-[-20px] opacity-5 group-hover:opacity-10 transition-opacity">
@@ -176,7 +177,7 @@ export default function ResellersPage() {
                                 </div>
                                 <div>
                                     <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">{stat.label}</p>
-                                    <h3 className="text-2xl font-black text-foreground">{stat.value}</h3>
+                                    <h3 className="text-xl font-black text-foreground">{stat.value}</h3>
                                 </div>
                             </div>
                             <div className="absolute right-[-20px] bottom-[-20px] opacity-5 group-hover:opacity-10 transition-opacity">
@@ -191,7 +192,7 @@ export default function ResellersPage() {
                     <div className="flex p-1 bg-white/5 border border-white/5 rounded-2xl w-full xl:w-auto">
                         {[
                             { id: "all", label: t("admin.resellers.all_partners") },
-                            { id: "pending", label: "Pending approval" },
+                            { id: "pending", label: t("admin.resellers.pending_approval") },
                             { id: "top-spend", label: t("admin.resellers.top_spend") }
                         ].map((tab) => (
                             <button
@@ -252,8 +253,8 @@ export default function ResellersPage() {
                                                             <p className="font-bold text-foreground text-base tracking-tight">{reseller.name}</p>
                                                             {(reseller as any).reseller_type && (
                                                                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${(reseller as any).reseller_type === 'partner' ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' :
-                                                                        (reseller as any).reseller_type === 'wholesaler' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
-                                                                            'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                                                                    (reseller as any).reseller_type === 'wholesaler' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
+                                                                        'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                                                                     }`}>
                                                                     {(reseller as any).reseller_type === 'partner' ? t("admin.resellers.partner") :
                                                                         (reseller as any).reseller_type === 'wholesaler' ? t("admin.resellers.wholesaler") :
@@ -279,7 +280,7 @@ export default function ResellersPage() {
                                                     <div className={activeTab === 'top-spend' ? 'scale-110 transition-transform origin-left' : ''}>
                                                         <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">{t("admin.resellers.total_spend")}</p>
                                                         <p className={`font-black text-sm ${activeTab === 'top-spend' ? 'text-primary' : 'text-foreground'}`}>
-                                                            {t("common.currency")} {(reseller.total_spent || 0).toLocaleString()}
+                                                            {t("common.currency")} {formatPrice(reseller.total_spent || 0)}
                                                         </p>
                                                     </div>
                                                 </div>

@@ -15,6 +15,7 @@ import {
     ShoppingBag
 } from "lucide-react"
 import { getOrders, type Customer } from "@/lib/supabase-api"
+import { formatPrice } from "@/lib/utils"
 import Link from "next/link"
 
 export default function CustomersPage() {
@@ -127,7 +128,7 @@ export default function CustomersPage() {
                                 </div>
                                 <div>
                                     <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">{stat.label}</p>
-                                    <h3 className="text-2xl font-black text-foreground">{stat.value}</h3>
+                                    <h3 className="text-xl font-black text-foreground">{stat.value}</h3>
                                 </div>
                             </div>
                             <div className="absolute right-[-20px] bottom-[-20px] opacity-5 group-hover:opacity-10 transition-opacity">
@@ -201,7 +202,7 @@ export default function CustomersPage() {
                                     <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
                                         <div>
                                             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">{t("admin.customers.spend")}</p>
-                                            <p className="font-black text-sm text-foreground">MAD {(customer.total_spent || 0).toLocaleString()}</p>
+                                            <p className="font-black text-sm text-foreground">MAD {formatPrice(customer.total_spent || 0)}</p>
                                             <p className="text-[10px] font-medium text-muted-foreground mt-0.5">{customer.total_orders || 0} {t("admin.customers.orders")}</p>
                                         </div>
                                         <div>
@@ -275,7 +276,7 @@ export default function CustomersPage() {
                                                     <div className={activeTab === 'top-spend' ? 'scale-110 transition-transform origin-left' : ''}>
                                                         <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">{t("admin.customers.total_spent")}</p>
                                                         <p className={`font-black text-sm ${activeTab === 'top-spend' ? 'text-primary' : 'text-foreground'}`}>
-                                                            MAD {(customer.total_spent || 0).toLocaleString()}
+                                                            MAD {formatPrice(customer.total_spent || 0)}
                                                         </p>
                                                         <p className="text-[10px] font-medium text-muted-foreground mt-1">
                                                             {customer.total_orders || 0} {t("admin.customers.orders")}

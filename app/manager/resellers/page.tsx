@@ -24,6 +24,7 @@ import {
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
 import Link from "next/link"
+import { formatPrice } from "@/lib/utils"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -187,7 +188,7 @@ export default function MyClientsPage() {
                         </div>
                         <h2 className="text-3xl md:text-5xl font-black mb-3 tracking-tighter">{t("manager.resellers.revenue_goal")}</h2>
                         <p className="text-white/80 max-w-md text-lg leading-relaxed font-medium">
-                            {t("manager.resellers.current_revenue")}: <span className="text-white font-bold">{targetRevenue.toLocaleString()} MAD</span>
+                            {t("manager.resellers.current_revenue")}: <span className="text-white font-bold">{formatPrice(targetRevenue)} MAD</span>
                         </p>
                     </div>
 
@@ -196,7 +197,7 @@ export default function MyClientsPage() {
                             <div>
                                 <span className="text-sm font-medium text-white/60 block mb-1">{t("manager.resellers.progress")}</span>
                                 <div className="text-2xl sm:text-3xl font-black flex items-baseline gap-1.5">
-                                    {totalRevenue.toLocaleString()} <span className="text-base sm:text-lg text-white/60 font-medium">/ {targetRevenue.toLocaleString()} MAD</span>
+                                    {formatPrice(totalRevenue)} <span className="text-base sm:text-lg text-white/60 font-medium">/ {formatPrice(targetRevenue)} MAD</span>
                                 </div>
                             </div>
                             <div className="text-right">

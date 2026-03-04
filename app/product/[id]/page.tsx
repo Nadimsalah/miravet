@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation"
 import { useCart } from "@/components/cart-provider"
 import { useLanguage } from "@/components/language-provider"
 import { getProductById, getProducts, getCurrentUserRole, getCurrentResellerTier, type Product, ResellerTier } from "@/lib/supabase-api"
+import { formatPrice } from "@/lib/utils"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -267,7 +268,7 @@ export default function ProductPage() {
                               {label}
                             </span>
                             <span className="text-3xl sm:text-4xl font-extrabold text-primary">
-                              {t('common.currency')} {(tierPrice / 1.2).toFixed(2)} <span className="text-sm font-normal text-muted-foreground align-middle">HT</span>
+                              {t('common.currency')} {formatPrice(tierPrice / 1.2)} <span className="text-sm font-normal text-muted-foreground align-middle">HT</span>
                             </span>
                             <span className="text-[10px] text-muted-foreground">
                               (+ 20% TVA)
@@ -278,7 +279,7 @@ export default function ProductPage() {
                               Standard
                             </span>
                             <span className="text-lg text-muted-foreground line-through decoration-destructive/30 decoration-2">
-                              {t('common.currency')} {product.price} <span className="text-[10px] align-middle">TTC</span>
+                              {t('common.currency')} {formatPrice(product.price)} <span className="text-[10px] align-middle">TTC</span>
                             </span>
                           </div>
                         </>
@@ -288,11 +289,11 @@ export default function ProductPage() {
                     return (
                       <>
                         <span className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-primary">
-                          {t('common.currency')} {product.price} <span className="text-sm font-normal text-muted-foreground align-middle">TTC</span>
+                          {t('common.currency')} {formatPrice(product.price)} <span className="text-sm font-normal text-muted-foreground align-middle">TTC</span>
                         </span>
                         {(product.compare_at_price ?? 0) > 0 && (
                           <span className="text-xl text-muted-foreground line-through decoration-destructive/30 decoration-2">
-                            {t('common.currency')} {product.compare_at_price}
+                            {t('common.currency')} {formatPrice(product.compare_at_price)}
                           </span>
                         )}
                       </>
@@ -301,11 +302,11 @@ export default function ProductPage() {
                 ) : (
                   <>
                     <span className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-primary">
-                      {t('common.currency')} {product.price} <span className="text-sm font-normal text-muted-foreground align-middle">TTC</span>
+                      {t('common.currency')} {formatPrice(product.price)} <span className="text-sm font-normal text-muted-foreground align-middle">TTC</span>
                     </span>
                     {(product.compare_at_price ?? 0) > 0 && (
                       <span className="text-xl text-muted-foreground line-through decoration-destructive/30 decoration-2">
-                        {t('common.currency')} {product.compare_at_price}
+                        {t('common.currency')} {formatPrice(product.compare_at_price)}
                       </span>
                     )}
                   </>
@@ -491,11 +492,11 @@ export default function ProductPage() {
                   <div className="flex items-center justify-between mt-auto">
                     <div className="flex flex-col">
                       <span className="text-base sm:text-xl font-bold text-primary">
-                        {t('common.currency')} {item.price}
+                        {t('common.currency')} {formatPrice(item.price)}
                       </span>
                       {(item.compare_at_price ?? 0) > 0 && (
                         <span className="text-[10px] sm:text-xs text-muted-foreground line-through">
-                          {t('common.currency')} {item.compare_at_price}
+                          {t('common.currency')} {formatPrice(item.compare_at_price)}
                         </span>
                       )}
                     </div>
@@ -555,7 +556,7 @@ export default function ProductPage() {
             <ShoppingBag className="w-5 h-5 mr-2" />
             <div className="flex flex-col items-start leading-none ml-1">
               <span className="text-[10px] opacity-80 font-normal uppercase tracking-wider">{t('product.add_to_cart')}</span>
-              <span className="text-base font-bold">{t('common.currency')} {(product.price * quantity).toFixed(2)}</span>
+              <span className="text-base font-bold">{t('common.currency')} {formatPrice(product.price * quantity)}</span>
             </div>
           </Button>
         </div>

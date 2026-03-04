@@ -23,6 +23,7 @@ import {
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import Link from "next/link"
+import { formatPrice } from "@/lib/utils"
 
 export default function ResellerOrderDetailsPage() {
     const { language } = useLanguage()
@@ -188,7 +189,7 @@ export default function ResellerOrderDetailsPage() {
                                                     {item.product_title}
                                                 </h4>
                                                 <p className="text-sm text-gray-500 mt-1">
-                                                    {isArabic ? `الكمية: ${item.quantity}` : `Quantity: ${item.quantity}`} × {item.price.toLocaleString()} MAD
+                                                    {isArabic ? `الكمية: ${item.quantity}` : `Quantity: ${item.quantity}`} × {formatPrice(item.price)} MAD
                                                 </p>
                                                 {item.variant_name && (
                                                     <span className="inline-block mt-2 px-2 py-0.5 bg-gray-50 text-gray-500 text-[10px] font-bold rounded uppercase tracking-wider">
@@ -197,7 +198,7 @@ export default function ResellerOrderDetailsPage() {
                                                 )}
                                             </div>
                                             <div className="text-right">
-                                                <p className="font-bold text-gray-900">{item.subtotal.toLocaleString()} MAD</p>
+                                                <p className="font-bold text-gray-900">{formatPrice(item.subtotal)} MAD</p>
                                             </div>
                                         </div>
                                     ))}
@@ -206,15 +207,15 @@ export default function ResellerOrderDetailsPage() {
                                 <div className="mt-8 pt-8 border-t border-gray-50 space-y-3">
                                     <div className="flex justify-between items-center text-gray-500">
                                         <span>{isArabic ? "المجموع الفرعي" : "Subtotal"}</span>
-                                        <span className="font-medium">{order.subtotal.toLocaleString()} MAD</span>
+                                        <span className="font-medium">{formatPrice(order.subtotal)} MAD</span>
                                     </div>
                                     <div className="flex justify-between items-center text-gray-500">
                                         <span>{isArabic ? "الشحن" : "Shipping"}</span>
-                                        <span className="font-medium">{order.shipping_cost.toLocaleString()} MAD</span>
+                                        <span className="font-medium">{formatPrice(order.shipping_cost)} MAD</span>
                                     </div>
                                     <div className="flex justify-between items-center pt-4 border-t border-gray-50">
                                         <span className="text-lg font-bold text-gray-900">{isArabic ? "الإجمالي" : "Total Amount"}</span>
-                                        <span className="text-2xl font-black text-primary">{order.total.toLocaleString()} MAD</span>
+                                        <span className="text-2xl font-black text-primary">{formatPrice(order.total)} MAD</span>
                                     </div>
                                 </div>
                             </div>
@@ -381,8 +382,8 @@ export default function ResellerOrderDetailsPage() {
                                     <p className="text-xs text-gray-500">{item.variant_name}</p>
                                 </td>
                                 <td className="py-3 text-center text-sm font-medium">{item.quantity}</td>
-                                <td className="py-3 text-right text-sm text-gray-600">{item.price?.toLocaleString('fr-FR')} MAD</td>
-                                <td className="py-3 text-right text-sm font-bold text-gray-900">{item.subtotal.toLocaleString('fr-FR')} MAD</td>
+                                <td className="py-3 text-right text-sm text-gray-600">{formatPrice(item.price)} MAD</td>
+                                <td className="py-3 text-right text-sm font-bold text-gray-900">{formatPrice(item.subtotal)} MAD</td>
                             </tr>
                         ))}
                     </tbody>
@@ -393,15 +394,15 @@ export default function ResellerOrderDetailsPage() {
                     <div className="w-1/3 space-y-2">
                         <div className="flex justify-between text-sm text-gray-600">
                             <span>Sous-total</span>
-                            <span>{order.subtotal.toLocaleString('fr-FR')} MAD</span>
+                            <span>{formatPrice(order.subtotal)} MAD</span>
                         </div>
                         <div className="flex justify-between text-sm text-gray-600">
                             <span>Livraison</span>
-                            <span>{order.shipping_cost.toLocaleString('fr-FR')} MAD</span>
+                            <span>{formatPrice(order.shipping_cost)} MAD</span>
                         </div>
                         <div className="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t border-gray-200">
                             <span>Total</span>
-                            <span>{order.total.toLocaleString('fr-FR')} MAD</span>
+                            <span>{formatPrice(order.total)} MAD</span>
                         </div>
                     </div>
                 </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useLanguage } from "@/components/language-provider"
 import { supabase } from "@/lib/supabase"
+import { formatPrice } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -221,7 +222,7 @@ export default function MyOrdersPage() {
                                             </div>
                                         </td>
                                         <td className="py-5 px-6 font-black text-slate-900">
-                                            MAD {o.total.toLocaleString()}
+                                            MAD {formatPrice(o.total)}
                                         </td>
                                         <td className="py-5 px-6 text-sm text-slate-500">
                                             {new Date(o.created_at).toLocaleDateString()}

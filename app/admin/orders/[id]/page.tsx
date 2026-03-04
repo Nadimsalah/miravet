@@ -32,6 +32,7 @@ import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import Image from "next/image"
 import { supabase } from "@/lib/supabase"
+import { formatPrice } from "@/lib/utils"
 
 export default function OrderDetailsPage() {
     const { t, setLanguage, language } = useLanguage()
@@ -262,12 +263,12 @@ export default function OrderDetailsPage() {
                                         <div className="flex-1">
                                             <h4 className="font-semibold text-foreground">{item.product_title}</h4>
                                             <div className="flex items-center gap-2 mt-0.5">
-                                                <p className="text-xs text-muted-foreground">Qté: {item.quantity} × MAD {item.final_price}</p>
+                                                <p className="text-xs text-muted-foreground">Qté: {item.quantity} × MAD {formatPrice(item.final_price)}</p>
                                                 <span className="text-[10px] bg-blue-500/10 text-blue-500 px-1.5 py-0.5 rounded-md font-medium">📍 {item.warehouse_name}</span>
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <p className="font-bold text-foreground">MAD {item.subtotal}</p>
+                                            <p className="font-bold text-foreground">MAD {formatPrice(item.subtotal)}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -276,15 +277,15 @@ export default function OrderDetailsPage() {
                             <div className="mt-6 pt-6 border-t border-white/10 space-y-2">
                                 <div className="flex justify-between text-sm text-muted-foreground">
                                     <span>{t("cart.subtotal")}</span>
-                                    <span>MAD {order.subtotal}</span>
+                                    <span>MAD {formatPrice(order.subtotal)}</span>
                                 </div>
                                 <div className="flex justify-between text-sm text-muted-foreground">
                                     <span>{t("cart.shipping")}</span>
-                                    <span>MAD {order.shipping_cost}</span>
+                                    <span>MAD {formatPrice(order.shipping_cost)}</span>
                                 </div>
                                 <div className="flex justify-between text-lg font-bold text-foreground pt-4 border-t border-white/5">
                                     <span>{t("cart.total")}</span>
-                                    <span className="text-primary">MAD {order.total}</span>
+                                    <span className="text-primary">MAD {formatPrice(order.total)}</span>
                                 </div>
                             </div>
                         </div>
@@ -508,8 +509,8 @@ export default function OrderDetailsPage() {
                                         <p className="text-[10px] text-blue-600 font-medium mt-1">📍 {item.warehouse_name}</p>
                                     </td>
                                     <td className="py-3 text-center text-sm font-medium">{item.quantity}</td>
-                                    <td className="py-3 text-right text-sm text-gray-600">{item.final_price?.toLocaleString('fr-FR')} MAD</td>
-                                    <td className="py-3 text-right text-sm font-bold text-gray-900">{item.subtotal.toLocaleString('fr-FR')} MAD</td>
+                                    <td className="py-3 text-right text-sm text-gray-600">{formatPrice(item.final_price)} MAD</td>
+                                    <td className="py-3 text-right text-sm font-bold text-gray-900">{formatPrice(item.subtotal)} MAD</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -520,15 +521,15 @@ export default function OrderDetailsPage() {
                         <div className="w-1/3 space-y-2">
                             <div className="flex justify-between text-sm text-gray-600">
                                 <span>Sous-total</span>
-                                <span>{order.subtotal.toLocaleString('fr-FR')} MAD</span>
+                                <span>{formatPrice(order.subtotal)} MAD</span>
                             </div>
                             <div className="flex justify-between text-sm text-gray-600">
                                 <span>Livraison</span>
-                                <span>{order.shipping_cost.toLocaleString('fr-FR')} MAD</span>
+                                <span>{formatPrice(order.shipping_cost)} MAD</span>
                             </div>
                             <div className="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t border-gray-200">
                                 <span>Total</span>
-                                <span>{order.total.toLocaleString('fr-FR')} MAD</span>
+                                <span>{formatPrice(order.total)} MAD</span>
                             </div>
                         </div>
                     </div>

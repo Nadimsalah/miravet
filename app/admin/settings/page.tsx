@@ -188,29 +188,6 @@ export default function SettingsPage() {
                             {/* General Settings */}
                             <TabsContent value="general" className="space-y-6 m-0">
 
-                                {/* ALERTS & REMINDERS WIDGET (Moved from Dashboard) */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="glass-strong rounded-3xl p-6 relative overflow-hidden flex flex-col justify-center items-center text-center group border-white/20 shadow-xl">
-                                        <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-green-500/20 transition-all" />
-                                        <div className="p-3 bg-green-500/10 text-green-500 rounded-full mb-4">
-                                            <Sparkles className="w-6 h-6" />
-                                        </div>
-                                        <h3 className="text-lg font-bold text-foreground mb-1">{t("admin.settings.general.action_required")}</h3>
-                                        <p className="text-sm text-muted-foreground">{settings.manager_alert_fallback || t("admin.settings.general.caught_up")}</p>
-                                    </div>
-
-                                    <div className="glass-strong rounded-3xl p-6 relative overflow-hidden flex flex-col justify-center group border-white/20 shadow-xl">
-                                        <div className="absolute bottom-0 left-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl -ml-10 -mb-10 group-hover:bg-blue-500/20 transition-all" />
-                                        <h3 className="text-lg font-bold text-foreground mb-2 flex items-center gap-2">
-                                            <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                                            {t("admin.settings.general.reminders_title")}
-                                        </h3>
-                                        <p className="text-sm text-muted-foreground leading-relaxed">
-                                            {settings.manager_internal_reminders || t("admin.settings.general.reminders_desc")}
-                                        </p>
-                                    </div>
-                                </div>
-                                {/* End Alerts & Reminders */}
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="glass rounded-3xl p-8 border-white/20 shadow-xl space-y-6">
@@ -585,40 +562,6 @@ export default function SettingsPage() {
                                         <h3 className="font-bold text-lg">{t("admin.settings.team.title")}</h3>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        <div className="space-y-4">
-                                            <div className="space-y-2">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="p-2 bg-green-500/10 rounded-lg text-green-500"><Sparkles className="w-4 h-4" /></span>
-                                                    <label className="text-sm font-bold">{t("admin.settings.team.label.fallback")}</label>
-                                                </div>
-                                                <Input
-                                                    value={settings.manager_alert_fallback || t("admin.settings.general.caught_up")}
-                                                    onChange={(e) => handleChange("manager_alert_fallback", e.target.value)}
-                                                    className="rounded-xl h-12 bg-white/5 border-white/10"
-                                                    placeholder="All caught up! No urgent alerts."
-                                                />
-                                                <p className="text-[10px] text-muted-foreground ml-1">{t("admin.settings.team.fallback_desc")}</p>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-4">
-                                            <div className="space-y-2">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="p-2 bg-primary/10 rounded-lg text-primary"><MessageSquare className="w-4 h-4" /></span>
-                                                    <label className="text-sm font-bold">{t("admin.settings.team.label.guidance")}</label>
-                                                </div>
-                                                <textarea
-                                                    rows={4}
-                                                    value={settings.manager_internal_reminders || t("admin.settings.general.reminders_desc")}
-                                                    onChange={(e) => handleChange("manager_internal_reminders", e.target.value)}
-                                                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-primary/50 focus:outline-none transition-all text-sm resize-none"
-                                                    placeholder="Instructions for account managers..."
-                                                />
-                                                <p className="text-[10px] text-muted-foreground ml-1">{t("admin.settings.team.guidance_desc")}</p>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
 
                                 {/* Login Links Section */}

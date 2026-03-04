@@ -15,17 +15,20 @@ export async function DELETE(
         }
 
         // 1. Delete from auth.users
+        // This will automatically delete the profile due to ON DELETE CASCADE
         const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(id)
-        // If user doesn't exist in Auth, we still try to delete profile
-        if (authError && !authError.message.includes('User not found')) {
-            console.error("[API Delivery] Auth Delete Error:", authError)
+
+        if (authError) {
+            // If user doesn't exist in Auth, we still try to delete profile as fallback
+            if (authError.message.includes('User not found')) {
+                const { error: profileError } = await supabaseAdmin.from('profiles').delete().eq('id', id)
+                if (profileError) throw profileError
+            } else {
+                throw authError
+            }
         }
 
-        // 2. Delete profile
-        const { error: profileError } = await supabaseAdmin.from('profiles').delete().eq('id', id)
-        if (profileError) throw profileError
-
-        return NextResponse.json({ success: true })
+        return NextResponse.json({ success: true, message: 'Logisticien supprimé avec succès' })
     } catch (error: any) {
         console.error("[API Delivery] DELETE Error:", error)
         return NextResponse.json({ error: error.message }, { status: 500 })

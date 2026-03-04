@@ -24,6 +24,7 @@ import {
     ResponsiveContainer
 } from "recharts"
 import { getDashboardStats, getRevenueAnalytics, getAdvancedAnalytics } from "@/lib/supabase-api"
+import { formatPrice } from "@/lib/utils"
 import { useLanguage } from "@/components/language-provider"
 import { TopPerformers } from "@/components/admin/analytics/top-performers"
 import { ProductInsights } from "@/components/admin/analytics/product-insights"
@@ -91,7 +92,7 @@ export default function AnalyticsPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <StatCard
                         title={t("admin.analytics.total_revenue")}
-                        value={`${stats?.totalRevenue?.toLocaleString()} MAD`}
+                        value={`${formatPrice(stats?.totalRevenue || 0)} MAD`}
                         change="+12.5%"
                         trend="up"
                         icon={CreditCard}
@@ -115,7 +116,7 @@ export default function AnalyticsPage() {
                     />
                     <StatCard
                         title={t("admin.analytics.avg_order_value")}
-                        value={`${(stats?.totalRevenue / (stats?.totalOrders || 1))?.toFixed(0)} MAD`}
+                        value={`${formatPrice(stats?.totalRevenue / (stats?.totalOrders || 1))} MAD`}
                         change="+5.2%"
                         trend="up"
                         icon={TrendingUp}
@@ -148,7 +149,7 @@ export default function AnalyticsPage() {
                                         axisLine={false}
                                         tickLine={false}
                                         tick={{ fill: '#6b7280', fontSize: 12 }}
-                                        tickFormatter={(val) => `${val} MAD`}
+                                        tickFormatter={(val) => formatPrice(val)}
                                     />
                                     <Tooltip
                                         contentStyle={{ backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: '12px', border: '1px solid #e5e7eb', color: '#1f2937', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
@@ -204,7 +205,7 @@ function StatCard({ title, value, change, icon: Icon, trend, color }: any) {
                 </div>
                 <div>
                     <p className="text-xs font-medium text-muted-foreground mb-1 uppercase tracking-wider">{title}</p>
-                    <h3 className="text-2xl font-bold text-gray-900">{value}</h3>
+                    <h3 className="text-xl font-bold text-gray-900">{value}</h3>
                 </div>
             </div>
         </div>

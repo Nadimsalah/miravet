@@ -16,10 +16,9 @@ import {
   ArrowLeft,
   ShieldCheck,
   Truck,
-  Tag,
-  Heart,
   Trash2,
 } from "lucide-react"
+import { formatPrice } from "@/lib/utils"
 import { getCurrentUserRole, getCurrentResellerTier, getShippingSettings, ShippingSetting, ResellerTier } from "@/lib/supabase-api"
 import {
   NavigationMenu,
@@ -97,13 +96,6 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Announcement Bar */}
-      <div className="bg-primary text-primary-foreground text-center py-2 px-4 text-sm font-medium">
-        {language === 'ar'
-          ? (currentShippingRule ? `شحن مجاني للطلبات فوق ${currentShippingRule.free_shipping_threshold} ${t('common.currency')}` : `شحن مجاني للطلبات فوق ٧٥٠ ${t('common.currency')}`)
-          : (currentShippingRule ? `Free Shipping on Orders Over ${t('common.currency')} ${currentShippingRule.free_shipping_threshold}` : `Free Shipping on Orders Over ${t('common.currency')} 750`)
-        }
-      </div>
 
       {/* Header */}
       <header
@@ -252,10 +244,10 @@ export default function CartPage() {
                           {/* Price */}
                           <div className="text-right">
                             <p className="text-base sm:text-lg font-bold text-foreground">
-                              {t('common.currency')} {(((isResellerAccount && item.resellerPrice) ? item.resellerPrice : item.price) * item.quantity).toFixed(2)}
+                              {t('common.currency')} {formatPrice(((isResellerAccount && item.resellerPrice) ? item.resellerPrice : item.price) * item.quantity)}
                             </p>
                             <p className="text-xs sm:text-sm text-muted-foreground">
-                              {t('common.currency')} {((isResellerAccount && item.resellerPrice) ? item.resellerPrice : item.price).toFixed(2)} each
+                              {t('common.currency')} {formatPrice((isResellerAccount && item.resellerPrice) ? item.resellerPrice : item.price)} each
                             </p>
                           </div>
                         </div>
@@ -304,23 +296,18 @@ export default function CartPage() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-foreground/80">
                     <span>{t('cart.subtotal')}</span>
-                    <span className="font-medium">{t('common.currency')} {subtotal.toFixed(2)}</span>
+                    <span className="font-medium">{t('common.currency')} {formatPrice(subtotal)}</span>
                   </div>
                   {promoApplied && (
                     <div className="flex items-center justify-between text-primary">
                       <span>Discount (20%)</span>
-                      <span className="font-medium">-{t('common.currency')} {discount.toFixed(2)}</span>
+                      <span className="font-medium">-{t('common.currency')} {formatPrice(discount)}</span>
                     </div>
                   )}
                   <div className="flex items-center justify-between text-foreground/80">
                     <span>{t('cart.shipping')}</span>
-                    <span className="font-medium">{shipping === 0 ? t('cart.free') : `${t('common.currency')} ${shipping.toFixed(2)}`}</span>
+                    <span className="font-medium">{shipping === 0 ? t('cart.free') : `${t('common.currency')} ${formatPrice(shipping)}`}</span>
                   </div>
-                  {subtotal < 750 && (
-                    <p className="text-xs text-muted-foreground">
-                      {t('cart.add_more_shipping')} {t('common.currency')} {(750 - subtotal).toFixed(2)}
-                    </p>
-                  )}
                 </div>
 
                 <Separator />
@@ -328,7 +315,7 @@ export default function CartPage() {
                 {/* Total */}
                 <div className="flex items-center justify-between text-lg font-bold text-foreground">
                   <span>{t('cart.total')}</span>
-                  <span>{t('common.currency')} {total.toFixed(2)}</span>
+                  <span>{t('common.currency')} {formatPrice(total)}</span>
                 </div>
 
                 {/* Checkout Button */}

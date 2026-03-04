@@ -24,6 +24,7 @@ import { supabase } from "@/lib/supabase"
 import { Checkbox } from "@/components/ui/checkbox"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { getAdminSettings, getShippingSettings, ShippingSetting } from "@/lib/supabase-api"
+import { formatPrice } from "@/lib/utils"
 
 const MOROCCO_CITIES = [
     "Casablanca", "Rabat", "Marrakech", "Fes", "Tangier", "Agadir", "Meknes", "Oujda", "Kenitra",
@@ -454,7 +455,7 @@ export default function CheckoutPage() {
                                 ) : (
                                     <>
                                         <ShieldCheck className="w-5 h-5 mr-2" />
-                                        {t('checkout.pay')} {total.toFixed(2)} {t('common.currency')}
+                                        {t('checkout.pay')} {formatPrice(total)} {t('common.currency')}
                                     </>
                                 )}
                             </Button>
@@ -492,7 +493,7 @@ export default function CheckoutPage() {
                                                 </h4>
                                                 {item.size && <p className="text-xs text-muted-foreground">{item.size}</p>}
                                                 <p className="text-sm font-semibold text-primary mt-1">
-                                                    {t('common.currency')} {(((isResellerAccount && item.resellerPrice) ? item.resellerPrice : item.price) * item.quantity).toFixed(2)}
+                                                    {t('common.currency')} {formatPrice(((isResellerAccount && item.resellerPrice) ? item.resellerPrice : item.price) * item.quantity)}
                                                 </p>
                                             </div>
                                         </div>
@@ -510,8 +511,8 @@ export default function CheckoutPage() {
                                             </span>
                                             <span className="text-muted-foreground">
                                                 {language === 'ar'
-                                                    ? `باقي ${Math.max(0, currentShippingRule.free_shipping_threshold - subtotal).toFixed(2)} ${t('common.currency')}`
-                                                    : `${Math.max(0, currentShippingRule.free_shipping_threshold - subtotal).toFixed(2)} ${t('common.currency')} left`
+                                                    ? `باقي ${formatPrice(Math.max(0, currentShippingRule.free_shipping_threshold - subtotal))} ${t('common.currency')}`
+                                                    : `${formatPrice(Math.max(0, currentShippingRule.free_shipping_threshold - subtotal))} ${t('common.currency')} left`
                                                 }
                                             </span>
                                         </div>
@@ -527,17 +528,17 @@ export default function CheckoutPage() {
                                 <div className="space-y-3 text-sm">
                                     <div className="flex justify-between text-muted-foreground">
                                         <span>{t('cart.subtotal')}</span>
-                                        <span className="font-medium text-foreground">{t('common.currency')} {subtotal.toFixed(2)}</span>
+                                        <span className="font-medium text-foreground">{t('common.currency')} {formatPrice(subtotal)}</span>
                                     </div>
                                     <div className="flex justify-between text-muted-foreground">
                                         <span>{t('cart.shipping')}</span>
                                         <span className="font-medium text-foreground">
-                                            {shipping === 0 ? t('cart.free') : `${t('common.currency')} ${shipping}`}
+                                            {shipping === 0 ? t('cart.free') : `${t('common.currency')} ${formatPrice(shipping)}`}
                                         </span>
                                     </div>
                                     <div className="flex justify-between text-lg font-bold text-foreground pt-3 border-t border-border/50">
                                         <span>{t('cart.total')}</span>
-                                        <span>{t('common.currency')} {total.toFixed(2)}</span>
+                                        <span>{t('common.currency')} {formatPrice(total)}</span>
                                     </div>
                                 </div>
 
@@ -556,7 +557,7 @@ export default function CheckoutPage() {
                                     ) : (
                                         <>
                                             <ShieldCheck className="w-5 h-5 mr-2" />
-                                            {t('checkout.pay')} {total.toFixed(2)} {t('common.currency')}
+                                            {t('checkout.pay')} {formatPrice(total)} {t('common.currency')}
                                         </>
                                     )}
                                 </Button>

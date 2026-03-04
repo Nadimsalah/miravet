@@ -31,6 +31,7 @@ import {
     DialogFooter
 } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
+import { formatPrice } from "@/lib/utils"
 
 const DELIVERY_FAILED_REASONS = [
     { fr: "Client absent / injoignable", ar: "الزبون غائب / هاتفه مغلق" },
@@ -341,7 +342,7 @@ export default function DeliveryDashboard() {
                                             </div>
                                             <div className="text-right">
                                                 <div className="text-lg font-black text-indigo-600">
-                                                    {order.total_amount?.toLocaleString()} MAD
+                                                    {formatPrice(order.total_amount || 0)} MAD
                                                 </div>
                                                 <span className={`
                                                     inline-block mt-1 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest
