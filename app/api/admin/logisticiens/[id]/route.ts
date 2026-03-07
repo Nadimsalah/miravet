@@ -48,9 +48,10 @@ export async function PATCH(
             return NextResponse.json({ error: 'ID manquant ou invalide' }, { status: 400 })
         }
 
-        const { name, city, phone, password } = await req.json()
+        const { name, city, phone, email, password } = await req.json()
 
         const updateData: any = {
+            email,
             user_metadata: {
                 full_name: name,
                 city,
@@ -71,7 +72,8 @@ export async function PATCH(
             .update({
                 name,
                 city,
-                phone
+                phone,
+                email
             })
             .eq('id', id)
 

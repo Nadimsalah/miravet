@@ -62,7 +62,7 @@ export default function DeliveryMenPage() {
     // Create/Edit Modal
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [editingMan, setEditingMan] = useState<DeliveryMan | null>(null)
-    const [formData, setFormData] = useState({ name: '', phone: '', password: '', city: '' })
+    const [formData, setFormData] = useState({ name: '', email: '', password: '', city: '', phone: '' })
     const [isSaving, setIsSaving] = useState(false)
 
     useEffect(() => {
@@ -118,7 +118,7 @@ export default function DeliveryMenPage() {
             toast.success(editingMan ? "Logisticien mis à jour" : "Logisticien créé avec succès")
             setIsModalOpen(false)
             setEditingMan(null)
-            setFormData({ name: '', phone: '', password: '', city: '' })
+            setFormData({ name: '', email: '', password: '', city: '', phone: '' })
             loadData()
         } catch (error: any) {
             toast.error(error.message)
@@ -168,6 +168,7 @@ export default function DeliveryMenPage() {
 
     const filtered = deliveryMen.filter(m =>
         m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (m.email && m.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
         m.phone.includes(searchQuery) ||
         m.city?.toLowerCase().includes(searchQuery.toLowerCase())
     )
@@ -197,7 +198,7 @@ export default function DeliveryMenPage() {
                         setIsModalOpen(open)
                         if (!open) {
                             setEditingMan(null)
-                            setFormData({ name: '', phone: '', password: '', city: '' })
+                            setFormData({ name: '', email: '', password: '', city: '', phone: '' })
                         }
                     }}>
                         <DialogTrigger asChild>
@@ -233,9 +234,19 @@ export default function DeliveryMenPage() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Téléphone (Identifiant)</label>
+                                    <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Email (Identifiant)</label>
                                     <Input
                                         required
+                                        type="email"
+                                        value={formData.email}
+                                        onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                        className="h-12 rounded-xl bg-white/5 border-white/10 focus:ring-pink-500"
+                                        placeholder="logisticien@example.com"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Téléphone</label>
+                                    <Input
                                         value={formData.phone}
                                         onChange={e => setFormData({ ...formData, phone: e.target.value })}
                                         className="h-12 rounded-xl bg-white/5 border-white/10 focus:ring-pink-500"
@@ -303,7 +314,7 @@ export default function DeliveryMenPage() {
                                                 <DropdownMenuItem
                                                     onClick={() => {
                                                         setEditingMan(m)
-                                                        setFormData({ name: m.name, phone: m.phone, city: m.city || '', password: '' })
+                                                        setFormData({ name: m.name, email: m.email || '', phone: m.phone || '', city: m.city || '', password: '' })
                                                         setIsModalOpen(true)
                                                     }}
                                                 >
@@ -347,6 +358,10 @@ export default function DeliveryMenPage() {
                                 <h3 className="text-xl font-black text-foreground mb-1 tracking-tight">{m.name}</h3>
                                 <div className="space-y-3 mb-6">
                                     <div className="flex items-center gap-2 text-sm text-pink-500 font-bold">
+                                        <Mail className="w-4 h-4" />
+                                        {m.email || "Email non défini"}
+                                    </div>
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground font-medium">
                                         <Phone className="w-4 h-4" />
                                         {m.phone}
                                     </div>

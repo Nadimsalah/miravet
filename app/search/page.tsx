@@ -86,7 +86,7 @@ function BestSellersGrid() {
                             {product.title}
                         </h3>
                         <div className="flex items-center justify-between gap-2 pt-2">
-                            <div className="flex flex-col">
+                            <div className="flex flex-row flex-wrap items-baseline gap-x-2">
                                 {(() => {
                                     const tier = resellerTier || 'reseller'
                                     const tierPrice = resellerTier ? (
@@ -98,10 +98,10 @@ function BestSellersGrid() {
                                     if (tierPrice) {
                                         return (
                                             <>
-                                                <span className="text-lg sm:text-xl font-black text-primary">
-                                                    {t("common.currency")} {formatPrice(tierPrice / 1.2)} <span className="text-xs font-normal text-muted-foreground">HT</span>
+                                                <span className="text-xs sm:text-sm font-bold text-primary whitespace-nowrap">
+                                                    {t("common.currency")} {formatPrice(tierPrice / 1.2)} <span className="text-[10px] font-normal text-muted-foreground">HT</span>
                                                 </span>
-                                                <span className="text-xs text-muted-foreground line-through opacity-70">
+                                                <span className="text-xs text-muted-foreground line-through opacity-70 whitespace-nowrap">
                                                     {t("common.currency")} {formatPrice(product.price)} <span className="text-[10px]">TTC</span>
                                                 </span>
                                             </>
@@ -110,11 +110,11 @@ function BestSellersGrid() {
 
                                     return (
                                         <>
-                                            <span className="text-lg sm:text-xl font-black text-primary">
-                                                {t("common.currency")} {formatPrice(product.price)} <span className="text-xs font-normal text-muted-foreground">TTC</span>
+                                            <span className="text-xs sm:text-sm font-bold text-primary whitespace-nowrap">
+                                                {t("common.currency")} {formatPrice(product.price)} <span className="text-[10px] font-normal text-muted-foreground">TTC</span>
                                             </span>
                                             {(product.compare_at_price ?? 0) > 0 && (
-                                                <span className="text-xs text-muted-foreground line-through opacity-70">
+                                                <span className="text-xs text-muted-foreground line-through opacity-70 whitespace-nowrap">
                                                     {t("common.currency")} {formatPrice(product.compare_at_price || 0)}
                                                 </span>
                                             )}
@@ -261,7 +261,7 @@ export default function SearchPage() {
                                         {product.title}
                                     </h3>
                                     <div className="flex items-center justify-between gap-2 pt-2">
-                                        <div className="flex flex-col">
+                                        <div className="flex flex-row flex-wrap items-baseline gap-x-2">
                                             {(() => {
                                                 const tier = resellerTier || 'reseller'
                                                 const tierPrice = resellerTier ? (
@@ -273,10 +273,10 @@ export default function SearchPage() {
                                                 if (tierPrice) {
                                                     return (
                                                         <>
-                                                            <span className="text-lg sm:text-xl font-black text-primary">
-                                                                {t('common.currency')} {formatPrice(tierPrice / 1.2)} <span className="text-xs font-normal text-muted-foreground">HT</span>
+                                                            <span className="text-xs sm:text-sm font-bold text-primary whitespace-nowrap">
+                                                                {t('common.currency')} {formatPrice(tierPrice / 1.2)} <span className="text-[10px] font-normal text-muted-foreground">HT</span>
                                                             </span>
-                                                            <span className="text-xs text-muted-foreground line-through opacity-70">
+                                                            <span className="text-xs text-muted-foreground line-through opacity-70 whitespace-nowrap">
                                                                 {t('common.currency')} {formatPrice(product.price)} <span className="text-[10px]">TTC</span>
                                                             </span>
                                                         </>
@@ -285,11 +285,11 @@ export default function SearchPage() {
 
                                                 return (
                                                     <>
-                                                        <span className="text-lg sm:text-xl font-black text-primary">
-                                                            {t('common.currency')} {formatPrice(product.price)} <span className="text-xs font-normal text-muted-foreground">TTC</span>
+                                                        <span className="text-xs sm:text-sm font-bold text-primary whitespace-nowrap">
+                                                            {t('common.currency')} {formatPrice(product.price)} <span className="text-[10px] font-normal text-muted-foreground">TTC</span>
                                                         </span>
                                                         {(product.compare_at_price ?? 0) > 0 && (
-                                                            <span className="text-xs text-muted-foreground line-through opacity-70">
+                                                            <span className="text-xs text-muted-foreground line-through opacity-70 whitespace-nowrap">
                                                                 {t('common.currency')} {formatPrice(product.compare_at_price || 0)}
                                                             </span>
                                                         )}

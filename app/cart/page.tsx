@@ -20,7 +20,7 @@ import {
   Tag,
 } from "lucide-react"
 import { formatPrice } from "@/lib/utils"
-import { getCurrentUserRole, getCurrentResellerTier, ResellerTier } from "@/lib/supabase-api"
+import { getCurrentUserRole, getCurrentResellerTier, getAdminSettings, ResellerTier } from "@/lib/supabase-api"
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -43,14 +43,18 @@ export default function CartPage() {
   const { t, language } = useLanguage()
   const [userRole, setUserRole] = useState<string | null>(null)
   const [resellerTier, setResellerTier] = useState<ResellerTier>(null)
+  const [shippingEnabled, setShippingEnabled] = useState(true)
+
   useEffect(() => {
     const fetchData = async () => {
-      const [role, tier] = await Promise.all([
+      const [role, tier, settings] = await Promise.all([
         getCurrentUserRole(),
-        getCurrentResellerTier()
+        getCurrentResellerTier(),
+        getAdminSettings()
       ])
       setUserRole(role)
       setResellerTier(tier)
+      setShippingEnabled(settings.shipping_enabled !== 'false')
     }
     fetchData()
   }, [])
@@ -310,12 +314,14 @@ export default function CartPage() {
                     </div>
                     <span>{t('cart.trust.secure')}</span>
                   </div>
-                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Truck className="w-4 h-4 text-primary" />
+                  {shippingEnabled && (
+                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <Truck className="w-4 h-4 text-primary" />
+                      </div>
+                      <span>{t('cart.trust.shipping')}</span>
                     </div>
-                    <span>{t('cart.trust.shipping')}</span>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>

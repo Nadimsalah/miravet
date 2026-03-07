@@ -16,11 +16,18 @@ const supabase = createClient(
 );
 
 async function check() {
-    const { data, error } = await supabase.from('customers').select('*');
+    console.log('--- All Customers Check ---');
+    const { data, error } = await supabase
+        .from('customers')
+        .select('name, email, role, company_name');
+
     if (error) {
         console.error(error);
     } else {
-        console.log(JSON.stringify(data, null, 2));
+        console.log(`Total customers: ${data.length}`);
+        data.forEach(p => {
+            console.log(`- ${p.name} (${p.email}), Role: "${p.role}", Company: "${p.company_name}"`);
+        });
     }
 }
 

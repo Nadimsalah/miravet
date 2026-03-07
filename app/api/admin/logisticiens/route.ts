@@ -3,21 +3,17 @@ import { supabaseAdmin } from '@/lib/supabase-server'
 
 export async function POST(req: Request) {
     try {
-        const { phone, password, name, city } = await req.json()
+        const { email, phone, password, name, city } = await req.json()
 
-        if (!phone || !password || !name) {
-            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+        if (!email || !password || !name) {
+            return NextResponse.json({ error: 'Missing required fields (email, password, name)' }, { status: 400 })
         }
 
-        // Clean phone number (remove spaces, etc. to use as identifier)
-        const cleanPhone = phone.replace(/\s+/g, '')
-
-        // Supabase Auth requires an email or a phone number. 
-        // For phone/password login, we'll use the phone field.
+        // 1. Create User in Supabase Auth
         const { data: userData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-            phone: cleanPhone,
+            email,
             password,
-            phone_confirm: true,
+            email_confirm: true,
             user_metadata: {
                 full_name: name,
                 role: 'DELIVERY_MAN',
@@ -26,57 +22,23 @@ export async function POST(req: Request) {
             }
         })
 
-        if (authError) {
-            // Fallback: If phone/password isn't enabled in Supabase settings yet,
-            // we'll use a virtual email phone@delivery.com
-            const virtualEmail = `${cleanPhone}@delivery.com`
-            const { data: userDataAlt, error: authErrorAlt } = await supabaseAdmin.auth.admin.createUser({
-                email: virtualEmail,
-                password,
-                email_confirm: true,
-                user_metadata: {
-                    full_name: name,
-                    role: 'DELIVERY_MAN',
-                    city: city,
-                    phone: phone
-                }
-            })
+        if (authError) throw authError
 
-            if (authErrorAlt) throw authErrorAlt
-
-            // 2. Explicitly insert into profiles to be safe
-            const { error: profileErrorAlt } = await supabaseAdmin.from('profiles').upsert({
-                id: userDataAlt.user.id,
-                name: name,
-                role: 'DELIVERY_MAN',
-                city: city,
-                phone: phone,
-                email: virtualEmail
-            })
-
-            if (profileErrorAlt) throw profileErrorAlt
-
-            return NextResponse.json({
-                success: true,
-                message: 'Logisticien created successfully (via virtual email)',
-                user: userDataAlt.user
-            })
-        }
-
-        // 2. Explicitly insert into profiles to be safe
+        // 2. Explicitly insert into profiles
         const { error: profileError } = await supabaseAdmin.from('profiles').upsert({
             id: userData.user.id,
             name: name,
             role: 'DELIVERY_MAN',
             city: city,
-            phone: phone
+            phone: phone,
+            email: email
         })
 
         if (profileError) throw profileError
 
         return NextResponse.json({
             success: true,
-            message: 'Logisticien created successfully',
+            message: 'Logisticien créé avec succès',
             user: userData.user
         })
     } catch (error: any) {

@@ -12,6 +12,7 @@ export interface CartItem {
     quantity: number
     size?: string
     inStock: boolean
+    stock: number
     resellerPrice?: number | null
 }
 
@@ -59,7 +60,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
             if (existingItemIndex > -1) {
                 const updatedItems = [...currentItems]
-                updatedItems[existingItemIndex].quantity += newItem.quantity
+                const item = updatedItems[existingItemIndex]
+                updatedItems[existingItemIndex].quantity = item.quantity + newItem.quantity
                 toast.success("Cart updated", {
                     description: `${newItem.name} quantity increased.`,
                 })
@@ -83,9 +85,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const updateQuantity = React.useCallback((id: string, quantity: number, size?: string) => {
         if (quantity < 1) return
         setItems((currentItems) =>
-            currentItems.map((item) =>
-                item.id === id && item.size === size ? { ...item, quantity } : item
-            )
+            currentItems.map((item) => {
+                if (item.id === id && item.size === size) {
+                    return { ...item, quantity: quantity }
+                }
+                return item
+            })
         )
     }, [])
 

@@ -8,9 +8,8 @@ import { useLanguage } from "@/components/language-provider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
 import { supabase } from "@/lib/supabase"
-import { Loader2, ArrowLeft, ArrowRight, User, Lock, Mail } from "lucide-react"
+import { Loader2, ArrowRight, Lock, Mail } from "lucide-react"
 import { toast } from "sonner"
 import { getCurrentUserRole } from "@/lib/supabase-api"
 
@@ -29,55 +28,44 @@ export default function LoginPage() {
         try {
             const normalizedEmail = email.trim().toLowerCase()
 
-            console.log('[Login Debug] Attempting login:', {
-                url: process.env.NEXT_PUBLIC_SUPABASE_URL,
-                email: normalizedEmail,
-                passwordLength: password.length,
-                timestamp: new Date().toISOString()
-            })
-
             const { data, error } = await supabase.auth.signInWithPassword({
                 email: normalizedEmail,
                 password,
             })
 
             if (error) {
-                console.error('[Login Debug] Auth error:', error)
                 throw error
             }
 
             if (data.user) {
-                console.log('[Login Debug] Login successful:', data.user.id)
-                toast.success(isArabic ? "تم تسجيل الدخول بنجاح" : "Logged in successfully")
+                toast.success(t("login.success"))
 
                 // Fetch role for redirect
                 const role = await getCurrentUserRole()
-                console.log('Fetched user role:', role)
 
                 const normalizedRole = role?.toUpperCase()
 
-                if (normalizedRole === 'RESELLER') {
-                    console.log('Redirecting to reseller dashboard')
+                if (normalizedRole === 'RESELLER' || normalizedRole === 'RESELLER_PENDING') {
                     router.push('/reseller/dashboard')
                 } else if (normalizedRole === 'ADMIN') {
-                    console.log('Redirecting to admin dashboard')
                     router.push('/admin/dashboard')
                 } else if (normalizedRole === 'ACCOUNT_MANAGER') {
-                    console.log('Redirecting to manager resellers')
-                    router.push('/manager/resellers')
+                    toast.error("Veuillez utiliser l'Espace Commercial pour vous connecter.")
+                    await supabase.auth.signOut()
+                    setIsLoading(false)
+                    return
                 } else if (normalizedRole === 'DELIVERY_MAN') {
-                    console.log('Redirecting to logistique dashboard')
-                    router.push('/logistique/dashboard')
+                    toast.error("Veuillez utiliser l'Espace Logisticien pour vous connecter.")
+                    await supabase.auth.signOut()
+                    setIsLoading(false)
+                    return
                 } else {
-                    console.log('Unknown role or customer, redirecting to home')
                     router.push('/')
                 }
                 router.refresh()
             }
         } catch (error: any) {
-            console.error('Login error:', error)
-            const projectId = process.env.NEXT_PUBLIC_SUPABASE_URL?.split('//')[1]?.split('.')[0] || 'Unknown'
-            const errorMessage = `${error.message || (isArabic ? "فشل تسجيل الدخول" : "Login failed")} (Target: ${projectId})`
+            const errorMessage = error.message || t("login.failed")
             toast.error(errorMessage)
         } finally {
             setIsLoading(false)
@@ -105,16 +93,14 @@ export default function LoginPage() {
                 </div>
                 <div className="relative z-10 max-w-lg">
                     <h1 className="text-5xl font-bold text-foreground mb-6 leading-tight">
-                        {isArabic ? "مرحباً بك في عالم التكنولوجيا" : "Welcome to the Future of IT"}
+                        {t("login.welcome")}
                     </h1>
                     <p className="text-xl text-muted-foreground leading-relaxed">
-                        {isArabic
-                            ? "انضم إلى شبكة ديدالي واستمتع بأفضل عروض الأجهزة وحلول الأعمال في المغرب."
-                            : "Join the Didali network and access the best hardware deals and business solutions in Morocco."}
+                        {t("login.join_network")}
                     </p>
                 </div>
                 <div className="relative z-10 text-sm text-muted-foreground">
-                    © 2026 Didali Store. {isArabic ? "جميع الحقوق محفوظة." : "All rights reserved."}
+                    © 2026 Didali Store. {t("login.rights")}
                 </div>
 
                 {/* Glass Card Background for Left Side */}
@@ -139,23 +125,17 @@ export default function LoginPage() {
                             />
                         </div>
 
-                        <div className="text-[10px] text-muted-foreground opacity-30 mt-2 font-mono">
-                            Supabase Context: {process.env.NEXT_PUBLIC_SUPABASE_URL?.split('//')[1]?.split('.')[0] || 'ewrelkbdqzywdjrgsadt'}
-                        </div>
-
                         <h2 className="text-3xl font-bold tracking-tight">
-                            {isArabic ? "تسجيل الدخول" : "Sign In"}
+                            {t("login.sign_in")}
                         </h2>
                         <p className="text-muted-foreground">
-                            {isArabic
-                                ? "أدخل بياناتك للوصول إلى حسابك"
-                                : "Enter your credentials to access your account"}
+                            {t("login.enter_credentials")}
                         </p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="space-y-2">
-                            <Label htmlFor="email">{isArabic ? "البريد الإلكتروني" : "Email"}</Label>
+                            <Label htmlFor="email">{t("login.email")}</Label>
                             <div className="relative">
                                 <Mail className={`absolute top-3 w-5 h-5 text-muted-foreground ${isArabic ? "right-3" : "left-3"}`} />
                                 <Input
@@ -163,7 +143,7 @@ export default function LoginPage() {
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    placeholder={isArabic ? "name@example.com" : "name@example.com"}
+                                    placeholder={t("login.placeholder_email")}
                                     className={`pl-10 h-12 rounded-xl bg-white/50 border-primary/10 focus:border-primary/50 focus:ring-primary/20 ${isArabic ? "pr-10 pl-3" : "pl-10 pr-3"}`}
                                     required
                                 />
@@ -172,9 +152,9 @@ export default function LoginPage() {
 
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                                <Label htmlFor="password">{isArabic ? "كلمة المرور" : "Password"}</Label>
+                                <Label htmlFor="password">{t("login.password")}</Label>
                                 <Link href="/forgot-password" className="text-sm font-medium text-primary hover:underline">
-                                    {isArabic ? "نسيت كلمة المرور؟" : "Forgot password?"}
+                                    {t("login.forgot_password")}
                                 </Link>
                             </div>
                             <div className="relative">
@@ -195,10 +175,10 @@ export default function LoginPage() {
                             {isLoading ? (
                                 <>
                                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                    {isArabic ? "جاري التحميل..." : "Loading..."}
+                                    {t("login.loading")}
                                 </>
                             ) : (
-                                isArabic ? "تسجيل الدخول" : "Sign In"
+                                t("login.sign_in")
                             )}
                         </Button>
                     </form>
@@ -209,28 +189,16 @@ export default function LoginPage() {
                         </div>
                         <div className="relative flex justify-center text-xs uppercase">
                             <span className="bg-background/50 backdrop-blur-md px-2 text-muted-foreground rounded-full">
-                                {isArabic ? "أو" : "Or"}
+                                {t("login.or")}
                             </span>
                         </div>
                     </div>
 
-
-
                     <div className="text-center text-sm pt-2 space-y-4">
                         <Link href="/reseller/register" className="font-semibold text-secondary-foreground hover:text-primary transition-colors flex items-center justify-center gap-2">
-                            {isArabic ? "التسجيل كموزع معتمد" : "Register as a Reseller"} <ArrowRight className={`w-4 h-4 ${isArabic ? "rotate-180" : ""}`} />
+                            {t("login.register_reseller")} <ArrowRight className={`w-4 h-4 ${isArabic ? "rotate-180" : ""}`} />
                         </Link>
-
-
                     </div>
-
-                    {/* Debug Info (Only visible in development) */}
-                    {process.env.NODE_ENV === 'development' && (
-                        <div className="mt-8 pt-4 border-t border-dashed border-slate-200 text-[10px] text-slate-400 font-mono text-center">
-                            <p>Supabase Project: {process.env.NEXT_PUBLIC_SUPABASE_URL?.split('//')[1]?.split('.')[0]}</p>
-                            <p>Anon Key Loaded: {process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'YES' : 'NO'}</p>
-                        </div>
-                    )}
                 </div>
             </div>
         </div>

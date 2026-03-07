@@ -1,5 +1,13 @@
 import { supabase, supabaseAdmin } from './supabase'
 
+export interface Brand {
+    id: string
+    name: string
+    logo: string | null
+    slug: string
+    created_at: string
+}
+
 export interface Product {
     id: string
     title: string
@@ -27,6 +35,8 @@ export interface Product {
     how_to_use_ar: string | null
     sales_count: number
     warehouse_id: string | null
+    brand_id?: string | null
+    brand?: Brand | null
     created_at: string
     updated_at: string
 }
@@ -291,22 +301,33 @@ export async function getProducts(filters?: {
     category?: string
     status?: string
     search?: string
+    brand_id?: string
+    brand_slug?: string
     limit?: number
     offset?: number
 }) {
     let query = supabase
         .from('products')
-        .select('*')
+        .select('*, brand:brands(*)')
         .order('created_at', { ascending: false })
 
     if (filters?.category) {
         query = query.eq('category', filters.category)
     }
 
+    if (filters?.brand_id) {
+        query = query.eq('brand_id', filters.brand_id)
+    }
+
+    if (filters?.brand_slug) {
+        // Filter on the joined table using the alias or the table name
+        query = query.eq('brand.slug', filters.brand_slug)
+    }
+
     if (filters?.status) {
         query = query.eq('status', filters.status)
-    } else {
-        // Default to active products only
+    } else if (!filters?.brand_id && !filters?.brand_slug) {
+        // Default to active products only for main shop/search
         query = query.eq('status', 'active')
     }
     if (filters?.limit) {
@@ -332,7 +353,7 @@ export async function getProducts(filters?: {
                 // Re-build clean query for fallback
                 let fallbackQueryBuilder = supabase
                     .from('products')
-                    .select('*')
+                    .select('*, brand:brands(*)')
                     .order('created_at', { ascending: false })
 
                 if (filters?.category) fallbackQueryBuilder = fallbackQueryBuilder.eq('category', filters.category)
@@ -342,12 +363,16 @@ export async function getProducts(filters?: {
                 if (filters?.limit) fallbackQueryBuilder = fallbackQueryBuilder.limit(filters.limit)
                 if (filters?.offset) fallbackQueryBuilder = fallbackQueryBuilder.range(filters.offset, filters.offset + (filters.limit || 10) - 1)
 
+                if (filters?.brand_id) fallbackQueryBuilder = fallbackQueryBuilder.eq('brand_id', filters.brand_id)
+                if (filters?.brand_slug) fallbackQueryBuilder = fallbackQueryBuilder.eq('brand.slug', filters.brand_slug)
+
                 const { data: fbData, error: fbError } = await fallbackQueryBuilder.or(`title.ilike."${searchTerm}",description.ilike."${searchTerm}"`)
 
                 if (fbError) {
                     console.error('Search failed even with fallback:', fbError.message)
                     return []
                 }
+                console.log(`Fallback search found ${fbData?.length} products`)
                 return fbData as Product[]
             }
 
@@ -361,8 +386,7 @@ export async function getProducts(filters?: {
     const { data, error } = await query
 
     if (error) {
-        console.error('Error fetching products:', {
-            message: error.message,
+        console.error('❌ Supabase Error (Products):', error.message || error, {
             code: error.code,
             details: error.details,
             hint: error.hint
@@ -373,10 +397,126 @@ export async function getProducts(filters?: {
     return data as Product[]
 }
 
+export async function getBrands() {
+    const { data, error } = await supabase
+        .from('brands')
+        .select('*')
+        .order('name', { ascending: true })
+
+    if (error) {
+        console.error('❌ Supabase Error (Brands):', error.message || error, {
+            code: error.code,
+            details: error.details,
+            hint: error.hint
+        })
+        return []
+    }
+
+    return data as Brand[]
+}
+
+export async function getBrandBySlug(slug: string) {
+    const { data, error } = await supabase
+        .from('brands')
+        .select('*')
+        .eq('slug', slug)
+        .single()
+
+    if (error) {
+        if (error.code === 'PGRST116') return null // Not found is fine
+        console.error('Error fetching brand by slug:', error.message)
+        return null
+    }
+
+    return data as Brand
+}
+
+export async function createBrand(brand: Partial<Brand>) {
+    const { data, error } = await supabase
+        .from('brands')
+        .insert(brand)
+        .select()
+        .single()
+
+    if (error) {
+        console.error('❌ Supabase Brand Create Error:', error.message, {
+            code: error.code,
+            details: error.details,
+            hint: error.hint
+        })
+        throw new Error(error.message || 'Failed to create brand')
+    }
+
+    return data as Brand
+}
+
+export async function updateBrand(id: string, brand: Partial<Brand>) {
+    const { data, error } = await supabase
+        .from('brands')
+        .update(brand)
+        .eq('id', id)
+        .select()
+        .single()
+
+    if (error) {
+        console.error('❌ Supabase Brand Update Error:', error.message, {
+            code: error.code,
+            details: error.details,
+            hint: error.hint
+        })
+        throw new Error(error.message || 'Failed to update brand')
+    }
+
+    return data as Brand
+}
+
+export async function deleteBrand(id: string) {
+    const { error } = await supabase
+        .from('brands')
+        .delete()
+        .eq('id', id)
+
+    if (error) {
+        console.error('❌ Error deleting brand:', error)
+        throw error
+    }
+
+    return true
+}
+
+export async function uploadBrandLogo(
+    file: File,
+    slug: string
+): Promise<{ success: boolean; url?: string; error?: string }> {
+    try {
+        const fileExt = file.name.split('.').pop()
+        const fileName = `brands/${slug}-${Date.now()}.${fileExt}`
+
+        const { error: uploadError } = await supabase.storage
+            .from('product-images') // Reusing existing bucket
+            .upload(fileName, file, { upsert: true })
+
+        if (uploadError) {
+            console.error('Error uploading logo:', uploadError)
+            return { success: false, error: uploadError.message }
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+            .from('product-images')
+            .getPublicUrl(fileName)
+
+        return { success: true, url: publicUrl }
+    } catch (error) {
+        console.error('Error in uploadBrandLogo:', error)
+        return { success: false, error: 'Failed to upload logo' }
+    }
+}
+
+
 export async function getProductById(id: string) {
     const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select('*, brand:brands(*)')
         .eq('id', id)
         .single()
 
@@ -779,11 +919,9 @@ export async function updateCustomerStatus(customerId: string, status: string) {
 export async function getCurrentUserRole(): Promise<string | null> {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
-        console.log('getCurrentUserRole: No user session found')
         return null
     }
 
-    console.log('getCurrentUserRole: Fetching profile for user', user.id)
     const { data, error } = await supabase
         .from('profiles')
         .select('role')
@@ -791,16 +929,13 @@ export async function getCurrentUserRole(): Promise<string | null> {
         .single()
 
     if (error) {
-        console.error('getCurrentUserRole: Error fetching profile:', error.message)
         return 'customer'
     }
 
     if (!data) {
-        console.warn('getCurrentUserRole: No profile found for user', user.id)
         return 'customer'
     }
 
-    console.log('getCurrentUserRole: Successfully found role:', data.role)
     return data.role as string
 }
 

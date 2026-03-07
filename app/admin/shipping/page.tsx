@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Save, Loader2, RotateCcw, Truck, Info, CheckCircle2, AlertCircle } from "lucide-react"
 import { toast } from "sonner"
-import { getShippingSettings, updateShippingSettings, ShippingSetting } from "@/lib/supabase-api"
+import { getShippingSettings, updateShippingSettings, ShippingSetting, getAdminSettings, updateAdminSettings } from "@/lib/supabase-api"
 import { AdminSidebar } from "@/components/admin/admin-sidebar"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
@@ -15,27 +15,39 @@ import { useLanguage } from "@/components/language-provider"
 export default function ShippingAdminPage() {
     const { t } = useLanguage()
     const [settings, setSettings] = useState<ShippingSetting[]>([])
+    const [globalSettings, setGlobalSettings] = useState<Record<string, string>>({})
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
 
     useEffect(() => {
-        loadSettings()
+        const init = async () => {
+            setLoading(true)
+            await Promise.all([loadSettings(), loadGlobalSettings()])
+            setLoading(false)
+        }
+        init()
     }, [])
 
     async function loadSettings() {
-        setLoading(true)
         const data = await getShippingSettings()
-        // If no data (table empty or error), fallback to defaults for UI state
         if (data && data.length > 0) {
             setSettings(data)
         }
-        setLoading(false)
+    }
+
+    async function loadGlobalSettings() {
+        const data = await getAdminSettings()
+        setGlobalSettings(data)
     }
 
     async function handleSave() {
         setSaving(true)
-        const result = await updateShippingSettings(settings)
-        if (result.success) {
+        const [shippingResult, globalResult] = await Promise.all([
+            updateShippingSettings(settings),
+            updateAdminSettings(globalSettings)
+        ])
+
+        if (shippingResult.success && globalResult.success) {
             toast.success(t("admin.shipping.success_update"))
         } else {
             toast.error(t("admin.shipping.error_update"))
@@ -45,6 +57,10 @@ export default function ShippingAdminPage() {
 
     const handleChange = (id: string, field: keyof ShippingSetting, value: any) => {
         setSettings(prev => prev.map(s => s.id === id ? { ...s, [field]: value } : s))
+    }
+
+    const handleGlobalChange = (key: string, value: string) => {
+        setGlobalSettings(prev => ({ ...prev, [key]: value }))
     }
 
     if (loading) {
@@ -89,6 +105,32 @@ export default function ShippingAdminPage() {
                             </button>
                         </div>
                     </div>
+
+                    {/* Global Toggle */}
+                    <Card className="border-primary/20 bg-primary/5 overflow-hidden rounded-3xl shadow-xl shadow-primary/5">
+                        <CardHeader className="border-b border-primary/10 bg-primary/5">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 rounded-2xl bg-primary/20">
+                                        <Truck className="w-6 h-6 text-primary" />
+                                    </div>
+                                    <div>
+                                        <CardTitle className="text-xl">Frais de Livraison Globale</CardTitle>
+                                        <CardDescription>Activer ou désactiver complètement l&apos;affichage et le calcul des frais de livraison</CardDescription>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3 bg-black/20 px-6 py-3 rounded-2xl border border-white/5">
+                                    <span className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                                        {globalSettings.shipping_enabled !== 'false' ? 'ACTIF' : 'INACTIF'}
+                                    </span>
+                                    <Switch
+                                        checked={globalSettings.shipping_enabled !== 'false'}
+                                        onCheckedChange={(checked) => handleGlobalChange('shipping_enabled', checked.toString())}
+                                    />
+                                </div>
+                            </div>
+                        </CardHeader>
+                    </Card>
 
                     <div className="grid grid-cols-1 gap-8">
                         {settings.map((rule) => (

@@ -20,20 +20,35 @@ import {
     Tag,
     X,
     Bell,
-    Upload
+    Upload,
+    Award,
+    Image as ImageIcon,
+    Loader2,
+    Save
 } from "lucide-react"
 import { Notifications } from "@/components/admin/notifications"
 import Link from "next/link"
 import Image from "next/image"
 import Papa from "papaparse"
-import { formatPrice } from "@/lib/utils"
+import { formatPrice, cn } from "@/lib/utils"
 import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
+    DialogFooter
 } from "@/components/ui/dialog"
+import {
+    getBrands,
+    createBrand,
+    updateBrand,
+    deleteBrand,
+    uploadBrandLogo,
+    type Brand
+} from "@/lib/supabase-api"
+import { toast } from "sonner"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 // Mock Products Data
 const allProducts = [
@@ -111,13 +126,30 @@ export default function AdminProductsPage() {
     const [isTranslating, setIsTranslating] = useState(false)
     const [showCategoryDialog, setShowCategoryDialog] = useState(false)
     const [categorySearch, setCategorySearch] = useState("")
+    const [brands, setBrands] = useState<Brand[]>([])
+    const [showBrandDialog, setShowBrandDialog] = useState(false)
+    const [brandSearch, setBrandSearch] = useState("")
+
+    // Brand Form State
+    const [editingBrand, setEditingBrand] = useState<Brand | null>(null)
+    const [brandName, setBrandName] = useState("")
+    const [brandSlug, setBrandSlug] = useState("")
+    const [logoFile, setLogoFile] = useState<File | null>(null)
+    const [logoPreview, setLogoPreview] = useState<string | null>(null)
+    const [isSavingBrand, setIsSavingBrand] = useState(false)
 
 
     // Fetch products from Supabase
     useEffect(() => {
         loadProducts()
         loadCategories()
+        loadBrands()
     }, [])
+
+    async function loadBrands() {
+        const data = await getBrands()
+        setBrands(data)
+    }
 
     async function loadCategories() {
         const { data } = await supabase
@@ -172,7 +204,7 @@ export default function AdminProductsPage() {
         setLoading(true)
         const { data, error } = await supabase
             .from('products')
-            .select('*')
+            .select('*, brand:brands!products_brand_id_fkey(*)')
             .order('created_at', { ascending: false })
 
         if (error) {
@@ -226,6 +258,62 @@ export default function AdminProductsPage() {
             case "Stock faible": return "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
             case "En rupture": return "bg-red-500/10 text-red-500 border-red-500/20"
             default: return "bg-secondary text-secondary-foreground"
+        }
+    }
+
+    // Brand management functions
+    function handleLogoSelect(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0]
+        if (!file) return
+        setLogoFile(file)
+        setLogoPreview(URL.createObjectURL(file))
+    }
+
+    async function handleSaveBrand() {
+        if (!brandName || !brandSlug) return
+        setIsSavingBrand(true)
+        try {
+            let logoUrl = editingBrand?.logo
+            if (logoFile) {
+                const res = await uploadBrandLogo(logoFile, brandSlug)
+                if (res.success) {
+                    logoUrl = res.url
+                } else {
+                    toast.error(`Erreur upload logo: ${res.error}`)
+                    setIsSavingBrand(false)
+                    return
+                }
+            }
+
+            if (editingBrand) {
+                await updateBrand(editingBrand.id, { name: brandName, slug: brandSlug, logo: logoUrl })
+                toast.success("Marque modifiée")
+            } else {
+                await createBrand({ name: brandName, slug: brandSlug, logo: logoUrl })
+                toast.success("Marque créée")
+            }
+            setIsSavingBrand(false)
+            setEditingBrand(null)
+            setBrandName("")
+            setBrandSlug("")
+            setLogoFile(null)
+            setLogoPreview(null)
+            loadBrands()
+        } catch (e: any) {
+            console.error("Brand save error:", e)
+            toast.error(`Erreur: ${e.message || "Impossible d'enregistrer la marque"}`)
+            setIsSavingBrand(false)
+        }
+    }
+
+    async function handleDeleteBrand(id: string) {
+        if (!confirm("Supprimer cette marque ?")) return
+        try {
+            await deleteBrand(id)
+            toast.success("Marque supprimée")
+            loadBrands()
+        } catch (e) {
+            toast.error("Erreur lors de la suppression")
         }
     }
 
@@ -462,6 +550,7 @@ export default function AdminProductsPage() {
                                 </>
                             )}
                         </Button>
+
                         <Dialog open={showCategoryDialog} onOpenChange={setShowCategoryDialog}>
                             <DialogTrigger asChild>
                                 <Button variant="outline" className="rounded-full h-9">
@@ -474,7 +563,6 @@ export default function AdminProductsPage() {
                                     <DialogTitle>{t("admin.products.manage_categories")}</DialogTitle>
                                 </DialogHeader>
                                 <div className="space-y-4">
-                                    {/* Add Category */}
                                     <div className="flex flex-col gap-3">
                                         <div className="flex gap-2">
                                             <Input
@@ -488,8 +576,6 @@ export default function AdminProductsPage() {
                                             </Button>
                                         </div>
                                     </div>
-
-                                    {/* Categories List */}
                                     <div className="relative">
                                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
                                         <Input
@@ -518,6 +604,82 @@ export default function AdminProductsPage() {
                                                     </Button>
                                                 </div>
                                             ))}
+                                    </div>
+                                </div>
+                            </DialogContent>
+                        </Dialog>
+
+                        <Dialog open={showBrandDialog} onOpenChange={setShowBrandDialog}>
+                            <DialogTrigger asChild>
+                                <Button variant="outline" className="rounded-full h-9">
+                                    <Award className="w-4 h-4 sm:mr-2" />
+                                    <span className="hidden sm:inline">Marques</span>
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-xl">
+                                <DialogHeader>
+                                    <DialogTitle>Gérer les Marques</DialogTitle>
+                                </DialogHeader>
+                                <div className="space-y-6 pt-4">
+                                    <div className="p-4 bg-muted/30 rounded-2xl border border-white/5 space-y-4">
+                                        <div className="flex gap-4">
+                                            <div className="relative w-20 h-20 rounded-xl border border-dashed flex items-center justify-center overflow-hidden bg-background">
+                                                {logoPreview ? (
+                                                    <Image src={logoPreview} alt="Preview" fill className="object-contain p-2" />
+                                                ) : <ImageIcon className="w-6 h-6 text-muted-foreground" />}
+                                                <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={handleLogoSelect} accept="image/*" />
+                                            </div>
+                                            <div className="flex-1 space-y-2">
+                                                <Input placeholder="Nom Marque" value={brandName} onChange={(e) => {
+                                                    setBrandName(e.target.value)
+                                                    if (!editingBrand) setBrandSlug(e.target.value.toLowerCase().replace(/\s+/g, '-'))
+                                                }} />
+                                                <Input placeholder="slug" value={brandSlug} onChange={(e) => setBrandSlug(e.target.value)} />
+                                            </div>
+                                        </div>
+                                        <div className="flex justify-end gap-2">
+                                            {editingBrand && (
+                                                <Button variant="ghost" size="sm" onClick={() => {
+                                                    setEditingBrand(null)
+                                                    setBrandName("")
+                                                    setBrandSlug("")
+                                                    setLogoPreview(null)
+                                                }}>Annuler</Button>
+                                            )}
+                                            <Button size="sm" onClick={handleSaveBrand} disabled={isSavingBrand}>
+                                                {isSavingBrand ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                                                {editingBrand ? "Modifier" : "Ajouter"}
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2 max-h-[40vh] overflow-y-auto">
+                                        {brands.map(brand => (
+                                            <div key={brand.id} className="flex items-center justify-between p-3 glass-strong rounded-xl border border-white/5">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center relative overflow-hidden border">
+                                                        {brand.logo ? <Image src={brand.logo} alt={brand.name} fill className="object-contain p-1" /> : <Award className="w-5 h-5 text-muted-foreground" />}
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-bold text-sm">{brand.name}</p>
+                                                        <p className="text-[10px] text-muted-foreground">{brand.slug}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex gap-1">
+                                                    <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => {
+                                                        setEditingBrand(brand)
+                                                        setBrandName(brand.name)
+                                                        setBrandSlug(brand.slug)
+                                                        setLogoPreview(brand.logo)
+                                                    }}>
+                                                        <Edit className="w-4 h-4" />
+                                                    </Button>
+                                                    <Button size="icon" variant="ghost" className="h-8 w-8 text-red-500 hover:bg-red-500/10" onClick={() => handleDeleteBrand(brand.id)}>
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             </DialogContent>
@@ -659,6 +821,7 @@ export default function AdminProductsPage() {
                                 <thead>
                                     <tr className="border-b border-white/10 bg-white/5 text-left">
                                         <th className="py-4 pl-4 sm:pl-6 text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("admin.products.table.product")}</th>
+                                        <th className="py-4 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Marque</th>
                                         <th className="py-4 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden sm:table-cell">{t("admin.products.table.category")}</th>
                                         <th className="py-4 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Prix en Dirham</th>
                                         <th className="py-4 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden md:table-cell">{t("admin.products.table.stock")}</th>
@@ -692,6 +855,18 @@ export default function AdminProductsPage() {
                                                                 {t("admin.products.qty")}: {product.stock}
                                                             </p>
                                                         </div>
+                                                    </div>
+                                                </td>
+                                                <td className="py-4 px-4 whitespace-nowrap">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="h-8 w-8 bg-white rounded-md flex items-center justify-center relative overflow-hidden border">
+                                                            {(product as any).brand?.logo ? (
+                                                                <Image src={(product as any).brand.logo} alt={(product as any).brand.name} fill className="object-contain p-1" />
+                                                            ) : (
+                                                                <Award className="w-4 h-4 text-muted-foreground/30" />
+                                                            )}
+                                                        </div>
+                                                        <span className="text-xs text-muted-foreground">{(product as any).brand?.name || "-"}</span>
                                                     </div>
                                                 </td>
                                                 <td className="py-4 px-4 text-sm text-foreground/80 hidden sm:table-cell">{product.category}</td>

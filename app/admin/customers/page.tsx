@@ -15,6 +15,7 @@ import {
     ShoppingBag
 } from "lucide-react"
 import { getOrders, type Customer } from "@/lib/supabase-api"
+import { supabase } from "@/lib/supabase"
 import { formatPrice } from "@/lib/utils"
 import Link from "next/link"
 
@@ -39,16 +40,24 @@ export default function CustomersPage() {
 
     async function loadGuestData() {
         setLoading(true)
-        // Fetch all guest orders (where customer_id is null)
-        const { data: orders } = await getOrders({ guest_only: true, limit: 1000 })
+        // 1. Fetch Guest Orders for virtual profiles (users who order without an account)
+        const { data: guestOrders } = await getOrders({ guest_only: true, limit: 2000 })
 
-        // Aggregate orders by email to create virtual customer profiles
+        // 2. Fetch all registered user emails to filter them out
+        const { data: registeredUsers } = await supabase
+            .from('profiles')
+            .select('email')
+
+        const registeredEmails = new Set((registeredUsers || []).map(u => u.email?.toLowerCase().trim()))
+
         const guestMap = new Map<string, any>()
 
-        orders.forEach((order: any) => {
+        // Aggregate orders by email to create virtual customer profiles (Digital Clients)
+        guestOrders?.forEach((order: any) => {
             const email = order.customer_email.toLowerCase().trim()
 
-            if (!guestMap.has(email)) {
+            // ONLY show them if they don't have a registered account
+            if (!registeredEmails.has(email) && !guestMap.has(email)) {
                 guestMap.set(email, {
                     id: `guest-${email}`, // Virtual ID
                     name: order.customer_name,
@@ -62,11 +71,11 @@ export default function CustomersPage() {
                 })
             }
 
-            const guest = guestMap.get(email)
-            guest.total_spent += order.total
-            guest.total_orders += 1
-            // Keep the most recent order number (assuming default sort is mostly time based or we accept the first seen if descending)
-            // If API returns desc, first seen is latest.
+            if (guestMap.has(email)) {
+                const guest = guestMap.get(email)
+                guest.total_spent += order.total
+                guest.total_orders += 1
+            }
         })
 
         setCustomers(Array.from(guestMap.values()))

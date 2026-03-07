@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useCart } from "@/components/cart-provider"
 import { useLanguage } from "@/components/language-provider"
-import { getProducts, getHeroCarouselItems, getCategories, getAdminSettings, getCurrentUserRole, getCurrentResellerTier, type Product, ResellerTier } from "@/lib/supabase-api"
+import { getProducts, getHeroCarouselItems, getCategories, getBrands, getAdminSettings, getCurrentUserRole, getCurrentResellerTier, type Product, type Brand, ResellerTier } from "@/lib/supabase-api"
 import { supabase } from "@/lib/supabase"
 import Image from "next/image"
 import Link from "next/link"
@@ -16,7 +16,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import { cn, formatPrice } from "@/lib/utils"
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetTitle, SheetDescription } from "@/components/ui/sheet"
 import {
   Search,
   ShoppingBag,
@@ -115,7 +115,7 @@ function ProductCard({ product, userRole, resellerTier }: { product: Product, us
   const isArabic = language === 'ar'
   const rating = 5 // Default rating since it's not in DB yet
   return (
-    <Link href={`/product/${product.id}`} className="group glass rounded-2xl sm:rounded-3xl p-3 sm:p-4 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 block">
+    <Link href={`/product/${product.id}`} className="group glass rounded-2xl sm:rounded-3xl p-3 sm:p-4 lg:p-3 xl:p-4 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 block">
       <div className="aspect-square bg-gradient-to-br from-secondary to-muted rounded-xl sm:rounded-2xl mb-3 sm:mb-4 flex items-center justify-center overflow-hidden relative">
         {product.images && product.images.length > 0 ? (
           <Image
@@ -158,7 +158,7 @@ function ProductCard({ product, userRole, resellerTier }: { product: Product, us
                 if (tierPrice) {
                   return (
                     <>
-                      <span className="text-sm sm:text-lg font-bold text-foreground">
+                      <span className="text-xs sm:text-base font-bold text-foreground">
                         {t('common.currency')} {formatPrice(tierPrice / 1.2)} <span className="text-[10px] font-normal text-muted-foreground">HT</span>
                       </span>
                       <span className="text-[9px] sm:text-xs text-muted-foreground line-through decoration-destructive/30">
@@ -169,20 +169,28 @@ function ProductCard({ product, userRole, resellerTier }: { product: Product, us
                 }
 
                 return (
-                  <span className="text-sm sm:text-lg font-bold text-foreground">
+                  <span className="text-xs sm:text-base font-bold text-foreground">
                     {t('common.currency')} {formatPrice(product.price)} <span className="text-[10px] font-normal text-muted-foreground">TTC</span>
                   </span>
                 )
               })()
             ) : (
-              <span className="text-sm sm:text-lg font-bold text-foreground">
+              <span className="text-xs sm:text-base font-bold text-foreground">
                 {t('common.currency')} {formatPrice(product.price)} <span className="text-[10px] font-normal text-muted-foreground">TTC</span>
               </span>
             )}
           </div>
-          <Button size="icon" className="w-8 h-8 sm:w-auto sm:h-9 sm:px-4 rounded-full text-[10px] sm:text-xs pointer-events-none">
+          <Button
+            size="icon"
+            className={cn(
+              "w-8 h-8 sm:w-auto sm:h-9 sm:px-4 rounded-full text-[10px] sm:text-xs pointer-events-none",
+              product.stock <= 0 && "bg-muted text-muted-foreground opacity-70"
+            )}
+          >
             <ShoppingBag className="w-4 h-4 sm:hidden" />
-            <span className="hidden sm:inline">{t('product.add_to_cart')}</span>
+            <span className="hidden sm:inline">
+              {product.stock > 0 ? t('product.add_to_cart') : t('product.out_of_stock')}
+            </span>
           </Button>
         </div>
       </div>
@@ -344,12 +352,13 @@ function HeroCarousel({ products }: { products: Product[] }) {
 export default function HomePage() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [showBackToTop, setShowBackToTop] = useState(false)
-  const [visibleProducts, setVisibleProducts] = useState(8)
+  const [visibleProducts, setVisibleProducts] = useState(10)
   const [selectedCategory, setSelectedCategory] = useState("All")
   const { t, language, toggleLanguage, dir } = useLanguage()
   const [user, setUser] = useState<any>(null)
   const [userRole, setUserRole] = useState<string | null>(null)
   const [resellerTier, setResellerTier] = useState<ResellerTier>(null)
+  const [shippingEnabled, setShippingEnabled] = useState(true)
 
   // Cart context is now available but we need to create a client component wrapper 
   // or accept that HomePage is a client component (which it already is: "use client" is missing but useState implies it)
@@ -372,6 +381,7 @@ export default function HomePage() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [categories, setCategories] = useState<{ id: string, name: string, slug: string, name_ar?: string }[]>([])
+  const [brands, setBrands] = useState<Brand[]>([])
   const [settings, setSettings] = useState<Record<string, string>>({})
 
   // Fetch data from Supabase
@@ -379,13 +389,14 @@ export default function HomePage() {
     async function loadData() {
       setLoading(true)
       try {
-        const [productsData, categoriesData, settingsData, userData, roleData, tierData] = await Promise.all([
-          getProducts({ status: 'active', limit: 20 }),
+        const [productsData, categoriesData, settingsData, userData, roleData, tierData, brandsData] = await Promise.all([
+          getProducts({ status: 'active', limit: 50 }),
           getCategories(),
           getAdminSettings(),
           supabase.auth.getUser(),
           getCurrentUserRole(),
-          getCurrentResellerTier()
+          getCurrentResellerTier(),
+          getBrands()
         ])
 
         setProducts(productsData || [])
@@ -394,6 +405,8 @@ export default function HomePage() {
         setUser(userData.data.user)
         setUserRole(roleData)
         setResellerTier(tierData)
+        setBrands(brandsData || [])
+        setShippingEnabled(settingsData.shipping_enabled !== 'false')
       } catch (e) {
         console.error("Failed to load home page data", e)
         // Ensure UI doesn't break
@@ -501,9 +514,9 @@ export default function HomePage() {
               <Image
                 src={"/logo.png"}
                 alt={"Didali Store"}
-                width={120}
-                height={34}
-                className={"h-10 sm:h-12 w-auto transition-transform duration-300 group-hover:scale-105"}
+                width={100}
+                height={28}
+                className={"h-8 sm:h-9 w-auto transition-transform duration-300 group-hover:scale-105"}
               />
             </Link>
 
@@ -542,13 +555,18 @@ export default function HomePage() {
                   <div className="flex flex-col h-full bg-background" dir={dir}>
                     {/* Mobile Menu Header */}
                     <div className="flex items-center justify-between p-6 border-b border-border/50">
-                      <Image
-                        src={"/logo.png"}
-                        alt={"Didali Store"}
-                        width={100}
-                        height={28}
-                        className={"h-8 w-auto mb-4"}
-                      />
+                      <SheetTitle className="text-left">
+                        <Image
+                          src={"/logo.png"}
+                          alt={"Didali Store"}
+                          width={100}
+                          height={28}
+                          className={"h-8 w-auto mb-4"}
+                        />
+                      </SheetTitle>
+                      <SheetDescription className="sr-only">
+                        Menu de navigation pour Didali Store
+                      </SheetDescription>
                       <SheetClose asChild>
                         <Button variant="ghost" size="icon" className="rounded-full">
                           <X className="w-5 h-5" />
@@ -668,11 +686,11 @@ export default function HomePage() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative py-12 sm:py-16 lg:py-20">
-        <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
-              <h1 className="text-4xl sm:text-5xl lg:text-5xl font-bold text-foreground leading-tight text-balance" suppressHydrationWarning>
+      <section className="relative py-8 sm:py-12 lg:py-16 xl:py-20 min-h-[60vh] flex items-center">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <div className="grid lg:grid-cols-2 gap-10 xl:gap-16 items-center">
+            <div className="space-y-6 lg:space-y-8">
+              <h1 className="text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-bold text-foreground leading-[1.1] text-balance" suppressHydrationWarning>
                 {language === 'ar' ? (
                   settings.hero_title_ar || settings.hero_title || (
                     <>
@@ -716,10 +734,12 @@ export default function HomePage() {
               </div>
               {/* Trust Badges */}
               <div className="flex flex-wrap gap-6 pt-4">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Truck className="w-5 h-5 text-primary" />
-                  <span className="text-sm">{t('hero.fast_delivery')}</span>
-                </div>
+                {shippingEnabled && (
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Truck className="w-5 h-5 text-primary" />
+                    <span className="text-sm">{t('hero.fast_delivery')}</span>
+                  </div>
+                )}
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <ShieldCheck className="w-5 h-5 text-primary" />
                   <span className="text-sm">{t('hero.secure_checkout')}</span>
@@ -761,7 +781,7 @@ export default function HomePage() {
                     }`}
                   onClick={() => {
                     setSelectedCategory(cat)
-                    setVisibleProducts(4) // Reset visible count on switch
+                    setVisibleProducts(10) // Reset visible count on switch
                   }}
                 >
                   {getCategoryLabel(cat)}
@@ -770,7 +790,7 @@ export default function HomePage() {
             ))}
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 animate-in fade-in duration-500">
+          <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 lg:gap-5 xl:gap-6 animate-in fade-in duration-500">
             {loading ? (
               Array.from({ length: 8 }).map((_, i) => (
                 <ProductCardSkeleton key={i} />
@@ -792,7 +812,7 @@ export default function HomePage() {
                 variant="outline"
                 size="lg"
                 className="rounded-full bg-transparent"
-                onClick={() => setVisibleProducts(prev => prev + 4)}
+                onClick={() => setVisibleProducts(prev => prev + 10)}
               >
                 {t('section.load_more')} <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
@@ -800,6 +820,61 @@ export default function HomePage() {
           )}
         </div>
       </section>
+
+      {/* Brands Showcase - Smaller logos, cleaner grid */}
+      {brands.length > 0 && (
+        <section className="py-20 sm:py-32 relative overflow-hidden bg-background">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+
+          <div className="container mx-auto px-4 relative">
+            <div className="text-center mb-16 space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 border border-primary/10 text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+                <Sparkles className="w-3 h-3" />
+                Nos Partenaires
+              </div>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight">
+                MARQUES OFFICIELLES
+              </h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto text-base sm:text-lg border-l-2 border-primary/20 pl-6 text-left sm:text-center sm:pl-0 sm:border-l-0">
+                Retrouvez les plus grands noms de la technologie, certifiés et garantis par Didali Store.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-3 sm:gap-4 md:gap-6">
+              {brands.map((brand) => (
+                <Link
+                  key={brand.id}
+                  href={`/brand/${brand.slug}`}
+                  className="group relative glass rounded-2xl p-4 sm:p-5 flex items-center justify-center aspect-square transition-all duration-700 hover:shadow-[0_20px_40px_-20px_rgba(var(--primary-rgb),0.3)] hover:-translate-y-1 border border-white/5 hover:border-primary/20 bg-secondary/5"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-2xl" />
+
+                  <div className="relative w-full h-full flex items-center justify-center grayscale group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-110">
+                    {brand.logo ? (
+                      <Image
+                        src={brand.logo}
+                        alt={brand.name}
+                        fill
+                        className="object-contain p-2 sm:p-3"
+                      />
+                    ) : (
+                      <span className="text-[10px] font-bold text-muted-foreground/60 group-hover:text-primary transition-colors text-center uppercase tracking-tighter line-clamp-2">
+                        {brand.name}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Tooltip-like label on hover */}
+                  <div className="absolute -top-12 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-primary text-primary-foreground text-[10px] font-black rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0 pointer-events-none whitespace-nowrap shadow-xl z-20">
+                    {brand.name}
+                    <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 w-2 h-2 bg-primary rotate-45" />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* FAQ Section */}
       <section id="faq" className="py-16 sm:py-20 bg-secondary/5">
@@ -857,7 +932,7 @@ export default function HomePage() {
             </div>
 
             {/* Links Columns */}
-            <div className="md:col-span-8 lg:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-8">
+            <div className="md:col-span-8 lg:col-span-7 grid grid-cols-2 sm:grid-cols-4 gap-8">
               <div>
                 <h4 className="font-semibold text-foreground text-sm tracking-wide uppercase mb-6">{t('footer.company')}</h4>
                 <ul className="space-y-4 text-sm text-muted-foreground">
@@ -891,6 +966,14 @@ export default function HomePage() {
                   <li><Link href="/shipping-info" className="hover:text-primary transition-colors block py-1">{t('footer.shipping_info')}</Link></li>
                   <li><Link href="/track-order" className="hover:text-primary transition-colors block py-1">{t('footer.track_order')}</Link></li>
                   <li><Link href="/faq" className="hover:text-primary transition-colors block py-1">{t('nav.faq')}</Link></li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-foreground text-sm tracking-wide uppercase mb-6">Équipe</h4>
+                <ul className="space-y-4 text-sm text-muted-foreground">
+                  <li><Link href="/manager/login" className="hover:text-primary transition-colors block py-1">Espace Commercial</Link></li>
+                  <li><Link href="/logistique/login" className="hover:text-primary transition-colors block py-1">Espace Logisticien</Link></li>
                 </ul>
               </div>
 

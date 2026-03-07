@@ -56,7 +56,9 @@ export default function ResellersPage() {
             const { data: customersData } = await supabase
                 .from('customers')
                 .select('*')
-                .eq('role', 'reseller')
+                .or('role.ilike.reseller,role.ilike.reseller_pending')
+                .not('company_name', 'is', null)
+                .neq('company_name', 'Personal Account')
                 .order('created_at', { ascending: false })
 
             // Fetch assignments with AM names

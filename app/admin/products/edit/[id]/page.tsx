@@ -22,7 +22,8 @@ import {
     Plus,
     Trash,
     Package,
-    Wand2
+    Wand2,
+    Image as ImageIcon
 } from "lucide-react"
 import Link from "next/link"
 import { getProductById } from "@/lib/supabase-api"
@@ -71,6 +72,8 @@ export default function EditProductPage() {
     const [selectedWarehouse, setSelectedWarehouse] = useState("")
     const [showWarehouseDialog, setShowWarehouseDialog] = useState(false)
     const [newWarehouseName, setNewWarehouseName] = useState("")
+    const [brandId, setBrandId] = useState<string>("")
+    const [brands, setBrands] = useState<{ id: string, name: string, logo: string | null }[]>([])
 
     // AI Rewrite State
     const [rewriting, setRewriting] = useState<string | null>(null)
@@ -82,10 +85,11 @@ export default function EditProductPage() {
     useEffect(() => {
         async function loadProduct() {
             setLoading(true)
-            const [product, categoriesData, warehousesData] = await Promise.all([
+            const [product, categoriesData, warehousesData, brandsData] = await Promise.all([
                 getProductById(productId),
                 supabase.from('categories').select('id, name, slug').order('name'),
-                supabase.from('warehouses').select('id, name').order('name')
+                supabase.from('warehouses').select('id, name').order('name'),
+                supabase.from('brands').select('id, name, logo').order('name')
             ])
 
             if (product) {
@@ -108,6 +112,7 @@ export default function EditProductPage() {
                 setHowToUse(product.how_to_use || "")
                 setImages(product.images || [])
                 setSelectedWarehouse(product.warehouse_id || "")
+                setBrandId(product.brand_id || "")
             }
 
             if (categoriesData.data) {
@@ -116,6 +121,10 @@ export default function EditProductPage() {
 
             if (warehousesData.data) {
                 setWarehouses(warehousesData.data)
+            }
+
+            if (brandsData.data) {
+                setBrands(brandsData.data)
             }
 
             // Fetch related products (initially some active products)
@@ -328,7 +337,8 @@ export default function EditProductPage() {
                 ingredients,
                 how_to_use: howToUse,
                 images,
-                warehouse_id: selectedWarehouse || null
+                warehouse_id: selectedWarehouse || null,
+                brand_id: brandId || null
             })
             .eq('id', productId)
 
@@ -631,6 +641,44 @@ export default function EditProductPage() {
                                         ))}
                                     </select>
                                     <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                                </div>
+                            </div>
+
+                            <div className="space-y-3">
+                                <label className="text-sm font-semibold text-gray-700">Marque (Brand)</label>
+                                <div className="relative">
+                                    <select
+                                        value={brandId || ""}
+                                        onChange={(e) => setBrandId(e.target.value)}
+                                        className="w-full h-12 rounded-xl border border-gray-200 bg-white px-4 text-base focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-gray-700 appearance-none shadow-sm"
+                                    >
+                                        <option value="">Sélectionner une marque</option>
+                                        {brands.map((brand) => (
+                                            <option key={brand.id} value={brand.id}>{brand.name}</option>
+                                        ))}
+                                    </select>
+                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                                    {brandId && (
+                                        <div className="mt-2 flex items-center gap-2 p-2 bg-gray-50 rounded-lg border border-gray-100">
+                                            {brands.find(b => b.id === brandId)?.logo ? (
+                                                <div className="relative w-8 h-8 rounded-md bg-white border overflow-hidden flex items-center justify-center p-0.5">
+                                                    <Image
+                                                        src={brands.find(b => b.id === brandId)?.logo || ""}
+                                                        alt=""
+                                                        fill
+                                                        className="object-contain"
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <div className="w-8 h-8 rounded-md bg-white border flex items-center justify-center">
+                                                    <ImageIcon className="w-4 h-4 text-gray-300" />
+                                                </div>
+                                            )}
+                                            <span className="text-xs font-medium text-gray-600">
+                                                {brands.find(b => b.id === brandId)?.name}
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 

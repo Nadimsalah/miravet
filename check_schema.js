@@ -22,8 +22,20 @@ async function checkOrdersSchema() {
     }
 
     // Check customers
-    const { data: custData } = await supabase.from('customers').select('id, company_name, email').limit(10);
-    console.log('Customers Sample:', custData);
+    const { data: custData, error: custError } = await supabase
+        .from('customers')
+        .select('id, name, email, role, status, company_name')
+        .limit(20);
+
+    if (custError) console.error('Error fetching customers:', custError);
+    else console.log('Customers Sample:', custData);
+
+    const { count, error: countError } = await supabase
+        .from('customers')
+        .select('*', { count: 'exact', head: true })
+        .in('role', ['reseller', 'reseller_pending', 'RESELLER', 'RESELLER_PENDING']);
+
+    console.log('Total potential resellers (any case):', count);
 }
 
 checkOrdersSchema();

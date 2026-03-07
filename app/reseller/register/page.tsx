@@ -39,14 +39,20 @@ export default function ResellerRegisterPage() {
         setIsLoading(true)
 
         try {
+            const normalizedEmail = formData.email.trim().toLowerCase()
+            console.log('[Register Debug] Attempting signup:', {
+                email: normalizedEmail,
+                passwordLength: formData.password.length
+            })
+
             // 1. Sign up with Supabase Auth
             const { data: authData, error: authError } = await supabase.auth.signUp({
-                email: formData.email,
+                email: normalizedEmail,
                 password: formData.password,
                 options: {
                     data: {
                         full_name: formData.name,
-                        role: 'reseller',
+                        role: 'reseller_pending',
                         company_name: formData.companyName,
                         ice: formData.ice,
                         website: formData.website,
@@ -58,48 +64,19 @@ export default function ResellerRegisterPage() {
 
             if (authError) throw authError
 
-            if (authData.user) {
-                // 2. Create customer record with Reseller details
-                // Note: We need to make sure 'customers' table has these columns.
-                // If not, we'll store basic info and put detailed info in metadata or a separate table.
-                // For now, assuming you added the columns from my previous SQL script.
+            // Note: Database trigger 'handle_new_user' now automatically creates
+            // profiles, resellers, and customers records atomically.
+            // No manual insert needed here to avoid RLS conflicts.
 
-                const { error: customerError } = await supabase
-                    .from('customers')
-                    .insert({
-                        id: authData.user.id,
-                        name: formData.name,
-                        email: formData.email,
-                        phone: formData.phone,
-                        status: 'pending',
-                        role: 'reseller',
-                        company_name: formData.companyName, // This needs column in DB
-                        ice: formData.ice, // This needs column in DB
-                        website: formData.website, // This needs column in DB
-                        city: formData.city, // This needs column in DB
-                        total_orders: 0,
-                        total_spent: 0
-                    })
+            toast.success(t("reseller.register.success_toast"))
 
-                if (customerError) {
-                    console.error('Error creating reseller profile:', customerError)
-                    // We don't rollback auth for now, but in production you might want to.
-                }
-
-                toast.success(
-                    isArabic
-                        ? "تم إنشاء حسابك بنجاح، وهو قيد المراجعة. سيتم تفعيل حسابك قريبًا."
-                        : "Your reseller account has been created and is pending activation. We will activate your account soon."
-                )
-
-                // Redirect to login while account awaits activation
-                setTimeout(() => {
-                    router.push('/login')
-                }, 2000)
-            }
+            // Redirect to login while account awaits activation
+            setTimeout(() => {
+                router.push('/login')
+            }, 2000)
 
         } catch (error: any) {
-            toast.error(error?.message || (isArabic ? "حدث خطأ أثناء التسجيل" : "Error submitting application"))
+            toast.error(error?.message || t("reseller.register.error_toast"))
         } finally {
             setIsLoading(false)
         }
@@ -126,22 +103,20 @@ export default function ResellerRegisterPage() {
                 </div>
                 <div className="relative z-10 max-w-lg">
                     <div className="inline-block px-3 py-1 rounded-full bg-primary/20 text-primary font-semibold text-sm mb-4 border border-primary/20">
-                        {isArabic ? "برنامج الشركاء" : "Partner Program"}
+                        {t("reseller.register.partner_program")}
                     </div>
                     <h1 className="text-4xl lg:text-5xl font-bold text-foreground mb-6 leading-tight">
-                        {isArabic ? "كن شريك نجاح ديدالي" : "Become a Didali Succes Partner"}
+                        {t("reseller.register.become_partner")}
                     </h1>
                     <p className="text-lg text-muted-foreground leading-relaxed">
-                        {isArabic
-                            ? "استفد من أسعار الجملة التنافسية، ودعم فني متخصص، وأولوية في التوصيل. انضم لأكبر شبكة موزعين في المغرب."
-                            : "Access competitive wholesale pricing, dedicated support, and priority delivery. Join the largest reseller network in Morocco."}
+                        {t("reseller.register.partner_desc")}
                     </p>
                     <ul className="mt-8 space-y-4">
                         {[
-                            isArabic ? "أسعار خاصة للموزعين" : "Special Reseller Pricing",
-                            isArabic ? "مدير حساب مخصص" : "Dedicated Account Manager",
-                            isArabic ? "شحن سريع لجميع المدن" : "Fast Nationwide Shipping",
-                            isArabic ? "ضمان رسمي" : "Official Warranty"
+                            t("reseller.register.feature.pricing"),
+                            t("reseller.register.feature.manager"),
+                            t("reseller.register.feature.shipping"),
+                            t("reseller.register.feature.warranty")
                         ].map((item, i) => (
                             <li key={i} className="flex items-center gap-3 text-foreground/80">
                                 <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-primary">
@@ -153,7 +128,7 @@ export default function ResellerRegisterPage() {
                     </ul>
                 </div>
                 <div className="relative z-10 text-sm text-muted-foreground">
-                    © 2026 Didali Store Partner Program.
+                    {t("reseller.register.rights")}
                 </div>
                 <div className="absolute inset-4 glass-liquid bg-white/10 rounded-[3rem] -z-0" />
             </div>
@@ -177,23 +152,21 @@ export default function ResellerRegisterPage() {
                         </div>
 
                         <h2 className="text-3xl font-bold tracking-tight mb-2">
-                            {isArabic ? "تسجيل حساب موزع" : "Register as a Reseller"}
+                            {t("reseller.register.title")}
                         </h2>
                         <p className="text-muted-foreground">
-                            {isArabic
-                                ? "يرجى ملء النموذج أدناه بمعلومات شركتك"
-                                : "Please fill out the form below with your company details"}
+                            {t("reseller.register.subtitle")}
                         </p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Company Info */}
                         <div className="md:col-span-2">
-                            <h3 className="text-lg font-semibold mb-4 border-b pb-2">{isArabic ? "معلومات الشركة" : "Company Information"}</h3>
+                            <h3 className="text-lg font-semibold mb-4 border-b pb-2">{t("reseller.register.company_info")}</h3>
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="companyName">{isArabic ? "اسم الشركة" : "Company Name"}</Label>
+                            <Label htmlFor="companyName">{t("reseller.register.company_name")}</Label>
                             <div className="relative">
                                 <Building2 className={`absolute top-3 w-5 h-5 text-muted-foreground ${isArabic ? "right-3" : "left-3"}`} />
                                 <Input
@@ -207,7 +180,7 @@ export default function ResellerRegisterPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="ice">{isArabic ? "رقم التعريف الموحد (ICE)" : "ICE Number"}</Label>
+                            <Label htmlFor="ice">{t("reseller.register.ice")}</Label>
                             <div className="relative">
                                 <FileText className={`absolute top-3 w-5 h-5 text-muted-foreground ${isArabic ? "right-3" : "left-3"}`} />
                                 <Input
@@ -221,7 +194,7 @@ export default function ResellerRegisterPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="website">{isArabic ? "الموقع الإلكتروني (اختياري)" : "Website (Optional)"}</Label>
+                            <Label htmlFor="website">{t("reseller.register.website")}</Label>
                             <div className="relative">
                                 <Globe className={`absolute top-3 w-5 h-5 text-muted-foreground ${isArabic ? "right-3" : "left-3"}`} />
                                 <Input
@@ -234,7 +207,7 @@ export default function ResellerRegisterPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="city">{isArabic ? "المدينة" : "City"}</Label>
+                            <Label htmlFor="city">{t("reseller.register.city")}</Label>
                             <div className="relative">
                                 <Input
                                     id="city"
@@ -248,11 +221,11 @@ export default function ResellerRegisterPage() {
 
                         {/* Contact Info */}
                         <div className="md:col-span-2 pt-4">
-                            <h3 className="text-lg font-semibold mb-4 border-b pb-2">{isArabic ? "معلومات الاتصال" : "Contact Person"}</h3>
+                            <h3 className="text-lg font-semibold mb-4 border-b pb-2">{t("reseller.register.contact_person")}</h3>
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="name">{isArabic ? "الاسم الكامل" : "Full Name"}</Label>
+                            <Label htmlFor="name">{t("reseller.register.full_name")}</Label>
                             <div className="relative">
                                 <User className={`absolute top-3 w-5 h-5 text-muted-foreground ${isArabic ? "right-3" : "left-3"}`} />
                                 <Input
@@ -266,7 +239,7 @@ export default function ResellerRegisterPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="phone">{isArabic ? "رقم الهاتف" : "Phone Number"}</Label>
+                            <Label htmlFor="phone">{t("reseller.register.phone")}</Label>
                             <div className="relative">
                                 <Phone className={`absolute top-3 w-5 h-5 text-muted-foreground ${isArabic ? "right-3" : "left-3"}`} />
                                 <Input
@@ -280,7 +253,7 @@ export default function ResellerRegisterPage() {
                         </div>
 
                         <div className="space-y-2 md:col-span-2">
-                            <Label htmlFor="email">{isArabic ? "البريد الإلكتروني المهني" : "Work Email"}</Label>
+                            <Label htmlFor="email">{t("reseller.register.work_email")}</Label>
                             <div className="relative">
                                 <Mail className={`absolute top-3 w-5 h-5 text-muted-foreground ${isArabic ? "right-3" : "left-3"}`} />
                                 <Input
@@ -294,7 +267,7 @@ export default function ResellerRegisterPage() {
                             </div>
                         </div>
                         <div className="space-y-2 md:col-span-2">
-                            <Label htmlFor="password">{isArabic ? "كلمة المرور" : "Password"}</Label>
+                            <Label htmlFor="password">{t("reseller.register.password")}</Label>
                             <div className="relative">
                                 <Lock className={`absolute top-3 w-5 h-5 text-muted-foreground ${isArabic ? "right-3" : "left-3"}`} />
                                 <Input
@@ -313,17 +286,17 @@ export default function ResellerRegisterPage() {
                                 {isLoading ? (
                                     <>
                                         <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                        {isArabic ? "جاري إرسال الطلب..." : "Submitting Application..."}
+                                        {t("reseller.register.submitting")}
                                     </>
                                 ) : (
-                                    isArabic ? "إنشاء حساب موزع" : "Create Reseller Account"
+                                    t("reseller.register.create_account")
                                 )}
                             </Button>
                         </div>
 
                         <div className="md:col-span-2 text-center text-sm pt-2">
                             <Link href="/login" className="font-medium text-primary hover:underline">
-                                {isArabic ? "لديك حساب بالفعل؟ تسجيل الدخول" : "Already have an account? Log in"}
+                                {t("reseller.register.already_have_account")}
                             </Link>
                         </div>
 

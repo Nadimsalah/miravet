@@ -11,7 +11,7 @@ import {
     Users,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet"
 import Image from "next/image"
 import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
@@ -95,6 +95,8 @@ export function AccountManagerSidebar() {
                     </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="p-0 w-80 border-r border-white/10">
+                    <SheetTitle className="sr-only">Menu Gestionnaire de Compte</SheetTitle>
+                    <SheetDescription className="sr-only">Accédez à vos clients et commandes</SheetDescription>
                     <SidebarContent />
                 </SheetContent>
             </Sheet>

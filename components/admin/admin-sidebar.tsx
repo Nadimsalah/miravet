@@ -20,9 +20,10 @@ import {
     Briefcase,
     Truck,
     Shield,
+    Award,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet"
 import Image from "next/image"
 
 const menuItems = [
@@ -41,6 +42,7 @@ const menuItems = [
     { icon: Phone, key: "admin.sidebar.contact_messages", href: "/admin/contacts" },
     { icon: Briefcase, key: "admin.sidebar.career_applications", href: "/admin/careers" },
     { icon: Settings, key: "admin.sidebar.settings", href: "/admin/settings" },
+    { icon: Award, key: "admin.sidebar.brands", href: "/admin/brands" },
 ]
 
 
@@ -120,6 +122,8 @@ export function AdminSidebar() {
                     </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="p-0 w-80 border-r border-white/10">
+                    <SheetTitle className="sr-only">Menu d'administration</SheetTitle>
+                    <SheetDescription className="sr-only">Sélectionnez une section de l'administration</SheetDescription>
                     <SidebarContent />
                 </SheetContent>
             </Sheet>

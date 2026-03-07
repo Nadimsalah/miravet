@@ -51,7 +51,7 @@ export default function ResellerDashboard() {
                     .maybeSingle()
 
                 if (profileRow?.role === 'DELIVERY_MAN') {
-                    router.push('/delivery/dashboard')
+                    router.push('/logistique/dashboard')
                     return
                 }
 

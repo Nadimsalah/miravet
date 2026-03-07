@@ -108,14 +108,22 @@ export default function CheckoutPage() {
     const totalItems = items.reduce((sum, item) => sum + item.quantity, 0)
 
     let shipping = 50 // Default
-    if (currentShippingRule) {
-        const isFreeAmount = currentShippingRule.free_shipping_threshold > 0 && subtotal >= currentShippingRule.free_shipping_threshold
-        const isFreeItems = currentShippingRule.free_shipping_min_items > 0 && totalItems >= currentShippingRule.free_shipping_min_items
+    const isShippingDisabledGlobally = paymentSettings.shipping_enabled === 'false'
 
-        if (isFreeAmount || isFreeItems) {
+    if (isShippingDisabledGlobally) {
+        shipping = 0
+    } else if (currentShippingRule) {
+        if (!currentShippingRule.enabled) {
             shipping = 0
         } else {
-            shipping = currentShippingRule.base_price
+            const isFreeAmount = currentShippingRule.free_shipping_threshold > 0 && subtotal >= currentShippingRule.free_shipping_threshold
+            const isFreeItems = currentShippingRule.free_shipping_min_items > 0 && totalItems >= currentShippingRule.free_shipping_min_items
+
+            if (isFreeAmount || isFreeItems) {
+                shipping = 0
+            } else {
+                shipping = currentShippingRule.base_price
+            }
         }
     } else {
         shipping = subtotal >= 750 ? 0 : 50
@@ -359,20 +367,19 @@ export default function CheckoutPage() {
                             {currentUser && (
                                 <div className="space-y-4 pt-2">
                                     <Label className="text-base font-semibold">
-                                        {language === 'ar' ? 'طريقة الدفع' : 'Payment Method'}
+                                        {t('checkout.payment_method')}
                                     </Label>
                                     <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-3">
-
                                         {/* COD */}
                                         {paymentSettings.payment_cod_enabled !== 'false' && (
                                             <div className={`flex items-start space-x-3 space-x-reverse rounded-xl border p-4 transition-all cursor-pointer ${paymentMethod === 'cod' ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border bg-card hover:bg-accent/50'}`}>
                                                 <RadioGroupItem value="cod" id="cod" className="mt-1" />
                                                 <div className="flex-1 space-y-1">
                                                     <Label htmlFor="cod" className="font-medium cursor-pointer">
-                                                        {language === 'ar' ? 'الدفع عند الاستلام' : 'Cash on Delivery (COD)'}
+                                                        {t('checkout.payment_cod')}
                                                     </Label>
                                                     <p className="text-xs text-muted-foreground">
-                                                        {language === 'ar' ? 'الدفع نقداً عند استلام الطلب' : 'Pay in cash when you receive your order'}
+                                                        {t('checkout.payment_cod_desc')}
                                                     </p>
                                                 </div>
                                             </div>
@@ -385,10 +392,10 @@ export default function CheckoutPage() {
                                                     <RadioGroupItem value="virement" id="virement" className="mt-1" />
                                                     <div className="flex-1 space-y-1">
                                                         <Label htmlFor="virement" className="font-medium cursor-pointer">
-                                                            {language === 'ar' ? 'تحويل بنكي' : 'Bank Transfer'}
+                                                            {t('checkout.payment_virement')}
                                                         </Label>
                                                         <p className="text-xs text-muted-foreground">
-                                                            {language === 'ar' ? 'الدفع عبر التحويل البنكي المباشر' : 'Direct bank transfer'}
+                                                            {t('checkout.payment_virement_desc')}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -407,7 +414,7 @@ export default function CheckoutPage() {
                                                     <RadioGroupItem value="cheque" id="cheque" className="mt-1" />
                                                     <div className="flex-1 space-y-1">
                                                         <Label htmlFor="cheque" className="font-medium cursor-pointer">
-                                                            {language === 'ar' ? 'شيك بنكي' : 'Cheque Payment'}
+                                                            {t('checkout.payment_cheque')}
                                                         </Label>
                                                     </div>
                                                 </div>
@@ -435,7 +442,7 @@ export default function CheckoutPage() {
                                         htmlFor="saveInfo"
                                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                                     >
-                                        {language === 'ar' ? 'حفظ المعلومات للمرة القادمة' : 'Save this information for next time'}
+                                        {t('checkout.save_info')}
                                     </label>
                                 </div>
                             )}
@@ -530,12 +537,14 @@ export default function CheckoutPage() {
                                         <span>{t('cart.subtotal')}</span>
                                         <span className="font-medium text-foreground">{t('common.currency')} {formatPrice(subtotal)}</span>
                                     </div>
-                                    <div className="flex justify-between text-muted-foreground">
-                                        <span>{t('cart.shipping')}</span>
-                                        <span className="font-medium text-foreground">
-                                            {shipping === 0 ? t('cart.free') : `${t('common.currency')} ${formatPrice(shipping)}`}
-                                        </span>
-                                    </div>
+                                    {!isShippingDisabledGlobally && (
+                                        <div className="flex justify-between text-muted-foreground">
+                                            <span>{t('cart.shipping')}</span>
+                                            <span className="font-medium text-foreground">
+                                                {shipping === 0 ? t('cart.free') : `${t('common.currency')} ${formatPrice(shipping)}`}
+                                            </span>
+                                        </div>
+                                    )}
                                     <div className="flex justify-between text-lg font-bold text-foreground pt-3 border-t border-border/50">
                                         <span>{t('cart.total')}</span>
                                         <span>{t('common.currency')} {formatPrice(total)}</span>
