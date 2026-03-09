@@ -20,6 +20,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetTitle, SheetDescrip
 import {
   Search,
   ShoppingBag,
+  ShoppingCart,
   Menu,
   Star,
   Truck,
@@ -158,10 +159,10 @@ function ProductCard({ product, userRole, resellerTier }: { product: Product, us
                 if (tierPrice) {
                   return (
                     <>
-                      <span className="text-xs sm:text-base font-bold text-foreground">
+                      <span className="text-xs sm:text-base font-bold text-foreground whitespace-nowrap">
                         {t('common.currency')} {formatPrice(tierPrice / 1.2)} <span className="text-[10px] font-normal text-muted-foreground">HT</span>
                       </span>
-                      <span className="text-[9px] sm:text-xs text-muted-foreground line-through decoration-destructive/30">
+                      <span className="text-[9px] sm:text-xs text-muted-foreground line-through decoration-destructive/30 whitespace-nowrap">
                         {t('common.currency')} {formatPrice(product.price)} <span className="text-[8px] font-normal">TTC</span>
                       </span>
                     </>
@@ -169,13 +170,13 @@ function ProductCard({ product, userRole, resellerTier }: { product: Product, us
                 }
 
                 return (
-                  <span className="text-xs sm:text-base font-bold text-foreground">
+                  <span className="text-xs sm:text-base font-bold text-foreground whitespace-nowrap">
                     {t('common.currency')} {formatPrice(product.price)} <span className="text-[10px] font-normal text-muted-foreground">TTC</span>
                   </span>
                 )
               })()
             ) : (
-              <span className="text-xs sm:text-base font-bold text-foreground">
+              <span className="text-xs sm:text-base font-bold text-foreground whitespace-nowrap">
                 {t('common.currency')} {formatPrice(product.price)} <span className="text-[10px] font-normal text-muted-foreground">TTC</span>
               </span>
             )}
@@ -183,14 +184,11 @@ function ProductCard({ product, userRole, resellerTier }: { product: Product, us
           <Button
             size="icon"
             className={cn(
-              "w-8 h-8 sm:w-auto sm:h-9 sm:px-4 rounded-full text-[10px] sm:text-xs pointer-events-none",
+              "w-9 h-9 rounded-full",
               product.stock <= 0 && "bg-muted text-muted-foreground opacity-70"
             )}
           >
-            <ShoppingBag className="w-4 h-4 sm:hidden" />
-            <span className="hidden sm:inline">
-              {product.stock > 0 ? t('product.add_to_cart') : t('product.out_of_stock')}
-            </span>
+            <ShoppingCart className="w-4 h-4" />
           </Button>
         </div>
       </div>

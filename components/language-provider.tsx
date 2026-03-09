@@ -1001,7 +1001,7 @@ const translations = {
         "cart.your_cart_empty": "Your cart is empty",
         "cart.empty_desc": "It seems you haven't added anything to your cart yet.",
         "cart.start_shopping": "Start shopping",
-        "cart.shopping_cart": "Cart",
+        "cart.shopping_cart": "Panier",
         "cart.items": "items",
         "cart.order_summary": "Order summary",
         "cart.subtotal": "Subtotal",

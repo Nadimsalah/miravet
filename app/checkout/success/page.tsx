@@ -125,7 +125,7 @@ export default function CheckoutSuccessPage() {
                                             </h4>
                                             {item.size && <p className="text-xs text-muted-foreground">{item.size}</p>}
                                         </div>
-                                        <p className="text-sm font-semibold text-primary">
+                                        <p className="text-sm font-semibold text-primary whitespace-nowrap">
                                             {t('common.currency')} {formatPrice(item.price * item.quantity)}
                                         </p>
                                     </div>
@@ -138,7 +138,7 @@ export default function CheckoutSuccessPage() {
                         <div className="space-y-3 text-sm">
                             <div className="flex justify-between text-muted-foreground">
                                 <span>{t('cart.subtotal')}</span>
-                                <span className="font-medium text-foreground">{t('common.currency')} {formatPrice(order.subtotal)}</span>
+                                <span className="font-medium text-foreground whitespace-nowrap">{t('common.currency')} {formatPrice(order.subtotal)}</span>
                             </div>
                             <div className="flex justify-between text-muted-foreground">
                                 <span>{t('cart.shipping')}</span>
@@ -148,7 +148,7 @@ export default function CheckoutSuccessPage() {
                             </div>
                             <div className="flex justify-between text-lg font-bold text-foreground pt-3 border-t border-border/50">
                                 <span>{t('cart.total')}</span>
-                                <span className="font-medium text-foreground">{t('common.currency')} {formatPrice(order.total)}</span>
+                                <span className="font-medium text-foreground whitespace-nowrap">{t('common.currency')} {formatPrice(order.total)}</span>
                             </div>
                         </div>
                     </div>

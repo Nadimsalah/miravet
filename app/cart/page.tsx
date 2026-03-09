@@ -6,18 +6,15 @@ import { useLanguage } from "@/components/language-provider"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import {
   ShoppingBag,
   Minus,
   Plus,
-  X,
   ArrowLeft,
   ShieldCheck,
   Truck,
-  Trash2,
-  Tag,
+  Trash2
 } from "lucide-react"
 import { formatPrice } from "@/lib/utils"
 import { getCurrentUserRole, getCurrentResellerTier, getAdminSettings, ResellerTier } from "@/lib/supabase-api"
@@ -37,8 +34,6 @@ import { CartItemSkeleton } from "@/components/ui/store-skeletons"
 
 export default function CartPage() {
   const [isScrolled, setIsScrolled] = useState(false)
-  const [promoCode, setPromoCode] = useState("")
-  const [promoApplied, setPromoApplied] = useState(false)
   const { items: cartItems, removeItem, updateQuantity, isInitialized } = useCart()
   const { t, language } = useLanguage()
   const [userRole, setUserRole] = useState<string | null>(null)
@@ -66,14 +61,7 @@ export default function CartPage() {
     const price = (isResellerAccount && item.resellerPrice) ? item.resellerPrice : item.price
     return sum + price * item.quantity
   }, 0)
-  const discount = promoApplied ? subtotal * 0.2 : 0
-  const total = subtotal - discount
-
-  const applyPromo = () => {
-    if (promoCode.toUpperCase() === "ARGAN20") {
-      setPromoApplied(true)
-    }
-  }
+  const total = subtotal
 
   return (
     <div className="min-h-screen bg-background">
@@ -224,10 +212,10 @@ export default function CartPage() {
 
                           {/* Price */}
                           <div className="text-right">
-                            <p className="text-base sm:text-lg font-bold text-foreground">
+                            <p className="text-base sm:text-lg font-bold text-foreground whitespace-nowrap">
                               {t('common.currency')} {formatPrice(((isResellerAccount && item.resellerPrice) ? item.resellerPrice : item.price) * item.quantity)}
                             </p>
-                            <p className="text-xs sm:text-sm text-muted-foreground">
+                            <p className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
                               {t('common.currency')} {formatPrice((isResellerAccount && item.resellerPrice) ? item.resellerPrice : item.price)} each
                             </p>
                           </div>
@@ -243,34 +231,6 @@ export default function CartPage() {
             <div className="lg:col-span-1">
               <div className="glass-strong rounded-xl sm:rounded-2xl p-5 sm:p-6 lg:sticky lg:top-24 space-y-5 sm:space-y-6">
                 <h2 className="text-lg sm:text-xl font-bold text-foreground">{t('cart.order_summary')}</h2>
-                {/* Promo Code */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">{t('cart.promo_code')}</label>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder={t('cart.enter_code')}
-                      value={promoCode}
-                      onChange={(e) => setPromoCode(e.target.value)}
-                      disabled={promoApplied}
-                      className="rounded-full bg-background/50"
-                    />
-                    <Button
-                      variant="outline"
-                      onClick={applyPromo}
-                      disabled={promoApplied}
-                      className="rounded-full bg-transparent"
-                    >
-                      {promoApplied ? t('cart.applied') : t('cart.apply')}
-                    </Button>
-                  </div>
-                  {promoApplied && (
-                    <div className="flex items-center gap-2 text-sm text-primary">
-                      <Tag className="w-4 h-4" />
-                      <span className="font-medium">{t('cart.discount_applied')}</span>
-                    </div>
-                  )}
-                </div>
-
                 <Separator />
 
                 {/* Price Breakdown */}
@@ -279,12 +239,6 @@ export default function CartPage() {
                     <span>{t('cart.subtotal')}</span>
                     <span className="font-medium">{t('common.currency')} {formatPrice(subtotal)}</span>
                   </div>
-                  {promoApplied && (
-                    <div className="flex items-center justify-between text-primary">
-                      <span>Discount (20%)</span>
-                      <span className="font-medium">-{t('common.currency')} {formatPrice(discount)}</span>
-                    </div>
-                  )}
 
                 </div>
 

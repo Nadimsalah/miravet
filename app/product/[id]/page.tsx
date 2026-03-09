@@ -429,7 +429,17 @@ export default function ProductPage() {
                     >
                       <Minus className="w-5 h-5" />
                     </Button>
-                    <span className="w-10 text-center font-black text-xl tabular-nums">{quantity}</span>
+                    <input
+                      type="number"
+                      min={1}
+                      value={quantity}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value)
+                        if (!isNaN(val) && val >= 1) setQuantity(val)
+                        else if (e.target.value === '') setQuantity(1)
+                      }}
+                      className="w-12 text-center font-black text-xl tabular-nums bg-transparent border-none outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                    />
                     <Button
                       variant="ghost"
                       size="icon"
@@ -465,7 +475,7 @@ export default function ProductPage() {
                 >
                   <div className="absolute inset-x-0 bottom-0 h-1 bg-white/20 group-hover:h-full transition-all duration-500 opacity-20 pointer-events-none" />
                   <ShoppingBag className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform" />
-                  {t('product.buy_now')}
+                  Acheter maintenant
                 </Button>
               </div>
 
@@ -515,27 +525,7 @@ export default function ProductPage() {
                 </Accordion>
               </div>
 
-              {/* Security & Support Info */}
-              <div className="grid grid-cols-2 gap-4 pt-4">
-                <div className="flex items-center gap-4 p-5 rounded-2xl bg-emerald-500/5 border border-emerald-500/10 group hover:bg-emerald-500/10 transition-colors">
-                  <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-500">
-                    <Check className="w-5 h-5" />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-xs font-black uppercase text-emerald-500/70 tracking-widest">Garantie</span>
-                    <span className="text-sm font-bold">12 Mois Officielle</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4 p-5 rounded-2xl bg-primary/5 border border-primary/10 group hover:bg-primary/10 transition-colors">
-                  <div className="p-2 rounded-xl bg-primary/20 text-primary">
-                    <Truck className="w-5 h-5" />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-xs font-black uppercase text-primary/70 tracking-widest">Livraison</span>
-                    <span className="text-sm font-bold">Partout au Maroc</span>
-                  </div>
-                </div>
-              </div>
+
             </div>
           </div>
         </div>
@@ -583,9 +573,17 @@ export default function ProductPage() {
               >
                 <Minus className="w-4 h-4" />
               </Button>
-              <span className="w-6 text-center font-bold text-sm tabular-nums">
-                {quantity}
-              </span>
+              <input
+                type="number"
+                min={1}
+                value={quantity}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value)
+                  if (!isNaN(val) && val >= 1) setQuantity(val)
+                  else if (e.target.value === '') setQuantity(1)
+                }}
+                className="w-8 text-center font-bold text-sm tabular-nums bg-transparent border-none outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              />
               <Button
                 variant="ghost"
                 size="icon"

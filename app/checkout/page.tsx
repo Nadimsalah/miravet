@@ -499,7 +499,7 @@ export default function CheckoutPage() {
                                                     {language === 'ar' && item.nameAr ? item.nameAr : item.name}
                                                 </h4>
                                                 {item.size && <p className="text-xs text-muted-foreground">{item.size}</p>}
-                                                <p className="text-sm font-semibold text-primary mt-1">
+                                                <p className="text-sm font-semibold text-primary mt-1 whitespace-nowrap">
                                                     {t('common.currency')} {formatPrice(((isResellerAccount && item.resellerPrice) ? item.resellerPrice : item.price) * item.quantity)}
                                                 </p>
                                             </div>
@@ -535,7 +535,7 @@ export default function CheckoutPage() {
                                 <div className="space-y-3 text-sm">
                                     <div className="flex justify-between text-muted-foreground">
                                         <span>{t('cart.subtotal')}</span>
-                                        <span className="font-medium text-foreground">{t('common.currency')} {formatPrice(subtotal)}</span>
+                                        <span className="font-medium text-foreground whitespace-nowrap">{t('common.currency')} {formatPrice(subtotal)}</span>
                                     </div>
                                     {!isShippingDisabledGlobally && (
                                         <div className="flex justify-between text-muted-foreground">
@@ -547,7 +547,7 @@ export default function CheckoutPage() {
                                     )}
                                     <div className="flex justify-between text-lg font-bold text-foreground pt-3 border-t border-border/50">
                                         <span>{t('cart.total')}</span>
-                                        <span>{t('common.currency')} {formatPrice(total)}</span>
+                                        <span className="whitespace-nowrap">{t('common.currency')} {formatPrice(total)}</span>
                                     </div>
                                 </div>
 
