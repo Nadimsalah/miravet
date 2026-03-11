@@ -10,30 +10,31 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: 'Account Manager ID required' }, { status: 400 })
         }
 
-        // Fetch assigned IDs with metadata to identify "Global Digital" assignments
-        console.log('Fetching orders for AM:', accountManagerId)
+        // 1. Fetch assignments for this manager
         const { data: assignments, error: amError } = await supabaseAdmin
             .from('account_manager_assignments')
-            .select(`
-                reseller_id, 
-                customer_id,
-                reseller:resellers(company_name)
-            `)
+            .select('reseller_id, customer_id')
             .eq('account_manager_id', accountManagerId)
             .is('soft_deleted_at', null)
 
         if (amError) throw amError
 
-        console.log('AM Assignments:', JSON.stringify(assignments))
-
         const resellerIds = assignments?.map((r: any) => r.reseller_id).filter(Boolean) || []
         const customerIds = assignments?.map((r: any) => r.customer_id).filter(Boolean) || []
-
-        // Special logic: If assigned to "CLIENTS DIGITAUX", also fetch guest orders (reseller_id IS NULL)
-        const isGlobalDigitalManager = assignments?.some((r: any) =>
-            r.reseller?.company_name?.toUpperCase().includes('DIGITAUX') ||
-            r.reseller?.company_name?.toUpperCase().includes('DIGITAL GLOBAL')
-        )
+        
+        // 2. Fetch those resellers to check for "Global Digital" status
+        let isGlobalDigitalManager = false
+        if (resellerIds.length > 0) {
+            const { data: assignedResellers } = await supabaseAdmin
+                .from('resellers')
+                .select('company_name')
+                .in('id', resellerIds)
+            
+            isGlobalDigitalManager = assignedResellers?.some((r: any) =>
+                r.company_name?.toUpperCase().includes('DIGITAUX') ||
+                r.company_name?.toUpperCase().includes('DIGITAL GLOBAL')
+            ) || false
+        }
 
         console.log('Is Global Manager:', isGlobalDigitalManager)
 
@@ -47,7 +48,7 @@ export async function GET(req: Request) {
         if (resellerIds.length > 0) {
             const { data: resellerProfiles } = await supabaseAdmin
                 .from('resellers')
-                .select('user_id, profile:profiles(email)')
+                .select('user_id, profile:profiles!user_id(email)')
                 .in('id', resellerIds)
 
             resellerEmails = resellerProfiles
@@ -60,7 +61,7 @@ export async function GET(req: Request) {
             .from('orders')
             .select(`
                 *,
-                reseller:resellers (*)
+                reseller:resellers!reseller_id (*)
             `)
             .order('created_at', { ascending: false })
 

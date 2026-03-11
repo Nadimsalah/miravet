@@ -67,7 +67,7 @@ function ProductCard({ product, userRole, resellerTier }: { product: Product, us
                 if (tierPrice) {
                   return (
                     <>
-                      <span className="text-xs sm:text-sm font-bold text-foreground">
+                      <span className="text-xs sm:text-sm font-bold text-foreground whitespace-nowrap">
                         {t('common.currency')} {formatPrice(tierPrice / 1.2)} <span className="text-[8px] font-normal text-muted-foreground">HT</span>
                       </span>
                     </>
@@ -75,13 +75,13 @@ function ProductCard({ product, userRole, resellerTier }: { product: Product, us
                 }
 
                 return (
-                  <span className="text-xs sm:text-sm font-bold text-foreground">
+                  <span className="text-xs sm:text-sm font-bold text-foreground whitespace-nowrap">
                     {t('common.currency')} {formatPrice(product.price)}
                   </span>
                 )
               })()
             ) : (
-              <span className="text-xs sm:text-sm font-bold text-foreground">
+              <span className="text-xs sm:text-sm font-bold text-foreground whitespace-nowrap">
                 {t('common.currency')} {formatPrice(product.price)}
               </span>
             )}
@@ -378,7 +378,7 @@ export default function ProductPage() {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative z-10">
                     <div className="space-y-1">
                       <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-2 inline-block">Prix Professionnel</span>
-                      <div className="flex items-baseline gap-2">
+                      <div className="flex items-baseline gap-2 whitespace-nowrap">
                         <span className="text-4xl sm:text-5xl font-black text-foreground tracking-tighter">
                           {formatPrice((resellerTier === 'wholesaler' ? product.wholesaler_price : resellerTier === 'partner' ? product.partner_price : product.reseller_price) || 0)}
                         </span>
@@ -387,14 +387,14 @@ export default function ProductPage() {
                     </div>
                     <div className="sm:text-right pt-4 sm:pt-0 sm:border-l sm:pl-8 border-white/10">
                       <span className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.3em] mb-2 inline-block">Public</span>
-                      <div className="text-2xl text-muted-foreground/40 line-through decoration-2 font-bold decoration-destructive/30 italic">
+                      <div className="text-2xl text-muted-foreground/40 line-through decoration-2 font-bold decoration-destructive/30 italic whitespace-nowrap">
                         {formatPrice(product.price)}
                       </div>
                     </div>
                   </div>
                 ) : (
                   <div className="flex items-baseline gap-4 relative z-10">
-                    <span className="text-5xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/70 tracking-tighter">
+                    <span className="text-5xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/70 tracking-tighter whitespace-nowrap">
                       {formatPrice(product.price)}
                     </span>
                     <div className="flex flex-col">
@@ -402,7 +402,7 @@ export default function ProductPage() {
                       <span className="text-[10px] text-muted-foreground font-bold uppercase mt-1">TTC</span>
                     </div>
                     {(product.compare_at_price ?? 0) > 0 && (
-                      <span className="ml-2 text-xl text-muted-foreground/40 line-through decoration-2 font-bold italic">
+                      <span className="ml-2 text-xl text-muted-foreground/40 line-through decoration-2 font-bold italic whitespace-nowrap">
                         {formatPrice(product.compare_at_price || 0)}
                       </span>
                     )}
@@ -618,7 +618,7 @@ export default function ProductPage() {
               }}
             >
               <span>Acheter maintenant</span>
-              <div className="flex items-center gap-1 opacity-80">
+              <div className="flex items-center gap-1 opacity-80 whitespace-nowrap">
                 <span className="text-[10px] font-bold">{t('common.currency')}</span>
                 <span className="font-black">{formatPrice(product.price * quantity)}</span>
               </div>

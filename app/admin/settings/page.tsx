@@ -52,7 +52,7 @@ export default function SettingsPage() {
     const handleCopy = (path: string) => {
         const url = `${origin}${path}`
         navigator.clipboard.writeText(url)
-        toast.success("Link copied to clipboard")
+        toast.success("Lien copié dans le presse-papiers")
     }
 
     async function loadSettings() {
@@ -406,7 +406,7 @@ export default function SettingsPage() {
                                                         value={settings.payment_cheque_details || ""}
                                                         onChange={(e) => handleChange("payment_cheque_details", e.target.value)}
                                                         className="w-full px-4 py-3 rounded-xl bg-black/20 border border-white/10 text-xs font-mono"
-                                                        placeholder="Payable to: Didali Store SARL..."
+                                                        placeholder="Payable à : Didali Store SARL..."
                                                     />
                                                 </div>
                                             )}
@@ -441,7 +441,7 @@ export default function SettingsPage() {
                                                         value={settings.payment_virement_details || ""}
                                                         onChange={(e) => handleChange("payment_virement_details", e.target.value)}
                                                         className="w-full px-4 py-3 rounded-xl bg-black/20 border border-white/10 text-xs font-mono leading-relaxed"
-                                                        placeholder="BANK: Attijariwafa Bank&#10;RIB: 007 000 0000000000000000 00&#10;BENEFICIARY: DEDALI STORE"
+                                                        placeholder="BANQUE : Attijariwafa Bank&#10;RIB : 007 000 0000000000000000 00&#10;BÉNÉFICIAIRE : DEDALI STORE"
                                                     />
                                                 </div>
                                             )}
@@ -533,7 +533,7 @@ export default function SettingsPage() {
                                                     onChange={(e) => handleChange("admin_pin", e.target.value)}
                                                     className="rounded-2xl h-14 bg-black/20 border-white/10 text-center text-3xl tracking-widest font-mono focus:border-red-500/40"
                                                     maxLength={12}
-                                                    placeholder="PIN"
+                                                    placeholder="CODE"
                                                 />
                                                 <button
                                                     type="button"
@@ -570,7 +570,7 @@ export default function SettingsPage() {
                                         <div className="p-2 bg-purple-500/10 rounded-lg">
                                             <LinkIcon className="w-5 h-5 text-purple-500" />
                                         </div>
-                                        <h3 className="font-bold text-lg">System Login Links</h3>
+                                        <h3 className="font-bold text-lg">Liens de Connexion au Système</h3>
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -580,8 +580,8 @@ export default function SettingsPage() {
                                                 <div className="flex items-center gap-3">
                                                     <div className="p-2 bg-blue-500/10 rounded-lg text-blue-500 group-hover:scale-110 transition-transform"><Users className="w-4 h-4" /></div>
                                                     <div>
-                                                        <p className="text-sm font-bold">Reseller / Manager</p>
-                                                        <p className="text-[10px] text-muted-foreground">Standard Dashboard Access</p>
+                                                        <p className="text-sm font-bold">Revendeur / Gestionnaire</p>
+                                                        <p className="text-[10px] text-muted-foreground">Accès standard au tableau de bord</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -604,8 +604,8 @@ export default function SettingsPage() {
                                                 <div className="flex items-center gap-3">
                                                     <div className="p-2 bg-red-500/10 rounded-lg text-red-500 group-hover:scale-110 transition-transform"><Shield className="w-4 h-4" /></div>
                                                     <div>
-                                                        <p className="text-sm font-bold">Admin Portal</p>
-                                                        <p className="text-[10px] text-muted-foreground">Super Admin Access</p>
+                                                        <p className="text-sm font-bold">Portail d'administration</p>
+                                                        <p className="text-[10px] text-muted-foreground">Accès Super Admin</p>
                                                     </div>
                                                 </div>
                                             </div>

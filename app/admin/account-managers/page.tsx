@@ -83,7 +83,7 @@ export default function AccountManagersPage() {
     const [resellers, setResellers] = useState<Reseller[]>([])
     const [loading, setLoading] = useState(true)
     const [searchQuery, setSearchQuery] = useState("")
-    const [viewMode, setViewMode] = useState<"grid" | "table">("table")
+    const [viewMode] = useState<"grid">("grid")
     const [copiedUrl, setCopiedUrl] = useState(false)
 
     // Performance Calculations
@@ -409,22 +409,13 @@ export default function AccountManagersPage() {
                             </Button>
                         </div>
 
-                        <div className="flex bg-white/5 p-1 rounded-xl border border-white/10 mr-2">
+                        <div className="flex bg-white/5 p-1 rounded-xl border border-white/10 mr-2 opacity-50 pointer-events-none hidden">
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className={`h-8 w-8 rounded-lg ${viewMode === 'grid' ? 'bg-white/10 text-primary shadow-sm' : 'text-muted-foreground'}`}
-                                onClick={() => setViewMode('grid')}
+                                className={`h-8 w-8 rounded-lg bg-white/10 text-primary shadow-sm`}
                             >
                                 <LayoutGrid className="w-4 h-4" />
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className={`h-8 w-8 rounded-lg ${viewMode === 'table' ? 'bg-white/10 text-primary shadow-sm' : 'text-muted-foreground'}`}
-                                onClick={() => setViewMode('table')}
-                            >
-                                <List className="w-4 h-4" />
                             </Button>
                         </div>
 
@@ -528,242 +519,124 @@ export default function AccountManagersPage() {
                     </div>
                 </div>
 
-                {viewMode === "grid" ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {loading ? (
-                            Array(3).fill(0).map((_, i) => (
-                                <div key={i} className="h-[400px] glass-strong rounded-3xl animate-pulse bg-white/5" />
-                            ))
-                        ) : filteredManagers.length > 0 ? (
-                            filteredManagers.map((m: any) => (
-                                <div key={m.id} className="glass-strong rounded-3xl border border-white/5 p-6 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 group flex flex-col">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {loading ? (
+                        Array(3).fill(0).map((_, i) => (
+                            <div key={i} className="h-[400px] glass-strong rounded-3xl animate-pulse bg-white/5" />
+                        ))
+                    ) : filteredManagers.length > 0 ? (
+                        filteredManagers.map((m: any) => (
+                            <div key={m.id} className="glass-strong rounded-3xl border border-white/5 p-6 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 group flex flex-col">
 
-                                    {/* Card Header */}
-                                    <div className="flex items-start justify-between mb-6">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center text-primary font-black text-xl border border-white/10 group-hover:scale-110 transition-transform duration-300">
-                                                {m.name.charAt(0)}
-                                            </div>
-                                            <div>
-                                                <h3 className="text-lg font-bold text-foreground leading-tight">{m.name}</h3>
-                                                <Badge variant="outline" className="mt-1 bg-primary/5 text-primary border-primary/20 text-[10px] px-2 py-0.5 h-5">
-                                                    {t("account_managers.manager")}
-                                                </Badge>
-                                            </div>
+                                {/* Card Header */}
+                                <div className="flex items-start justify-between mb-6">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center text-primary font-black text-xl border border-white/10 group-hover:scale-110 transition-transform duration-300">
+                                            {m.name.charAt(0)}
                                         </div>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/10">
-                                                    <MoreHorizontal className="w-4 h-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="glass-strong rounded-xl border-white/10">
-                                                <DropdownMenuItem
-                                                    onClick={() => {
-                                                        setEditingGoalManager(m)
-                                                        setNewGoalValue(m.target_revenue.toString())
-                                                        setIsGoalModalOpen(true)
-                                                    }}
-                                                >
-                                                    <Shield className="w-4 h-4 mr-2" />
-                                                    {t("account_managers.set_prime_goal")}
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem
-                                                    onClick={() => {
-                                                        setResettingManager(m)
-                                                        setNewPasswordInput("")
-                                                        setIsResetPasswordModalOpen(true)
-                                                    }}
-                                                >
-                                                    <Lock className="w-4 h-4 mr-2" />
-                                                    Modifier le mot de passe
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem
-                                                    className="text-destructive focus:text-destructive"
-                                                    onClick={() => handleDeleteManager(m)}
-                                                >
-                                                    <Trash2 className="w-4 h-4 mr-2" />
-                                                    {t("account_managers.delete_account")}
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
+                                        <div>
+                                            <h3 className="text-lg font-bold text-foreground leading-tight">{m.name}</h3>
+                                            <Badge variant="outline" className="mt-1 bg-primary/5 text-primary border-primary/20 text-[10px] px-2 py-0.5 h-5">
+                                                {t("account_managers.manager")}
+                                            </Badge>
+                                        </div>
                                     </div>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/10">
+                                                <MoreHorizontal className="w-4 h-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" className="glass-strong rounded-xl border-white/10">
+                                            <DropdownMenuItem
+                                                onClick={() => {
+                                                    setEditingGoalManager(m)
+                                                    setNewGoalValue(m.target_revenue.toString())
+                                                    setIsGoalModalOpen(true)
+                                                }}
+                                            >
+                                                <Shield className="w-4 h-4 mr-2" />
+                                                {t("account_managers.set_prime_goal")}
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                onClick={() => {
+                                                    setResettingManager(m)
+                                                    setNewPasswordInput("")
+                                                    setIsResetPasswordModalOpen(true)
+                                                }}
+                                            >
+                                                <Lock className="w-4 h-4 mr-2" />
+                                                Modifier le mot de passe
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                className="text-destructive focus:text-destructive"
+                                                onClick={() => handleDeleteManager(m)}
+                                            >
+                                                <Trash2 className="w-4 h-4 mr-2" />
+                                                {t("account_managers.delete_account")}
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
 
-                                    {/* Contact Info */}
-                                    <div className="space-y-3 mb-6 bg-background/30 p-4 rounded-2xl border border-white/5">
+                                {/* Contact Info */}
+                                <div className="space-y-3 mb-6 bg-background/30 p-4 rounded-2xl border border-white/5">
+                                    <div className="flex items-center gap-3 text-sm">
+                                        <div className="p-1.5 bg-white/5 rounded-md text-muted-foreground/70">
+                                            <Mail className="w-3.5 h-3.5" />
+                                        </div>
+                                        <span className="text-muted-foreground truncate">{m.email}</span>
+                                    </div>
+                                    {m.phone && (
                                         <div className="flex items-center gap-3 text-sm">
                                             <div className="p-1.5 bg-white/5 rounded-md text-muted-foreground/70">
-                                                <Mail className="w-3.5 h-3.5" />
+                                                <Phone className="w-3.5 h-3.5" />
                                             </div>
-                                            <span className="text-muted-foreground truncate">{m.email}</span>
+                                            <span className="text-foreground font-medium">{m.phone}</span>
                                         </div>
-                                        {m.phone && (
-                                            <div className="flex items-center gap-3 text-sm">
-                                                <div className="p-1.5 bg-white/5 rounded-md text-muted-foreground/70">
-                                                    <Phone className="w-3.5 h-3.5" />
-                                                </div>
-                                                <span className="text-foreground font-medium">{m.phone}</span>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Stats Grid */}
-                                    <div className="grid grid-cols-2 gap-3 mb-6 flex-1">
-                                        <div className="p-4 bg-background/40 rounded-2xl border border-white/5 flex flex-col justify-center">
-                                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">PARTENAIRES</p>
-                                            <div className="flex items-center gap-2">
-                                                <Users className="w-4 h-4 text-primary/60" />
-                                                <span className="text-xl font-black text-foreground">{m.reseller_count || 0}</span>
-                                            </div>
-                                        </div>
-                                        <div className="p-4 bg-gradient-to-br from-violet-500/5 to-fuchsia-500/5 rounded-2xl border border-violet-500/10 flex flex-col justify-center relative overflow-hidden">
-                                            <div className="absolute top-0 right-0 w-12 h-12 bg-violet-500/10 rounded-full blur-xl -translate-y-1/2 translate-x-1/2" />
-                                            <p className="text-[10px] font-bold text-violet-500/80 uppercase tracking-wider mb-1">OBJECTIF</p>
-                                            <div className="flex items-center gap-1">
-                                                <span className="text-sm font-black text-foreground">{formatPrice(m.target_revenue)}</span>
-                                                <span className="text-[10px] font-medium text-muted-foreground">DH</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                            <Button
-                                                onClick={() => handleOpenAssign(m)}
-                                                className="w-full h-11 rounded-xl font-bold bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20 transition-all text-sm"
-                                            >
-                                                <LinkIcon className="w-4 h-4 mr-2" />
-                                                {t("account_managers.manage_assignments")}
-                                            </Button>
-                                </div>
-                            ))
-                        ) : (
-                            <div className="col-span-full py-20 text-center">
-                                <div className="flex flex-col items-center gap-4">
-                                    <div className="p-6 bg-white/5 rounded-full text-muted-foreground/20 animate-pulse">
-                                        <Shield className="w-16 h-16" />
-                                    </div>
-                                    <h3 className="text-xl font-bold text-foreground">{t("account_managers.no_managers")}</h3>
-                                    <p className="text-muted-foreground max-w-xs mx-auto text-sm">{t("account_managers.no_managers_desc")}</p>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                ) : (
-                    <div className="glass-strong rounded-3xl border border-white/5 overflow-hidden">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="border-b border-white/5 bg-white/5">
-                                        <th className="p-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">Nom / Commercial</th>
-                                        <th className="p-4 text-xs font-bold uppercase tracking-widest text-muted-foreground text-center">Partenaires</th>
-                                        <th className="p-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">CA Généré</th>
-                                        <th className="p-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">Objectif</th>
-                                        <th className="p-4 text-xs font-bold uppercase tracking-widest text-muted-foreground">Performance</th>
-                                        <th className="p-4 text-xs font-bold uppercase tracking-widest text-muted-foreground text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {loading ? (
-                                        Array(3).fill(0).map((_, i) => (
-                                            <tr key={i} className="animate-pulse border-b border-white/5">
-                                                <td colSpan={6} className="p-8"><div className="h-4 bg-white/5 rounded w-full"></div></td>
-                                            </tr>
-                                        ))
-                                    ) : filteredManagers.length > 0 ? (
-                                        filteredManagers.map((m: any) => (
-                                            <tr key={m.id} className="border-b border-white/5 hover:bg-white/5 transition-colors group">
-                                                <td className="p-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold border border-white/10">
-                                                            {m.name.charAt(0)}
-                                                        </div>
-                                                        <div>
-                                                            <div className="font-bold text-foreground">{m.name}</div>
-                                                            <div className="text-xs text-muted-foreground">{m.email}</div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="p-4 text-center">
-                                                    <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
-                                                        {m.reseller_count}
-                                                    </Badge>
-                                                </td>
-                                                <td className="p-4">
-                                                    <div className="font-black text-foreground">{formatPrice(m.total_revenue)} DH</div>
-                                                </td>
-                                                <td className="p-4">
-                                                    <div className="text-muted-foreground font-medium">{formatPrice(m.target_revenue)} DH</div>
-                                                </td>
-                                                <td className="p-4">
-                                                    <div className="w-full max-w-[120px] space-y-1.5">
-                                                        <div className="flex justify-between text-[10px] font-bold">
-                                                            <span className={m.performance_percent >= 100 ? 'text-emerald-500' : 'text-primary'}>
-                                                                {m.performance_percent.toFixed(1)}%
-                                                            </span>
-                                                        </div>
-                                                        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
-                                                            <div
-                                                                className={`h-full transition-all duration-1000 ${m.performance_percent >= 100 ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-primary'}`}
-                                                                style={{ width: `${Math.min(m.performance_percent, 100)}%` }}
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="p-4 text-right">
-                                                    <div className="flex justify-end gap-2">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-9 w-9 rounded-lg text-primary hover:bg-primary/10 hover:scale-110 active:scale-95 transition-all shadow-sm border border-primary/5"
-                                                            onClick={(e) => {
-                                                                e.preventDefault()
-                                                                e.stopPropagation()
-                                                                handleOpenAssign(m)
-                                                            }}
-                                                            title={t("account_managers.manage_assignments")}
-                                                        >
-                                                            <LinkIcon className="w-4 h-4" />
-                                                        </Button>
-                                                        <DropdownMenu>
-                                                            <DropdownMenuTrigger asChild>
-                                                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground">
-                                                                    <MoreHorizontal className="w-4 h-4" />
-                                                                </Button>
-                                                            </DropdownMenuTrigger>
-                                                            <DropdownMenuContent align="end" className="glass-strong rounded-xl border-white/10">
-                                                                <DropdownMenuItem onClick={() => {
-                                                                    setEditingGoalManager(m)
-                                                                    setNewGoalValue(m.target_revenue.toString())
-                                                                    setIsGoalModalOpen(true)
-                                                                }}>
-                                                                    <Target className="w-4 h-4 mr-2" />
-                                                                    Objectif CA
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuItem onClick={() => {
-                                                                    setResettingManager(m)
-                                                                    setNewPasswordInput("")
-                                                                    setIsResetPasswordModalOpen(true)
-                                                                }}>
-                                                                    <Lock className="w-4 h-4 mr-2" />
-                                                                    Mot de passe
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuItem className="text-destructive font-bold" onClick={() => handleDeleteManager(m)}>
-                                                                    <Trash2 className="w-4 h-4 mr-2" />
-                                                                    Supprimer
-                                                                </DropdownMenuItem>
-                                                            </DropdownMenuContent>
-                                                        </DropdownMenu>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    ) : (
-                                        <tr><td colSpan={6} className="p-20 text-center text-muted-foreground">Aucun résultat trouvé</td></tr>
                                     )}
-                                </tbody>
-                            </table>
+                                </div>
+
+                                {/* Stats Grid */}
+                                <div className="grid grid-cols-2 gap-3 mb-6 flex-1">
+                                    <div className="p-4 bg-background/40 rounded-2xl border border-white/5 flex flex-col justify-center">
+                                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">PARTENAIRES</p>
+                                        <div className="flex items-center gap-2">
+                                            <Users className="w-4 h-4 text-primary/60" />
+                                            <span className="text-xl font-black text-foreground">{m.reseller_count || 0}</span>
+                                        </div>
+                                    </div>
+                                    <div className="p-4 bg-gradient-to-br from-violet-500/5 to-fuchsia-500/5 rounded-2xl border border-violet-500/10 flex flex-col justify-center relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 w-12 h-12 bg-violet-500/10 rounded-full blur-xl -translate-y-1/2 translate-x-1/2" />
+                                        <p className="text-[10px] font-bold text-violet-500/80 uppercase tracking-wider mb-1">OBJECTIF</p>
+                                        <div className="flex items-center gap-1">
+                                            <span className="text-sm font-black text-foreground">{formatPrice(m.target_revenue)}</span>
+                                            <span className="text-[10px] font-medium text-muted-foreground">DH</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <Button
+                                    onClick={() => handleOpenAssign(m)}
+                                    className="w-full h-11 rounded-xl font-bold bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20 transition-all text-sm"
+                                >
+                                    <LinkIcon className="w-4 h-4 mr-2" />
+                                    {t("account_managers.manage_assignments")}
+                                </Button>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="col-span-full py-20 text-center">
+                            <div className="flex flex-col items-center gap-4">
+                                <div className="p-6 bg-white/5 rounded-full text-muted-foreground/20 animate-pulse">
+                                    <Shield className="w-16 h-16" />
+                                </div>
+                                <h3 className="text-xl font-bold text-foreground">{t("account_managers.no_managers")}</h3>
+                                <p className="text-muted-foreground max-w-xs mx-auto text-sm">{t("account_managers.no_managers_desc")}</p>
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
 
                 {/* Assignment Modal (Global) */}
                 <Dialog open={isAssignModalOpen} onOpenChange={setIsAssignModalOpen}>

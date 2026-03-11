@@ -97,7 +97,10 @@ export function WhatsAppSubscription() {
                 <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
                     <div className="flex rounded-full shadow-sm bg-background/80 border border-input focus-within:ring-2 focus-within:ring-green-500/20 transition-all overflow-hidden h-14 w-full group/input" dir="ltr">
                         <Select value={countryCode} onValueChange={setCountryCode}>
-                            <SelectTrigger className="w-[110px] sm:w-[130px] border-0 bg-transparent focus:ring-0 h-full rounded-s-full px-4 gap-2 hover:bg-muted/50 transition-colors">
+                            <SelectTrigger 
+                                className="w-[110px] sm:w-[130px] border-0 bg-transparent focus:ring-0 h-full rounded-s-full px-4 gap-2 hover:bg-muted/50 transition-colors"
+                                suppressHydrationWarning
+                            >
                                 <SelectValue placeholder="Code" />
                             </SelectTrigger>
                             <SelectContent>

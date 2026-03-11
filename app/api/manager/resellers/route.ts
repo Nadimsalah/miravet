@@ -26,7 +26,7 @@ export async function GET(req: Request) {
             .from('resellers')
             .select(`
                 *,
-                user:profiles (name, email, phone)
+                user:profiles!user_id (name, email, phone)
             `)
             .in('id', resellerIds)
 

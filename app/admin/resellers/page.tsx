@@ -52,34 +52,59 @@ export default function ResellersPage() {
     async function loadResellers() {
         setLoading(true)
         try {
-            // Fetch customers with reseller role, including reseller_type
-            const { data: customersData } = await supabase
-                .from('customers')
-                .select('*')
-                .or('role.ilike.reseller,role.ilike.reseller_pending')
-                .not('company_name', 'is', null)
-                .neq('company_name', 'Personal Account')
+            // 1. Fetch all resellers joined with profiles
+            const { data: resellersData, error: resError } = await supabase
+                .from('resellers')
+                .select(`
+                    *,
+                    user:profiles!user_id(name, email, role)
+                `)
                 .order('created_at', { ascending: false })
 
-            // Fetch assignments with AM names
+            if (resError) throw resError
+
+            // 2. Fetch customer records to get total_spent
+            const { data: customersData } = await supabase
+                .from('customers')
+                .select('id, total_spent')
+                .in('id', (resellersData || []).map(r => r.user_id))
+
+            // 3. Fetch assignments
             const { data: assignments } = await supabase
                 .from('account_manager_assignments')
                 .select(`
-                    reseller:resellers(user_id),
-                    account_manager:profiles(name)
+                    customer_id,
+                    reseller_id,
+                    account_manager:profiles!account_manager_id(name)
                 `)
                 .is('soft_deleted_at', null)
 
-            const resellersWithAM = (customersData || []).map((r: any) => {
-                const assignment = assignments?.find((a: any) => a.reseller?.user_id === r.id)
+            // 4. Merge all data
+            const mergedResellers = (resellersData || []).map((r: any) => {
+                const customer = customersData?.find(c => c.id === r.user_id)
+                const assignment = assignments?.find((a: any) => a.customer_id === r.user_id || a.reseller_id === r.id)
+                
                 return {
-                    ...r,
-                    account_manager_name: (assignment as any)?.account_manager?.name
+                    id: r.user_id, // Keep user_id as main ID for compatibility
+                    reseller_id_db: r.id,
+                    name: r.user?.name || "Unknown",
+                    email: r.user?.email || "N/A",
+                    role: r.user?.role || "reseller",
+                    status: r.status,
+                    company_name: r.company_name,
+                    ice: r.ice,
+                    city: r.city,
+                    total_spent: customer?.total_spent || 0,
+                    account_manager_name: (assignment as any)?.account_manager?.name,
+                    created_at: r.created_at
                 }
             })
 
-            setResellers(resellersWithAM as any)
+            // Optional: Still filter out some if really needed, but the user wants to see them.
+            // Let's keep them all for now.
+            setResellers(mergedResellers as any)
         } catch (error: any) {
+            console.error('Error loading resellers:', error)
             toast.error(t("admin.resellers.error_loading"))
         } finally {
             setLoading(false)

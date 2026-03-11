@@ -64,6 +64,9 @@ export default function HeroCarouselPage() {
     // Edit State
     const [editingItem, setEditingItem] = useState<HeroCarouselItem | null>(null)
     const [editLink, setEditLink] = useState("")
+    const [editImage, setEditImage] = useState<File | null>(null)
+    const [editPreview, setEditPreview] = useState<string | null>(null)
+    const [isUpdating, setIsUpdating] = useState(false)
 
     useEffect(() => {
         loadCarouselItems()
@@ -194,16 +197,44 @@ export default function HeroCarouselPage() {
     async function handleSaveEdit() {
         if (!editingItem) return
 
-        const result = await updateHeroCarouselItem(editingItem.id, {
-            title: editingItem.title,
-            subtitle: editingItem.subtitle,
-            link: editLink || null
-        })
+        setIsUpdating(true)
+        try {
+            let imageUrl = editingItem.image_url
 
-        if (result.success) {
-            toast.success(t("admin.hero.toast.save_success"))
-            setItems(prev => prev.map(i => i.id === editingItem.id ? { ...i, ...editingItem, link: editLink } : i))
-            setEditingItem(null)
+            // 1. If new image selected, upload it
+            if (editImage) {
+                const uploadResult = await uploadHeroCarouselImage(editImage, editingItem.position)
+                if (uploadResult.success && uploadResult.url) {
+                    imageUrl = uploadResult.url
+                } else {
+                    toast.error(uploadResult.error || "Failed to upload new image")
+                    setIsUpdating(false)
+                    return
+                }
+            }
+
+            // 2. Update Item in DB
+            const result = await updateHeroCarouselItem(editingItem.id, {
+                title: editingItem.title,
+                subtitle: editingItem.subtitle,
+                link: editLink || null,
+                image_url: imageUrl
+            })
+
+            if (result.success) {
+                toast.success(t("admin.hero.toast.save_success"))
+                setItems(prev => prev.map(i => i.id === editingItem.id ? { ...i, ...editingItem, link: editLink, image_url: imageUrl } : i))
+                setEditingItem(null)
+                setEditImage(null)
+                setEditPreview(null)
+            } else {
+                toast.error(result.error || "Failed to save changes")
+            }
+        } catch (error) {
+            console.error("Error updating slide:", error)
+            toast.error("An unexpected error occurred")
+        } finally {
+            setIsUpdating(false)
         }
     }
 
@@ -560,6 +591,37 @@ export default function HeroCarouselPage() {
                                                         <DialogTitle>Edit Slide</DialogTitle>
                                                     </DialogHeader>
                                                     <div className="space-y-4 py-4">
+                                                        {/* Image Edit Section */}
+                                                        <div className="space-y-2">
+                                                            <label className="text-sm font-medium">Image</label>
+                                                            <div className="relative aspect-video rounded-xl border-2 border-dashed border-muted-foreground/25 hover:border-primary/50 transition-colors bg-background/50 overflow-hidden group">
+                                                                {editingItem?.id === item.id && (editPreview || item.image_url) && (
+                                                                    <Image
+                                                                        src={editPreview || item.image_url}
+                                                                        alt="Preview"
+                                                                        fill
+                                                                        className="object-cover"
+                                                                    />
+                                                                )}
+                                                                <label className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white">
+                                                                    <Upload className="w-8 h-8 mb-2" />
+                                                                    <span className="text-xs font-medium">Click to change image</span>
+                                                                    <input
+                                                                        type="file"
+                                                                        className="hidden"
+                                                                        accept="image/*"
+                                                                        onChange={(e) => {
+                                                                            const file = e.target.files?.[0]
+                                                                            if (file) {
+                                                                                setEditImage(file)
+                                                                                setEditPreview(URL.createObjectURL(file))
+                                                                            }
+                                                                        }}
+                                                                    />
+                                                                </label>
+                                                            </div>
+                                                        </div>
+
                                                         <div className="space-y-2">
                                                             <label className="text-sm font-medium">Title</label>
                                                             <Input
@@ -589,7 +651,16 @@ export default function HeroCarouselPage() {
                                                         </div>
                                                     </div>
                                                     <DialogFooter>
-                                                        <Button onClick={handleSaveEdit}>Save Changes</Button>
+                                                        <Button onClick={handleSaveEdit} disabled={isUpdating}>
+                                                            {isUpdating ? (
+                                                                <>
+                                                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                                    Saving...
+                                                                </>
+                                                            ) : (
+                                                                "Save Changes"
+                                                            )}
+                                                        </Button>
                                                     </DialogFooter>
                                                 </DialogContent>
                                             </Dialog>

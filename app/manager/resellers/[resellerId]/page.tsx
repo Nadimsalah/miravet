@@ -65,7 +65,7 @@ export default function ResellerProfilePage() {
             // 1. Fetch Reseller Details with Profile and Customer fallbacks
             const { data: rawRes, error: resError } = await supabase
                 .from('resellers')
-                .select('*, user:profiles(name, email, phone)')
+                .select('*, user:profiles!user_id(name, email, phone)')
                 .eq('id', resellerId)
                 .single()
 
@@ -86,11 +86,12 @@ export default function ResellerProfilePage() {
             }
             setReseller(mergedReseller)
 
-            // 2. Fetch Reseller Orders (Matching by reseller_id OR customer_id)
+            // 2. Fetch Reseller Orders (Matching by reseller_id OR customer_id OR email)
+            const emailFilter = mergedReseller.user?.email ? `,customer_email.ilike.${mergedReseller.user.email}` : ''
             const { data: ordersData, error: ordersError } = await supabase
                 .from('orders')
                 .select('*')
-                .or(`reseller_id.eq.${resellerId},customer_id.eq.${rawRes.user_id}`)
+                .or(`reseller_id.eq.${resellerId},customer_id.eq.${rawRes.user_id}${emailFilter}`)
                 .order('created_at', { ascending: false })
 
             if (ordersError) throw ordersError

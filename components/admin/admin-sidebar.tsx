@@ -35,12 +35,11 @@ const menuItems = [
     { icon: Shield, key: "admin.sidebar.account_managers", href: "/admin/account-managers" },
     { icon: Truck, key: "admin.sidebar.delivery_men", href: "/admin/logisticiens" },
     { icon: Truck, key: "admin.sidebar.shipping", href: "/admin/shipping" },
-    { icon: BarChart3, key: "admin.sidebar.analytics", href: "/admin/analytics" },
+
     { icon: ImageIcon, key: "admin.sidebar.hero_carousel", href: "/admin/hero-carousel" },
     // CRM / Marketing
     { icon: MessageCircle, key: "admin.sidebar.whatsapp_leads", href: "/admin/whatsapp" },
-    { icon: Phone, key: "admin.sidebar.contact_messages", href: "/admin/contacts" },
-    { icon: Briefcase, key: "admin.sidebar.career_applications", href: "/admin/careers" },
+
     { icon: Settings, key: "admin.sidebar.settings", href: "/admin/settings" },
     { icon: Award, key: "admin.sidebar.brands", href: "/admin/brands" },
 ]

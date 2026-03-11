@@ -12,5 +12,5 @@ export function formatPrice(amount: number | string | undefined | null) {
   return new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
-  }).format(val).replace(/,/g, ' ')
+  }).format(val).replace(/,/g, '\u00A0')
 }

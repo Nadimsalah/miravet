@@ -870,7 +870,7 @@ export default function AdminProductsPage() {
                                                     </div>
                                                 </td>
                                                 <td className="py-4 px-4 text-sm text-foreground/80 hidden sm:table-cell">{product.category}</td>
-                                                <td className="py-4 px-4 text-sm font-bold text-foreground">{formatPrice(product.price)}</td>
+                                                <td className="py-4 px-4 text-sm font-bold text-foreground whitespace-nowrap">{formatPrice(product.price)}</td>
                                                 <td className="py-4 px-4 text-sm text-muted-foreground hidden md:table-cell font-medium">
                                                     {product.stock} {t("admin.products.units")}
                                                 </td>

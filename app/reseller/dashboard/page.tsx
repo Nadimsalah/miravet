@@ -229,7 +229,7 @@ export default function ResellerDashboard() {
                                 <div className="w-12 h-12 bg-green-500/10 rounded-2xl flex items-center justify-center text-green-600 mb-4 group-hover:scale-110 transition-transform">
                                     <CreditCard className="w-6 h-6" />
                                 </div>
-                                <div className="text-xl sm:text-2xl font-black text-foreground tabular-nums truncate">
+                                <div className="text-xl sm:text-2xl font-black text-foreground tabular-nums truncate whitespace-nowrap">
                                     {formatPrice(orders.reduce((sum, o) => sum + Number(o.total), 0))} <span className="text-xs">MAD</span>
                                 </div>
                                 <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">
@@ -376,7 +376,7 @@ export default function ResellerDashboard() {
                                                     <div className="flex justify-between items-end pt-4 border-t border-white/5">
                                                         <div>
                                                             <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-1">{t("reseller.dashboard.total")}</div>
-                                                            <div className="font-black text-xl text-foreground">
+                                                            <div className="font-black text-xl text-foreground whitespace-nowrap">
                                                                 {formatPrice(order.total)} <span className="text-[10px] text-muted-foreground">MAD</span>
                                                             </div>
                                                         </div>
@@ -419,7 +419,7 @@ export default function ResellerDashboard() {
                                                                 </span>
                                                             </td>
                                                             <td className="bg-white/5 py-5 px-4 border-y border-white/5 group-hover:border-primary/20 group-hover:bg-primary/[0.02] text-right">
-                                                                <span className="font-black text-foreground">
+                                                            <span className="font-black text-foreground whitespace-nowrap">
                                                                     {formatPrice(order.total)} <span className="text-[10px] text-muted-foreground mr-1">MAD</span>
                                                                 </span>
                                                             </td>
