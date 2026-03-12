@@ -916,16 +916,17 @@ export async function updateCustomerStatus(customerId: string, status: string) {
     return data as Customer
 }
 
-export async function getCurrentUserRole(): Promise<string | null> {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-        return null
+export async function getCurrentUserRole(userId?: string): Promise<string | null> {
+    if (!userId) {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        if (error || !session?.user) return null
+        userId = session.user.id
     }
 
     const { data, error } = await supabase
         .from('profiles')
         .select('role')
-        .eq('id', user.id)
+        .eq('id', userId)
         .single()
 
     if (error) {
@@ -941,14 +942,17 @@ export async function getCurrentUserRole(): Promise<string | null> {
 
 export type ResellerTier = 'reseller' | 'partner' | 'wholesaler' | null
 
-export async function getCurrentResellerTier(): Promise<ResellerTier> {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return null
+export async function getCurrentResellerTier(userId?: string): Promise<ResellerTier> {
+    if (!userId) {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        if (error || !session?.user) return null
+        userId = session.user.id
+    }
 
     const { data, error } = await supabase
         .from('customers')
         .select('role, reseller_type')
-        .eq('id', user.id)
+        .eq('id', userId)
         .single()
 
     if (error || !data) {

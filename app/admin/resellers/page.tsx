@@ -22,7 +22,8 @@ import {
     Eye,
     MapPin,
     ArrowLeft,
-    Shield
+    Shield,
+    Wallet
 } from "lucide-react"
 import { getCustomers, updateCustomerStatus, type Customer } from "@/lib/supabase-api"
 import { supabase } from "@/lib/supabase"
@@ -147,7 +148,7 @@ export default function ResellersPage() {
 
     const stats = [
         { label: t("admin.resellers.partner_network"), value: resellers.length, icon: Users, color: "text-blue-500", bg: "bg-blue-500/10" },
-        { label: t("admin.resellers.total_spend"), value: `${t("common.currency")} ${formatPrice(totalSpend)}`, icon: DollarSign, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+        { label: t("admin.resellers.total_spend"), value: `${t("common.currency")} ${formatPrice(totalSpend)}`, icon: Wallet, color: "text-emerald-500", bg: "bg-emerald-500/10" },
     ]
 
     return (

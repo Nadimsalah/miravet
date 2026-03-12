@@ -67,7 +67,8 @@ export default function CheckoutPage() {
             const settingsData = await getAdminSettings()
             setPaymentSettings(settingsData)
 
-            const { data: { user } } = await supabase.auth.getUser()
+            const { data: { session } } = await supabase.auth.getSession()
+            const user = session?.user
             if (user) {
                 setCurrentUser(user)
                 const { data: profile } = await supabase

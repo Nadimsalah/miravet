@@ -15,32 +15,28 @@ const supabase = createClient(
     env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-async function inspectAssignments() {
-    const { data, error } = await supabase
-        .from('account_manager_assignments')
-        .select('*')
-        .limit(5);
+async function findAMs() {
+    const { data: ams, error } = await supabase.from('profiles').select('id, name, email').eq('role', 'ACCOUNT_MANAGER');
+    if (error) return console.error(error);
+    console.log('Account Managers:', JSON.stringify(ams, null, 2));
 
-    if (error) {
-        console.error('Error:', error);
-    } else {
-        console.log('Assignments Sample:', data);
-        if (data.length > 0) {
-            console.log('Columns:', Object.keys(data[0]));
-        }
-    }
-
-    // Also check for 'imad@mail.com' ID first
-    const { data: profiles } = await supabase.from('profiles').select('id, email').eq('email', 'imad@mail.com').single();
-    if (profiles) {
-        console.log('Imad ID:', profiles.id);
-        const { data: imadAssignments } = await supabase
+    if (ams && ams.length > 0) {
+        // Try to query assignments for the first AM
+        const { data: assignments, error: assignError } = await supabase
             .from('account_manager_assignments')
             .select('*')
-            .eq('account_manager_id', profiles.id)
+            .eq('account_manager_id', ams[0].id)
             .is('soft_deleted_at', null);
-        console.log('Imad Current Assignments:', imadAssignments);
+
+        if (assignError) {
+          console.error('Assignments ERROR:', assignError);
+          // If account_manager_id is missing, find what IS there
+          const { data: allCols } = await supabase.from('account_manager_assignments').select('*').limit(1);
+          console.log('ALL COLUMNS:', JSON.stringify(Object.keys(allCols[0] || {}), null, 2));
+        } else {
+          console.log(`Found ${assignments.length} assignments for ${ams[0].email}`);
+        }
     }
 }
 
-inspectAssignments();
+findAMs();

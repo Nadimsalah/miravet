@@ -357,7 +357,7 @@ const translations = {
         "admin.sidebar.shipping": "Livraison",
         "admin.sidebar.analytics": "Analytique",
         "admin.sidebar.hero_carousel": "Promo",
-        "admin.sidebar.whatsapp_leads": "Leads WhatsApp",
+        "admin.sidebar.whatsapp_leads": "Dirige WhatsApp",
         "admin.sidebar.contact_messages": "Messages de contact",
         "admin.sidebar.career_applications": "Candidatures",
         "admin.sidebar.settings": "Paramètres",
@@ -526,7 +526,7 @@ const translations = {
 
         // Admin WhatsApp
         "admin.whatsapp.back": "Retour au tableau de bord",
-        "admin.whatsapp.title": "Leads WhatsApp",
+        "admin.whatsapp.title": "Dirige WhatsApp",
         "admin.whatsapp.list_title": "Liste des abonnés WhatsApp",
         "admin.whatsapp.subtitle": "Cette page est un espace réservé pour afficher les numéros du formulaire.",
         "admin.whatsapp.table.country": "Code pays",
@@ -1178,7 +1178,7 @@ const translations = {
         "admin.sidebar.shipping": "Shipping",
         "admin.sidebar.analytics": "Analytics",
         "admin.sidebar.hero_carousel": "Promo",
-        "admin.sidebar.whatsapp_leads": "WhatsApp Leads",
+        "admin.sidebar.whatsapp_leads": "Dirige WhatsApp",
         "admin.sidebar.contact_messages": "Contact Messages",
         "admin.sidebar.career_applications": "Applications",
         "admin.sidebar.settings": "Settings",

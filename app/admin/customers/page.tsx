@@ -8,11 +8,10 @@ import { Input } from "@/components/ui/input"
 import {
     Search,
     Mail,
-    Ban,
     Users,
-    DollarSign,
     MapPin,
-    ShoppingBag
+    ShoppingBag,
+    Wallet
 } from "lucide-react"
 import { getOrders, type Customer } from "@/lib/supabase-api"
 import { supabase } from "@/lib/supabase"
@@ -103,7 +102,7 @@ export default function CustomersPage() {
 
     const stats = [
         { label: t("admin.customers.guest_database"), value: customers.length, icon: Users, color: "text-blue-500", bg: "bg-blue-500/10" },
-        { label: t("admin.customers.total_guest_spend"), value: `MAD ${totalSpend.toLocaleString()}`, icon: DollarSign, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+        { label: t("admin.customers.total_guest_spend"), value: `MAD ${formatPrice(totalSpend)}`, icon: Wallet, color: "text-emerald-500", bg: "bg-emerald-500/10" },
     ]
 
     return (
@@ -222,14 +221,11 @@ export default function CustomersPage() {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center justify-between pt-2">
+                                    <div className="pt-2 border-t border-white/5">
                                         <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
                                             <MapPin className="w-3.5 h-3.5 text-primary/60" />
                                             {customer.city || t("admin.customers.unknown")}
                                         </div>
-                                        <Button variant="ghost" size="icon" className="h-10 w-10 text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-xl">
-                                            <Ban className="w-4 h-4" />
-                                        </Button>
                                     </div>
                                 </div>
                             ))
@@ -247,13 +243,12 @@ export default function CustomersPage() {
                                     <th className="py-6 px-6">{t("admin.customers.performance")}</th>
                                     <th className="py-6 px-6">{t("admin.customers.last_order")}</th>
                                     <th className="py-6 px-6">{t("admin.customers.location")}</th>
-                                    <th className="py-6 px-8 text-right">{t("admin.customers.actions")}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={5} className="py-20 text-center text-muted-foreground animate-pulse font-bold">{t("admin.customers.loading")}</td>
+                                        <td colSpan={4} className="py-20 text-center text-muted-foreground animate-pulse font-bold">{t("admin.customers.loading")}</td>
                                     </tr>
                                 ) : filteredCustomers.length > 0 ? (
                                     filteredCustomers.map((customer) => (
@@ -306,18 +301,11 @@ export default function CustomersPage() {
                                                     {customer.city || t("admin.customers.unknown")}
                                                 </div>
                                             </td>
-                                            <td className="py-6 px-8 text-right">
-                                                <div className="flex items-center justify-end gap-3">
-                                                    <Button variant="ghost" size="icon" className="h-12 w-12 rounded-xl group-hover:bg-red-500/10 hover:text-red-500">
-                                                        <Ban className="w-4 h-4" />
-                                                    </Button>
-                                                </div>
-                                            </td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={5} className="py-40 text-center">
+                                        <td colSpan={4} className="py-40 text-center">
                                             <div className="flex flex-col items-center gap-4">
                                                 <div className="p-6 bg-white/5 rounded-full text-muted-foreground/20">
                                                     <Users className="w-16 h-16" />

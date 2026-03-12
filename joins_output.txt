@@ -1,0 +1,8 @@
+﻿--- Testing: Direct join (reseller:resellers(*)) ---
+FAILED: Could not find a relationship between 'account_manager_assignments' and 'resellers' in the schema cache
+--- Testing: Explicit column (reseller:resellers!reseller_id(*)) ---
+FAILED: Could not find a relationship between 'account_manager_assignments' and 'resellers' in the schema cache
+--- Testing: Join via customer_id (customer:customers!customer_id(*)) ---
+SUCCESS: Found data
+--- Testing: Join profiles via account_manager_id (manager:profiles!account_manager_id(*)) ---
+SUCCESS: Found data

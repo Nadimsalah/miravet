@@ -19,7 +19,6 @@ import {
     RefreshCw,
     ChevronDown,
     Layers,
-    DollarSign,
     Package,
     Tags,
     Sparkles,
@@ -27,7 +26,8 @@ import {
     Building2,
     Warehouse,
     Trash,
-    Search
+    Search,
+    Wallet
 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
@@ -767,7 +767,7 @@ export default function NewProductPage() {
                         <section className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
                             <div className="p-6 border-b border-gray-50 bg-gray-50/30">
                                 <h3 className="text-lg font-bold flex items-center gap-2 text-gray-800">
-                                    <DollarSign className="w-4 h-4 text-green-500" />
+                                    <Wallet className="w-4 h-4 text-green-500" />
                                     Tarification
                                 </h3>
                             </div>

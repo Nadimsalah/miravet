@@ -32,9 +32,9 @@ import {
     TrendingUp,
     Target,
     BarChart3,
-    DollarSign,
     ArrowUpRight,
-    Trophy
+    Trophy,
+    Wallet
 } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { formatPrice } from "@/lib/utils"
@@ -94,7 +94,7 @@ export default function AccountManagersPage() {
         : 0
 
     const performanceStats = [
-        { label: "Chiffre d'Affaire Total", value: `${formatPrice(totalTeamRevenue)} DH`, icon: DollarSign, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+        { label: "Chiffre d'Affaire Total", value: `${formatPrice(totalTeamRevenue)} DH`, icon: Wallet, color: "text-emerald-500", bg: "bg-emerald-500/10" },
         { label: "Partenaires Assignés", value: totalAssignedResellers, icon: Users, color: "text-blue-500", bg: "bg-blue-500/10" },
         { label: "Performance Moyenne", value: `${avgPerformance.toFixed(1)}%`, icon: TrendingUp, color: "text-violet-500", bg: "bg-violet-500/10" },
     ]

@@ -9,7 +9,6 @@ import {
     ArrowLeft,
     Package,
     TrendingUp,
-    DollarSign,
     Building2,
     Mail,
     Phone,
@@ -225,7 +224,7 @@ export default function ResellerProfilePage() {
 
                         <div className="glass-strong p-6 rounded-[2.5rem] border border-white/10 shadow-xl group text-emerald-500">
                             <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-4 transition-transform group-hover:scale-110">
-                                <DollarSign className="w-6 h-6" />
+                                <CreditCard className="w-6 h-6" />
                             </div>
                             <p className="text-xs font-black text-emerald-500/70 uppercase tracking-widest mb-1">
                                 Volume total

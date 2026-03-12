@@ -98,7 +98,7 @@ export default function AdminWhatsappPage() {
                                     <Globe className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Total Leads</p>
+                                    <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Total Dirige</p>
                                     <h2 className="text-4xl font-black text-foreground tabular-nums">
                                         {leads.length}
                                     </h2>
@@ -125,7 +125,7 @@ export default function AdminWhatsappPage() {
                             <div className="space-y-4">
                                 <h3 className="font-bold text-foreground">Marketing Direct</h3>
                                 <p className="text-xs text-muted-foreground max-w-[200px]">
-                                    Utilisez ces leads pour vos campagnes de promotion ciblées.
+                                    Utilisez ces dirige pour vos campagnes de promotion ciblées.
                                 </p>
                                 <Button size="sm" variant="secondary" className="rounded-xl font-bold" disabled>
                                     Exporter CSV
@@ -148,7 +148,7 @@ export default function AdminWhatsappPage() {
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                                 <input 
                                     type="text"
-                                    placeholder="Search leads..."
+                                    placeholder="Search dirige..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     className="w-full pl-10 pr-4 py-2 bg-black/20 border border-white/10 rounded-xl text-sm focus:outline-none focus:border-primary/50 transition-all"

@@ -391,7 +391,7 @@ export default function HomePage() {
           getProducts({ status: 'active', limit: 50 }),
           getCategories(),
           getAdminSettings(),
-          supabase.auth.getUser(),
+          supabase.auth.getSession(),
           getCurrentUserRole(),
           getCurrentResellerTier(),
           getBrands()
@@ -400,7 +400,7 @@ export default function HomePage() {
         setProducts(productsData || [])
         setCategories(categoriesData || [])
         setSettings(settingsData || {})
-        setUser(userData.data.user)
+        setUser(userData.data.session?.user || null)
         setUserRole(roleData)
         setResellerTier(tierData)
         setBrands(brandsData || [])

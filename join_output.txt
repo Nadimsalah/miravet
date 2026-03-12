@@ -1,0 +1,11 @@
+﻿Testing Resellers -> Profiles join...
+Join Result: SUCCESS
+
+Testing Resellers -> Customers join...
+Join Result: {
+  code: 'PGRST200',
+  details: "Searched for a foreign key relationship between 'resellers' and 'customers' using the hint 'user_id' in the schema 'public', but no matches were found.",
+  hint: "Perhaps you meant 'orders' instead of 'customers'.",
+  message: "Could not find a relationship between 'resellers' and 'customers' in the schema cache"
+}
+Error details: Could not find a relationship between 'resellers' and 'customers' in the schema cache

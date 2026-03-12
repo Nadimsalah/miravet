@@ -16,7 +16,14 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
-import { ShoppingBag, Star, Minus, Plus, Truck, ShieldCheck, RotateCcw, Check, Sparkles, Search, AlertTriangle } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog"
+import { ShoppingBag, Star, Minus, Plus, Truck, ShieldCheck, RotateCcw, Check, Sparkles, Search, AlertTriangle, Phone } from "lucide-react"
 import { ProductDetailsSkeleton } from "@/components/ui/store-skeletons"
 
 // Product Card Component for Related Products
@@ -109,6 +116,7 @@ export default function ProductPage() {
   const [userRole, setUserRole] = useState<string | null>(null)
   const [resellerTier, setResellerTier] = useState<ResellerTier>(null)
   const [shippingEnabled, setShippingEnabled] = useState(true)
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false)
 
   useEffect(() => {
     async function loadData() {
@@ -239,18 +247,18 @@ export default function ProductPage() {
       </header>
 
       <main className="container mx-auto px-4 py-6 sm:py-8 lg:py-12 max-w-[1400px]">
-        {/* Breadcrumb - More compact on mobile */}
-        <div className="flex items-center gap-2 text-[10px] sm:text-xs text-muted-foreground/60 mb-6 sm:mb-10 overflow-x-auto no-scrollbar whitespace-nowrap pb-2">
-          <Link href="/" className="hover:text-primary transition-colors uppercase tracking-wider font-medium">Accueil</Link>
+        {/* Breadcrumb - Polished and more compact */}
+        <div className="flex items-center gap-2 text-[10px] sm:text-xs text-muted-foreground/50 mb-4 sm:mb-8 overflow-x-auto no-scrollbar whitespace-nowrap pb-1">
+          <Link href="/" className="hover:text-primary transition-colors uppercase tracking-[0.1em] font-medium">Accueil</Link>
           <span className="opacity-20">/</span>
-          <Link href="/#shop" className="hover:text-primary transition-colors uppercase tracking-wider font-medium">Boutique</Link>
+          <Link href="/#shop" className="hover:text-primary transition-colors uppercase tracking-[0.1em] font-medium">Boutique</Link>
           <span className="opacity-20">/</span>
-          <span className="text-foreground/80 font-bold truncate uppercase tracking-wider">{displayTitle}</span>
+          <span className="text-foreground/60 font-bold truncate uppercase tracking-[0.1em]">{displayTitle}</span>
         </div>
 
-        <div className="grid lg:grid-cols-12 gap-8 lg:gap-16 items-start">
+        <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
           {/* Left Column: Images - Optimized for laptop aspect ratios */}
-          <div className="lg:col-span-7 xl:col-span-7 space-y-6">
+          <div className="lg:col-span-6 xl:col-span-6 space-y-6">
             <div className="relative space-y-4 -mx-4 sm:mx-0">
               {/* Mobile: Horizontal Snap Scroll with indicators */}
               <div className="flex sm:hidden overflow-x-auto snap-x snap-mandatory no-scrollbar pb-8 gap-4 px-4 scroll-smooth">
@@ -313,21 +321,21 @@ export default function ProductPage() {
             </div>
           </div>
 
-          {/* Right Column: Info - Balanced spacing for laptops */}
-          <div className="lg:col-span-5 xl:col-span-5 flex flex-col lg:sticky lg:top-28">
+          {/* Right Column: Info - Optimized for laptops */}
+          <div className="lg:col-span-6 xl:col-span-6 flex flex-col lg:sticky lg:top-24">
             <div className="space-y-6 sm:space-y-8">
               <div>
-                <h1 className="text-3xl sm:text-4xl xl:text-5xl font-black text-foreground mb-4 tracking-tight leading-[1.1] text-balance">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-foreground mb-3 tracking-tight leading-[1.15] text-balance">
                   {displayTitle}
                 </h1>
 
                 {product.brand && (
                   <Link
                     href={`/brand/${product.brand.slug}`}
-                    className="inline-flex items-center gap-4 mb-8 p-1 sm:p-2 pr-6 bg-white/5 backdrop-blur-3xl rounded-[1.25rem] border border-white/10 hover:bg-white/10 hover:border-primary/30 transition-all group w-fit shadow-2xl"
+                    className="inline-flex items-center gap-3 mb-6 p-1 sm:p-1.5 pr-5 bg-white/5 backdrop-blur-3xl rounded-[1rem] border border-white/10 hover:bg-white/10 hover:border-primary/30 transition-all group w-fit shadow-lg"
                   >
                     {product.brand.logo ? (
-                      <div className="relative w-12 h-12 rounded-xl bg-white p-2 flex items-center justify-center overflow-hidden shadow-inner group-hover:scale-110 transition-transform">
+                      <div className="relative w-10 h-10 rounded-lg bg-white p-1.5 flex items-center justify-center overflow-hidden shadow-inner group-hover:scale-110 transition-transform">
                         <Image
                           src={product.brand.logo}
                           alt={product.brand.name}
@@ -336,73 +344,73 @@ export default function ProductPage() {
                         />
                       </div>
                     ) : (
-                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20 group-hover:rotate-12 transition-transform">
-                        <span className="text-primary font-bold text-xl">{product.brand.name.substring(0, 1)}</span>
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20 group-hover:rotate-12 transition-transform">
+                        <span className="text-primary font-bold text-lg">{product.brand.name.substring(0, 1)}</span>
                       </div>
                     )}
                     <div className="flex flex-col">
-                      <span className="text-[10px] text-primary font-black uppercase tracking-[0.3em] leading-none mb-1">Partenaire</span>
-                      <span className="text-base font-bold text-foreground">{product.brand.name}</span>
+                      <span className="text-[9px] text-primary font-black uppercase tracking-[0.2em] leading-none mb-1">Partenaire</span>
+                      <span className="text-sm font-bold text-foreground">{product.brand.name}</span>
                     </div>
                   </Link>
                 )}
 
-                <div className="flex flex-wrap items-center gap-4 mb-8">
-                  <div className="flex items-center gap-1.5 bg-primary/5 rounded-full px-3 py-1.5 border border-primary/10">
-                    <span className="text-sm font-bold text-primary">{rating.toFixed(1)}</span>
+                <div className="flex flex-wrap items-center gap-3 mb-6">
+                  <div className="flex items-center gap-1.5 bg-primary/5 rounded-full px-2.5 py-1 border border-primary/10">
+                    <span className="text-xs font-bold text-primary">{rating.toFixed(1)}</span>
                     <div className="flex gap-0.5">
                       {Array.from({ length: 5 }).map((_, i) => (
-                        <Star key={i} className={`w-3 h-3 ${i < 4 ? "fill-primary text-primary" : "text-primary/30"}`} />
+                        <Star key={i} className={`w-2.5 h-2.5 ${i < 4 ? "fill-primary text-primary" : "text-primary/30"}`} />
                       ))}
                     </div>
-                    <span className="text-[10px] text-muted-foreground/60 font-bold ml-1 uppercase">{reviewsCount} avis</span>
+                    <span className="text-[9px] text-muted-foreground/60 font-bold ml-1 uppercase">{reviewsCount} avis</span>
                   </div>
 
-                  <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border transition-colors ${stockStatus === 'in_stock'
+                  <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border transition-colors ${stockStatus === 'in_stock'
                     ? "bg-emerald-500/5 text-emerald-500 border-emerald-500/20"
                     : stockStatus === 'low_stock'
                       ? "bg-amber-500/5 text-amber-500 border-amber-500/20"
                       : "bg-destructive/5 text-destructive border-destructive/20"
                     }`}>
-                    <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${stockStatus === 'in_stock' ? 'bg-emerald-500' : stockStatus === 'low_stock' ? 'bg-amber-500' : 'bg-destructive'}`} />
+                    <div className={`w-1 h-1 rounded-full animate-pulse ${stockStatus === 'in_stock' ? 'bg-emerald-500' : stockStatus === 'low_stock' ? 'bg-amber-500' : 'bg-destructive'}`} />
                     {t(`product.${stockStatus}`)}
                   </div>
                 </div>
               </div>
 
               {/* Price Card - Redesigned for impact */}
-              <div className="relative p-8 rounded-[2rem] bg-gradient-to-br from-secondary/50 to-secondary/30 border border-white/10 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden group">
+              <div className="relative p-6 sm:p-8 rounded-[1.5rem] bg-gradient-to-br from-secondary/50 to-secondary/30 border border-white/10 shadow-lg overflow-hidden group">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-primary/10 transition-colors" />
 
                 {resellerTier ? (
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative z-10">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
                     <div className="space-y-1">
-                      <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-2 inline-block">Prix Professionnel</span>
+                      <span className="text-[9px] font-black text-primary uppercase tracking-[0.2em] mb-1 inline-block">Prix Professionnel</span>
                       <div className="flex items-baseline gap-2 whitespace-nowrap">
-                        <span className="text-4xl sm:text-5xl font-black text-foreground tracking-tighter">
+                        <span className="text-3xl sm:text-4xl font-black text-foreground tracking-tighter">
                           {formatPrice((resellerTier === 'wholesaler' ? product.wholesaler_price : resellerTier === 'partner' ? product.partner_price : product.reseller_price) || 0)}
                         </span>
-                        <span className="text-lg font-bold text-muted-foreground uppercase">{t('common.currency')}</span>
+                        <span className="text-base font-bold text-muted-foreground uppercase">{t('common.currency')}</span>
                       </div>
                     </div>
-                    <div className="sm:text-right pt-4 sm:pt-0 sm:border-l sm:pl-8 border-white/10">
-                      <span className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.3em] mb-2 inline-block">Public</span>
-                      <div className="text-2xl text-muted-foreground/40 line-through decoration-2 font-bold decoration-destructive/30 italic whitespace-nowrap">
+                    <div className="sm:text-right pt-3 sm:pt-0 sm:border-l sm:pl-6 border-white/10">
+                      <span className="text-[9px] text-muted-foreground font-black uppercase tracking-[0.2em] mb-1 inline-block">Public</span>
+                      <div className="text-xl text-muted-foreground/40 line-through decoration-1 font-bold italic whitespace-nowrap">
                         {formatPrice(product.price)}
                       </div>
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-baseline gap-4 relative z-10">
-                    <span className="text-5xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/70 tracking-tighter whitespace-nowrap">
+                  <div className="flex items-baseline gap-3 relative z-10">
+                    <span className="text-4xl sm:text-5xl lg:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/70 tracking-tighter whitespace-nowrap">
                       {formatPrice(product.price)}
                     </span>
                     <div className="flex flex-col">
-                      <span className="text-xl font-bold text-primary uppercase leading-none">{t('common.currency')}</span>
-                      <span className="text-[10px] text-muted-foreground font-bold uppercase mt-1">TTC</span>
+                      <span className="text-lg font-bold text-primary uppercase leading-none">{t('common.currency')}</span>
+                      <span className="text-[9px] text-muted-foreground font-bold uppercase mt-1">TTC</span>
                     </div>
                     {(product.compare_at_price ?? 0) > 0 && (
-                      <span className="ml-2 text-xl text-muted-foreground/40 line-through decoration-2 font-bold italic whitespace-nowrap">
+                      <span className="ml-2 text-lg text-muted-foreground/40 line-through decoration-1 font-bold italic whitespace-nowrap">
                         {formatPrice(product.compare_at_price || 0)}
                       </span>
                     )}
@@ -410,14 +418,8 @@ export default function ProductPage() {
                 )}
               </div>
 
-              {/* Description - More readable */}
-              <div
-                className="text-muted-foreground/80 leading-relaxed text-lg prose prose-invert max-w-none prose-p:leading-relaxed prose-strong:text-foreground border-l-2 border-primary/20 pl-8 py-2"
-                dangerouslySetInnerHTML={{ __html: displayDescription }}
-              />
-
               {/* Quantity Selector - Compact on Desktop */}
-              <div className="flex flex-col sm:flex-row items-center gap-6 py-4">
+              <div className="flex flex-col sm:flex-row items-center gap-4 py-2">
                 <div className="w-full sm:w-auto">
                   <div className={`flex items-center justify-between sm:justify-start gap-4 bg-secondary/20 p-2 rounded-2xl border border-white/5 backdrop-blur-xl ${!inStock ? 'opacity-40 pointer-events-none' : ''}`}>
                     <Button
@@ -454,9 +456,15 @@ export default function ProductPage() {
 
                 <Button
                   size="lg"
-                  disabled={!inStock}
-                  className="w-full sm:flex-1 h-16 rounded-2xl text-lg font-black shadow-[0_20px_40px_-5px_rgba(var(--primary-rgb),0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all bg-primary hover:bg-primary/90 text-primary-foreground group overflow-hidden relative"
+                  className={cn(
+                    "w-full sm:flex-1 min-h-[3.5rem] h-auto py-3 rounded-xl text-base sm:text-lg font-black shadow-[0_20px_40px_-5px_rgba(var(--primary-rgb),0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all text-primary-foreground group overflow-hidden relative",
+                    inStock ? "bg-primary hover:bg-primary/90" : "bg-zinc-800 hover:bg-zinc-700"
+                  )}
                   onClick={() => {
+                    if (!inStock) {
+                      setIsContactModalOpen(true)
+                      return
+                    }
                     const tier = resellerTier || 'reseller'
                     const tierPrice = resellerTier ? (tier === 'wholesaler' ? product.wholesaler_price : tier === 'partner' ? product.partner_price : product.reseller_price) : undefined
                     addItem({
@@ -474,10 +482,25 @@ export default function ProductPage() {
                   }}
                 >
                   <div className="absolute inset-x-0 bottom-0 h-1 bg-white/20 group-hover:h-full transition-all duration-500 opacity-20 pointer-events-none" />
-                  <ShoppingBag className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform" />
-                  Acheter maintenant
+                  {inStock ? (
+                      <>
+                        <ShoppingBag className="w-6 h-6 mr-3 shrink-0 group-hover:scale-110 transition-transform" />
+                        Acheter maintenant
+                      </>
+                  ) : (
+                      <div className="flex items-center justify-center gap-3 w-full">
+                        <Phone className="w-5 h-5 sm:w-6 sm:h-6 shrink-0 group-hover:scale-110 transition-transform" />
+                        <span className="text-sm sm:text-base leading-tight whitespace-normal text-left sm:text-center block">Nous contacter pour la disponibilité</span>
+                      </div>
+                  )}
                 </Button>
               </div>
+
+              {/* Description - More readable */}
+              <div
+                className="text-muted-foreground/80 leading-relaxed text-base sm:text-lg prose prose-invert max-w-none prose-p:leading-relaxed prose-strong:text-foreground border-l-2 border-primary/20 pl-6 sm:pl-8 py-1"
+                dangerouslySetInnerHTML={{ __html: displayDescription }}
+              />
 
               {/* Specifications & Warranty Accordions */}
               <div className="space-y-4 pt-4">
@@ -597,9 +620,15 @@ export default function ProductPage() {
 
             <Button
               size="lg"
-              disabled={!inStock}
-              className="flex-1 h-12 rounded-2xl text-sm font-black bg-primary text-primary-foreground shadow-lg active:scale-95 transition-all flex items-center justify-between px-6"
+              className={cn(
+                  "flex-1 min-h-[3rem] h-auto py-2 rounded-2xl text-sm font-black text-primary-foreground shadow-lg active:scale-95 transition-all flex items-center justify-between px-4 sm:px-6",
+                  inStock ? "bg-primary" : "bg-zinc-800 justify-center"
+              )}
               onClick={() => {
+                if (!inStock) {
+                  setIsContactModalOpen(true)
+                  return
+                }
                 const tier = resellerTier || 'reseller'
                 const tierPrice = resellerTier ? (tier === 'wholesaler' ? product.wholesaler_price : tier === 'partner' ? product.partner_price : product.reseller_price) : undefined
 
@@ -617,11 +646,20 @@ export default function ProductPage() {
                 router.push("/cart")
               }}
             >
-              <span>Acheter maintenant</span>
-              <div className="flex items-center gap-1 opacity-80 whitespace-nowrap">
-                <span className="text-[10px] font-bold">{t('common.currency')}</span>
-                <span className="font-black">{formatPrice(product.price * quantity)}</span>
-              </div>
+              {inStock ? (
+                <>
+                  <span>Acheter maintenant</span>
+                  <div className="flex items-center gap-1 opacity-80 whitespace-nowrap">
+                    <span className="text-[10px] font-bold">{t('common.currency')}</span>
+                    <span className="font-black">{formatPrice(product.price * quantity)}</span>
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center justify-center w-full gap-2 py-1">
+                  <Phone className="w-4 h-4 shrink-0" />
+                  <span className="text-[11px] sm:text-xs whitespace-normal text-center leading-tight">Nous contacter pour la disponibilité</span>
+                </div>
+              )}
             </Button>
           </div>
         </div>
@@ -689,6 +727,38 @@ export default function ProductPage() {
           </div>
         </div>
       </footer>
+
+      <Dialog open={isContactModalOpen} onOpenChange={setIsContactModalOpen}>
+        <DialogContent className="rounded-[2.5rem] p-8 max-w-[90%] sm:max-w-md border-none shadow-2xl">
+          <DialogHeader className="mb-4">
+            <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-4 mx-auto sm:mx-0">
+              <Phone className="w-8 h-8" />
+            </div>
+            <DialogTitle className="text-2xl font-black text-slate-900 text-center sm:text-left">
+              Contactez-nous
+            </DialogTitle>
+            <DialogDescription className="font-medium text-slate-500 text-center sm:text-left text-base mt-2">
+              Ce produit est actuellement en rupture de stock. Appelez-nous pour vérifier la disponibilité ou réserver un exemplaire.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3">
+            <a 
+              href="tel:0522450507" 
+              className="w-full flex items-center justify-center gap-3 bg-primary hover:bg-primary/90 text-primary-foreground font-black text-xl py-4 rounded-xl shadow-lg transition-transform active:scale-95 group"
+            >
+              <Phone className="w-5 h-5 group-hover:-rotate-12 transition-transform" />
+              05 22 45 05 07
+            </a>
+            <Button
+              variant="outline"
+              onClick={() => setIsContactModalOpen(false)}
+              className="w-full h-12 rounded-xl border-slate-200 text-slate-500 font-bold hover:bg-slate-50"
+            >
+              Annuler
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
