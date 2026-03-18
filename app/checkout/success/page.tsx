@@ -29,7 +29,7 @@ function CheckoutSuccessContent() {
             <header className="py-6 border-b border-slate-100 bg-white">
                 <div className="container max-w-4xl mx-auto px-4 flex justify-center">
                     <Link href="/">
-                        <Image src="/logo.png" alt="Miravet" width={120} height={36} className="h-8 w-auto" />
+                        <Image src="/logo.png" alt="Miravet" width={180} height={54} className="h-12 w-auto" />
                     </Link>
                 </div>
             </header>

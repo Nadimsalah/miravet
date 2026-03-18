@@ -461,9 +461,9 @@ export default function HomePage() {
               <Image
                 src="/logo.png"
                 alt="Miravet"
-                width={120}
-                height={34}
-                className="h-7 sm:h-9 w-auto transition-transform duration-300 group-hover:scale-105"
+                width={180}
+                height={54}
+                className="h-14 sm:h-12 w-auto transition-transform duration-300 group-hover:scale-105"
               />
             </Link>
 
@@ -507,7 +507,7 @@ export default function HomePage() {
                     <div className="relative z-10 p-8 sm:p-12 flex flex-col h-full">
                       {/* Menu Header: Brand Only */}
                       <div className="flex items-center justify-between mb-16">
-                        <Image src="/logo.png" alt="Miravet" width={140} height={40} className="h-10 w-auto" />
+                        <Image src="/logo.png" alt="Miravet" width={180} height={54} className="h-14 w-auto" />
                         <SheetClose className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center hover:bg-slate-100 transition-colors">
                           <X className="w-6 h-6 text-slate-500" />
                         </SheetClose>
@@ -882,7 +882,7 @@ export default function HomePage() {
             {/* Column 1: Brand */}
             <div className="lg:col-span-5 space-y-8 flex flex-col items-center md:items-start">
               <Link href="/" className="relative group">
-                <Image src="/logo.png" alt="Miravet Logo" width={140} height={40} className="h-10 w-auto" />
+                <Image src="/logo.png" alt="Miravet Logo" width={180} height={54} className="h-14 w-auto" />
               </Link>
               <p className="text-[#64748b] text-lg font-medium leading-relaxed max-w-sm">
                 Partenaire de confiance pour la grossisterie vétérinaire au Maroc. Innovation, expertise et engagement pour la santé animale.

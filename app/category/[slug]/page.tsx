@@ -114,9 +114,9 @@ export default function CategoryPage() {
                             <Image 
                                 src="/logo.png" 
                                 alt="Miravet Logo" 
-                                width={120} 
-                                height={36} 
-                                className="h-8 w-auto hover:opacity-80 transition-opacity"
+                                width={180} 
+                                height={54} 
+                                className="h-12 w-auto hover:opacity-80 transition-opacity"
                             />
                         </Link>
                     </div>

@@ -61,7 +61,7 @@ export default function CartPage() {
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex-shrink-0">
-              <Image src="/logo.png" alt="Miravet" width={120} height={36} className="h-8 w-auto" />
+              <Image src="/logo.png" alt="Miravet" width={180} height={54} className="h-12 w-auto" />
             </Link>
             <Link href="/cart">
               <Button variant="ghost" className="relative rounded-full gap-2 px-3" size="sm">

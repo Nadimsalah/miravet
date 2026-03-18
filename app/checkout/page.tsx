@@ -198,7 +198,7 @@ export default function CheckoutPage() {
                         Retour au panier
                     </Link>
                     <Link href="/">
-                        <Image src="/logo.png" alt="Miravet" width={100} height={30} className="h-7 w-auto" />
+                        <Image src="/logo.png" alt="Miravet" width={180} height={54} className="h-10 w-auto" />
                     </Link>
                     <div className="w-24 hidden sm:block" />
                 </div>

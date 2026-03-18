@@ -64,8 +64,8 @@ export default function AdminLoginPage() {
                             <Image
                                 src="/logo.png"
                                 alt="Miravet Logo"
-                                width={128}
-                                height={128}
+                                width={180}
+                                height={54}
                                 className="w-32 h-32 object-contain hover:scale-105 transition-transform"
                             />
                         </div>

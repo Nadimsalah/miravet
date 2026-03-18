@@ -23,7 +23,7 @@ export default function NotFound() {
                             src="/logo.png"
                             alt="Miravet"
                             width={180}
-                            height={50}
+                            height={54}
                             className="h-12 w-auto opacity-90 transition-opacity hover:opacity-100"
                         />
                     </Link>

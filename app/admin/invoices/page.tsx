@@ -169,10 +169,25 @@ export default function AdminInvoicesPage() {
         }
     }
 
-    const printInvoice = (order: Order) => {
+    const printInvoice = async (order: Order) => {
         setSelectedOrder(order)
-        setTimeout(() => {
-            window.print()
+        setTimeout(async () => {
+            const element = document.getElementById('printable-invoice')
+            if (!element) return
+            const origClass = element.className
+            element.className = "bg-white text-black p-8 w-[800px] block"
+            try {
+                const html2pdf = (await import('html2pdf.js')).default
+                await html2pdf().set({
+                    margin: 0.5,
+                    filename: `facture_${order.order_number}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true },
+                    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+                }).from(element).save()
+            } finally {
+                element.className = origClass
+            }
         }, 300)
     }
 
@@ -340,7 +355,7 @@ export default function AdminInvoicesPage() {
 
             {/* Printable Invoice Section - Hidden on screen, visible on print */}
             {selectedOrder && (
-                <div className="hidden print:block bg-white text-black p-0 min-h-screen font-sans">
+                <div id="printable-invoice" className="hidden print:block bg-white text-black p-0 min-h-screen font-sans">
                     {/* Header */}
                     <div className="flex justify-between items-start border-b-2 border-slate-900 pb-6 mb-8">
                         <div className="space-y-4">

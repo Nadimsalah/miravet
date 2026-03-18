@@ -193,7 +193,7 @@ export default function SearchPage() {
                             <ChevronLeft className="w-5 h-5" />
                         </Button>
                     </Link>
-                    <Image src="/logo.png" alt="Miravet" width={140} height={40} className="h-10 w-auto" />
+                    <Image src="/logo.png" alt="Miravet" width={180} height={54} className="h-14 w-auto" />
                 </div>
 
                 <div className="max-w-3xl mx-auto relative group">

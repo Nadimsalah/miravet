@@ -27,9 +27,9 @@ export default function OurStoryPage() {
             <Image
               src="/logo.png"
               alt="Miravet"
-              width={142}
-              height={40}
-              className="h-8 w-auto transition-transform duration-300 group-hover:scale-105"
+              width={180}
+              height={54}
+              className="h-12 w-auto transition-transform duration-300 group-hover:scale-105"
             />
           </Link>
         </div>

@@ -109,11 +109,26 @@ export default function OrderDetailsPage() {
         setUpdating(false)
     }
 
-    const handlePrint = (type: 'bon_commande' | 'delivery_note' = 'bon_commande') => {
+    const handlePrint = async (type: 'bon_commande' | 'delivery_note' = 'bon_commande') => {
         setPrintType(type)
-        setTimeout(() => {
-            window.print()
-        }, 100)
+        setTimeout(async () => {
+            const element = document.getElementById('printable-invoice')
+            if (!element) return
+            const origClass = element.className
+            element.className = "bg-white text-black p-8 w-[800px] block"
+            try {
+                const html2pdf = (await import('html2pdf.js')).default
+                await html2pdf().set({
+                    margin: 0.5,
+                    filename: `${type}_${order.order_number}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true },
+                    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+                }).from(element).save()
+            } finally {
+                element.className = origClass
+            }
+        }, 300)
     }
 
     const getStatusColor = (status: string) => {
@@ -431,7 +446,7 @@ export default function OrderDetailsPage() {
                 </div>
 
                 {/* Printable "Bon de Commande" Section */}
-                <div className="hidden print:block bg-white text-black p-0 min-h-screen font-sans">
+                <div id="printable-invoice" className="hidden print:block bg-white text-black p-0 min-h-screen font-sans">
                     {/* Header */}
                     <div className="flex justify-between items-start border-b-2 border-gray-900 pb-4 mb-6">
                         <div>
