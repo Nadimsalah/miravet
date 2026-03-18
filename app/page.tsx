@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { useCart } from "@/components/cart-provider"
 import { useLanguage } from "@/components/language-provider"
-import { getProducts, getHeroCarouselItems, getCategories, getBrands, getAdminSettings, getCurrentUserRole, getCurrentUserId, getCurrentResellerTier, type Product, type Brand, type ResellerTier } from "@/lib/supabase-api"
+import { getProducts, getHeroCarouselItems, getCategories, getAdminSettings, getCurrentUserRole, getCurrentUserId, getCurrentResellerTier, type Product, type ResellerTier } from "@/lib/supabase-api"
 import { supabase } from "@/lib/supabase"
 import Image from "next/image"
 import Link from "next/link"
