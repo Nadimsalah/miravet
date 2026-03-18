@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
@@ -14,6 +14,14 @@ import { toast } from "sonner"
 import { useSearchParams } from "next/navigation"
 
 export default function ResellerRegisterPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-background"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}>
+            <ResellerRegisterContent />
+        </Suspense>
+    )
+}
+
+function ResellerRegisterContent() {
     const { t, language, dir } = useLanguage()
     const router = useRouter()
     const searchParams = useSearchParams()

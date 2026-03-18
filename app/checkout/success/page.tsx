@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
@@ -13,6 +13,14 @@ import { motion } from "framer-motion"
 import { formatPrice } from "@/lib/utils"
 
 export default function CheckoutSuccessPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-background"><div className="w-8 h-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" /></div>}>
+            <CheckoutSuccessContent />
+        </Suspense>
+    )
+}
+
+function CheckoutSuccessContent() {
     const searchParams = useSearchParams()
     const orderId = searchParams.get('orderId')
     

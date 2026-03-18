@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { AdminSidebar } from "@/components/admin/admin-sidebar"
 import { useLanguage } from "@/components/language-provider"
 import { Badge } from "@/components/ui/badge"
@@ -32,6 +32,14 @@ import {
 } from "@/components/ui/popover"
 
 export default function AdminOrdersPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-background"><div className="w-8 h-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>}>
+            <AdminOrdersContent />
+        </Suspense>
+    )
+}
+
+function AdminOrdersContent() {
     const { t, setLanguage, language } = useLanguage()
     const searchParams = useSearchParams()
     const customerId = searchParams.get('customer_id')
