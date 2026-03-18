@@ -21,7 +21,7 @@ export default function NotFound() {
                     <Link href="/">
                         <Image
                             src="/logo.png"
-                            alt="Didali Store"
+                            alt="Miravet"
                             width={180}
                             height={50}
                             className="h-12 w-auto opacity-90 transition-opacity hover:opacity-100"

@@ -10,9 +10,41 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { PushNotificationManager } from "@/components/admin/push-notification-manager"
 import { AdminSearch } from "@/components/admin/admin-search"
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { getCurrentUserRole } from "@/lib/supabase-api"
 
 export default function AdminDashboard() {
     const { t } = useLanguage()
+    const router = useRouter()
+    const [authorized, setAuthorized] = useState(false)
+
+    useEffect(() => {
+        const checkRole = async () => {
+            // Check for PIN session first
+            const hasPinSession = document.cookie.includes('admin_session=true')
+            
+            // If they have the PIN, they are authorized for Admin Area
+            if (hasPinSession) {
+                setAuthorized(true)
+                return
+            }
+
+            // Fallback: If no PIN session, check if they are an ADMIN in DB
+            // (But user wants PIN to be the primary entry, so if no PIN, we go to login)
+            router.replace('/admin/login')
+        }
+        checkRole()
+    }, [router])
+
+    if (!authorized) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+            </div>
+        )
+    }
+
     return (
         <div className="min-h-screen bg-background relative overflow-hidden">
             <PushNotificationManager />
@@ -37,8 +69,6 @@ export default function AdminDashboard() {
                         </div>
                     </div>
 
-
-
                     <div className="flex items-center gap-3">
                         <Notifications />
                     </div>
@@ -46,9 +76,6 @@ export default function AdminDashboard() {
 
                 {/* Bento Grid Layout */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-
-
-
                     {/* Top Row: Stats (Spawn across all columns) */}
                     <DashboardStats />
 

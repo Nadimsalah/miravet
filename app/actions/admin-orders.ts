@@ -38,19 +38,23 @@ export async function updateOrderStatusAdmin(orderId: string, status: string, ac
             updateData.delivery_assigned_at = new Date().toISOString()
         }
 
-        console.log('[Admin Action] Performing update:', updateData)
-        const { data, error } = await supabaseAdmin
+        const { data: updateResults, error } = await supabaseAdmin
             .from('orders')
             .update(updateData)
             .eq('id', orderId)
             .select()
-            .single()
 
         if (error) {
             console.error('[Admin Action] Error updating order status:', error)
             return { error: error.message }
         }
 
+        if (!updateResults || updateResults.length === 0) {
+            console.warn('[Admin Action] No rows were updated. Check if the SUPABASE_SERVICE_ROLE_KEY is correctly set in .env.local.')
+            return { error: "Update failed. No changes were applied (possible permission issue or missing service key)." }
+        }
+
+        const data = updateResults[0]
         console.log('[Admin Action] Update successful. New data:', data)
 
         // 3. Manually Insert Log (Trusting the provided actorId)
@@ -110,7 +114,7 @@ export async function getOrderDetailsAdmin(orderId: string) {
                 *,
                 product:products (
                     id,
-                    warehouse:warehouses (name)
+                    warehouse_id
                 )
             `)
             .eq('order_id', orderId)
@@ -118,22 +122,40 @@ export async function getOrderDetailsAdmin(orderId: string) {
         if (itemsError) throw itemsError
 
         // Fetch Notes
-        const { data: notes, error: notesError } = await supabaseAdmin
-            .from('order_internal_notes')
-            .select('*, author:profiles(name)')
-            .eq('order_id', orderId)
-            .order('created_at', { ascending: false })
+        let notes: any[] = []
+        try {
+            const { data: notesData, error: notesError } = await supabaseAdmin
+                .from('order_internal_notes')
+                .select('*, author:profiles(name)')
+                .eq('order_id', orderId)
+                .order('created_at', { ascending: false })
 
-        if (notesError) throw notesError
+            if (notesError) {
+                console.error('[Admin Action] Error fetching notes:', notesError.message)
+            } else {
+                notes = notesData || []
+            }
+        } catch (err) {
+            console.error('[Admin Action] Exception fetching notes:', err)
+        }
 
         // Fetch Logs
-        const { data: logs, error: logsError } = await supabaseAdmin
-            .from('order_status_logs')
-            .select('*, changed_by_user:profiles(name)')
-            .eq('order_id', orderId)
-            .order('created_at', { ascending: false })
+        let logs: any[] = []
+        try {
+            const { data: logsData, error: logsError } = await supabaseAdmin
+                .from('order_status_logs')
+                .select('*, changed_by_user:profiles(name)')
+                .eq('order_id', orderId)
+                .order('created_at', { ascending: false })
 
-        if (logsError) throw logsError
+            if (logsError) {
+                console.error('[Admin Action] Error fetching logs:', logsError.message)
+            } else {
+                logs = logsData || []
+            }
+        } catch (err) {
+            console.error('[Admin Action] Exception fetching logs:', err)
+        }
 
         // ----------------------------------------------------
         // BUILD VIEW MODEL (Flattened & Guaranteed Data)
@@ -218,7 +240,7 @@ export async function getOrderDetailsAdmin(orderId: string) {
             ...item,
             image_url: item.product_image || null,
             final_price: item.price,
-            warehouse_name: item.product?.warehouse?.name || "N/A"
+            warehouse_name: (item.product as any)?.warehouse?.name || (item.product as any)?.warehouse_id || "N/A"
         }))
 
         // 3. Return Clean Object

@@ -85,7 +85,7 @@ export default function SettingsPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     title: "System Test ⚡",
-                    body: "Connection established. You are now receiving administrative alerts for Didali Store.",
+                    body: "Connection established. You are now receiving administrative alerts for Miravet.",
                     tag: 'test-push'
                 })
             })
@@ -205,7 +205,7 @@ export default function SettingsPage() {
                                                     value={settings.store_name || ""}
                                                     onChange={(e) => handleChange("store_name", e.target.value)}
                                                     className="rounded-xl h-12 bg-white/5 border-white/10 focus:bg-white/10"
-                                                    placeholder="Didali Store"
+                                                    placeholder="Miravet"
                                                 />
                                             </div>
                                             <div className="space-y-2">
@@ -406,7 +406,7 @@ export default function SettingsPage() {
                                                         value={settings.payment_cheque_details || ""}
                                                         onChange={(e) => handleChange("payment_cheque_details", e.target.value)}
                                                         className="w-full px-4 py-3 rounded-xl bg-black/20 border border-white/10 text-xs font-mono"
-                                                        placeholder="Payable à : Didali Store SARL..."
+                                                        placeholder="Payable à : Miravet SARL..."
                                                     />
                                                 </div>
                                             )}

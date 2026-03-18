@@ -78,50 +78,8 @@ export default function MyClientsPage() {
             }
 
             const data = resellersData
-            setResellers(data.resellers)
-
-            // 2. Fetch Orders for Revenue Calculation (Smart Discovery)
-            if (data.resellers && data.resellers.length > 0) {
-                const resellerIds = data.resellers.map((r: any) => r.id)
-                const resellerEmails = data.resellers.map((r: any) => r.user?.email).filter(Boolean)
-                const hasGlobalDigital = data.resellers.some((r: any) =>
-                    r.company_name?.toUpperCase().includes('DIGITAUX') ||
-                    r.company_name?.toUpperCase().includes('DIGITAL GLOBAL')
-                )
-
-                let query = supabase
-                    .from('orders')
-                    .select('total, status, reseller_id, customer_email')
-
-                // Build the OR logic
-                const orParts = []
-                if (resellerIds.length > 0) orParts.push(`reseller_id.in.(${resellerIds.join(',')})`)
-                if (resellerEmails.length > 0) {
-                    const emailsStr = resellerEmails.map((e: string) => `"${e}"`).join(',')
-                    orParts.push(`customer_email.in.(${emailsStr})`)
-                }
-                if (hasGlobalDigital) orParts.push(`reseller_id.is.null`)
-
-                if (orParts.length > 0) {
-                    query = query.or(orParts.join(','))
-                } else {
-                    setTotalRevenue(0)
-                    return
-                }
-
-                const { data: orders, error: ordersError } = await query
-
-                if (ordersError) {
-                    console.error("Error fetching orders for revenue:", ordersError)
-                } else {
-                    const revenue = orders
-                        ?.filter((o: any) => o.status === 'delivered')
-                        .reduce((acc, curr) => acc + (curr.total || 0), 0) || 0
-                    setTotalRevenue(revenue)
-                }
-            } else {
-                setTotalRevenue(0)
-            }
+            setResellers(data.resellers || [])
+            setTotalRevenue(data.totalRevenue || 0)
 
         } catch (error: any) {
             console.error("Load error:", error)

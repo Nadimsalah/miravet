@@ -3,21 +3,10 @@
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { useLanguage } from "@/components/language-provider"
-import { ComingSoonPage } from "@/components/coming-soon-page"
 
 export default function RefundPolicyPage() {
   const { language } = useLanguage()
   const isArabic = language === "ar"
-
-  // Temporary: Coming soon layout for footer page
-  return (
-    <ComingSoonPage
-      titleEn="Refund Policy"
-      titleFr="Politique de remboursement"
-      subtitleEn="The detailed refund and return policy for Didali Store will be available here very soon."
-      subtitleFr="La politique détaillée de remboursement et de retour pour Didali Store sera disponible ici très bientôt."
-    />
-  )
 
   return (
     <div className={`min-h-screen bg-background ${isArabic ? "font-[var(--font-almarai)]" : ""}`}>
@@ -31,60 +20,50 @@ export default function RefundPolicyPage() {
             <span>{isArabic ? "العودة إلى الرئيسية" : "Back to Home"}</span>
           </Link>
           <span className="text-xs text-muted-foreground uppercase tracking-[0.25em]">
-            {isArabic ? "سياسة الاسترجاع" : "Refund Policy"}
+            {isArabic ? "سياسة الاسترجاع" : "Retours & Remboursements"}
           </span>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-10 sm:py-14 max-w-4xl">
         <h1 className={`text-2xl sm:text-3xl font-bold mb-6 ${isArabic ? "text-right" : ""}`}>
-          {isArabic ? "سياسة الاسترجاع لديدالي – مصر" : "Didali Egypt – Refund & Returns Policy"}
+          {isArabic ? "سياسة الاسترجاع لدى مرافيت – المغرب" : "Miravet Maroc – Politique de Retour et Remboursement"}
         </h1>
         <div className={`space-y-5 text-sm sm:text-base text-muted-foreground leading-relaxed ${isArabic ? "text-right" : ""}`}>
           <p>
             {isArabic
-              ? "نحرص على رضاك التام عن منتجات ديدالي. توضح هذه السياسة الشروط التي يتم من خلالها استرجاع أو استبدال المنتجات داخل مصر وفقًا لقانون حماية المستهلك المصري."
-              : "We want you to be fully satisfied with your Didali products. This policy explains the conditions for returns and refunds within Egypt, in line with Egyptian consumer protection law."}
+              ? "نحرص في مرافيت على تقديم منتجات بيطرية عالية الجودة. نظراً لطبيعة المنتجات (أدوية ولقاحات)، تطبق شروط خاصة للاسترجاع لضمان سلامة سلسلة التبريد والأمان الصحي."
+              : "Chez Miravet, nous nous engageons à fournir des produits vétérinaires de haute qualité. En raison de la nature des produits (médicaments et vaccins), des conditions spécifiques de retour s'appliquent pour garantir l'intégrité de la chaîne du froid et la sécurité sanitaire."}
           </p>
 
           <h2 className="font-semibold text-foreground">
-            {isArabic ? "١. فترة الاسترجاع" : "1. Return period"}
+            {isArabic ? "١. المنتجات غير القابلة للاسترجاع" : "1. Produits non retournables"}
           </h2>
           <p>
             {isArabic
-              ? "يمكنك طلب استرجاع أو استبدال المنتج خلال 14 يومًا من تاريخ الاستلام، بشرط أن يكون غير مستخدم، وفي عبوته الأصلية، وغير مفتوح لاعتبارات الصحة والعناية الشخصية."
-              : "You may request a return or exchange within 14 days of receipt, provided the product is unused, unopened, and in its original packaging, due to health and personal care regulations."}
+              ? "لا يمكن استرجاع اللقاحات والأدوية التي تتطلب تبريداً بمجرد مغادرتها لمستودعاتنا أو تسليمها، وذلك لعدم إمكانية التأكد من ظروف تخزينها اللاحقة."
+              : "Les vaccins et médicaments nécessitant une conservation au froid ne peuvent être retournés une fois livrés, car nous ne pouvons garantir le respect des conditions de stockage ultérieures."}
           </p>
 
           <h2 className="font-semibold text-foreground">
-            {isArabic ? "٢. المنتجات التالفة أو الخاطئة" : "2. Damaged or incorrect items"}
+            {isArabic ? "٢. الأجهزة والمعدات" : "2. Matériel et Équipement"}
           </h2>
           <p>
             {isArabic
-              ? "في حال استلام منتج تالف أو غير مطابق للطلب، نتحمل تكلفة الاسترجاع أو الاستبدال بالكامل. يُرجى التواصل معنا خلال 48 ساعة من الاستلام مع صور توضح المشكلة."
-              : "If you receive a damaged item or an item that does not match your order, we will cover all return or exchange costs. Please contact us within 48 hours of delivery with photos showing the issue."}
+              ? "يمكن استرجاع أو استبدال المعدات الطبية والآلات في غضون 7 أيام إذا كان بها عيب مصنعي أو إذا كانت في تغليفها الأصلي ولم يتم فتحها."
+              : "Le matériel médical et les équipements peuvent être retournés ou échangés sous 7 jours en cas de défaut de fabrication ou s'ils sont dans leur emballage d'origine non ouvert."}
           </p>
 
           <h2 className="font-semibold text-foreground">
-            {isArabic ? "٣. طريقة الاسترجاع" : "3. How refunds are processed"}
+            {isArabic ? "٣. مسطرة الاسترجاع" : "3. Procédure de retour"}
           </h2>
           <p>
             {isArabic
-              ? "يتم رد المبلغ بنفس طريقة الدفع الأصلية إن أمكن، أو عن طريق تحويل بنكي/محفظة إلكترونية خلال مدة قد تصل إلى 14 يوم عمل بعد استلام المنتج وفحصه."
-              : "Refunds are issued using the original payment method where possible, or via bank transfer / e‑wallet within up to 14 business days after we receive and inspect the returned item."}
-          </p>
-
-          <h2 className="font-semibold text-foreground">
-            {isArabic ? "٤. الاستثناءات" : "4. Exceptions"}
-          </h2>
-          <p>
-            {isArabic
-              ? "لا يمكن استرجاع المنتجات التي تم فتحها أو استخدامها، إلا إذا كانت هناك عيوب تصنيع واضحة. يحق لنا رفض أي طلب استرجاع لا يطابق الشروط السابقة."
-              : "We cannot accept returns of opened or used products except where there is a clear manufacturing defect. We reserve the right to decline returns that do not meet the conditions above."}
+              ? "في حالة وجود خطأ في الطلبية من جانبنا، نتحمل كامل تكاليف التصحيح. يُرجى فحص الطلبية عند الاستلام والتبليغ عن أي خلل فوراً لمندوبنا أو عبر الهاتف."
+              : "En cas d'erreur de préparation de notre part, nous prenons en charge l'intégralité des frais de correction. Veuillez vérifier votre commande à la réception et signaler toute anomalie immédiatement à notre livreur ou par téléphone."}
           </p>
         </div>
       </main>
     </div>
   )
 }
-

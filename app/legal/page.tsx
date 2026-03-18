@@ -7,8 +7,8 @@ export default function LegalPage() {
     <ComingSoonPage
       titleEn="Legal"
       titleFr="Mentions légales"
-      subtitleEn="All legal information and notices for Didali Store will be gathered here very soon."
-      subtitleFr="Toutes les informations et mentions légales de Didali Store seront regroupées ici très bientôt."
+      subtitleEn="All legal information and notices for Miravet will be gathered here very soon."
+      subtitleFr="Toutes les informations et mentions légales de Miravet seront regroupées ici très bientôt."
     />
   )
 }

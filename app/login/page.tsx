@@ -13,9 +13,13 @@ import { Loader2, ArrowRight, Lock, Mail } from "lucide-react"
 import { toast } from "sonner"
 import { getCurrentUserRole } from "@/lib/supabase-api"
 
+import { useSearchParams } from "next/navigation"
+
 export default function LoginPage() {
     const { t, language, dir } = useLanguage()
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const redirect = searchParams.get('redirect')
     const [isLoading, setIsLoading] = useState(false)
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
@@ -45,10 +49,14 @@ export default function LoginPage() {
 
                 const normalizedRole = role?.toUpperCase()
 
-                if (normalizedRole === 'RESELLER' || normalizedRole === 'RESELLER_PENDING') {
+                if (redirect) {
+                    router.push(redirect)
+                } else if (normalizedRole === 'RESELLER' || normalizedRole === 'RESELLER_PENDING') {
                     router.push('/reseller/dashboard')
                 } else if (normalizedRole === 'ADMIN') {
-                    router.push('/admin/dashboard')
+                    // Admins see the reseller dashboard by default
+                    // They must use /admin/login for super admin access
+                    router.push('/reseller/dashboard')
                 } else if (normalizedRole === 'ACCOUNT_MANAGER') {
                     router.push('/manager/resellers')
                 } else if (normalizedRole === 'DELIVERY_MAN') {
@@ -78,10 +86,10 @@ export default function LoginPage() {
                     <Link href="/">
                         <Image
                             src={"/logo.png"}
-                            alt={"Didali Store"}
-                            width={178}
-                            height={50}
-                            className={"h-12 w-auto"}
+                            alt={"Miravet"}
+                            width={240}
+                            height={68}
+                            className={"h-16 w-auto"}
                         />
                     </Link>
                 </div>
@@ -94,7 +102,7 @@ export default function LoginPage() {
                     </p>
                 </div>
                 <div className="relative z-10 text-sm text-muted-foreground">
-                    © 2026 Didali Store. {t("login.rights")}
+                    © {new Date().getFullYear()} Miravet. {t("login.rights")}
                 </div>
 
                 {/* Glass Card Background for Left Side */}
@@ -112,10 +120,10 @@ export default function LoginPage() {
                         <div className="lg:hidden flex justify-center mb-6">
                             <Image
                                 src={"/logo.png"}
-                                alt={"Didali Store"}
-                                width={140}
-                                height={40}
-                                className={"h-10 w-auto"}
+                                alt={"Miravet"}
+                                width={180}
+                                height={50}
+                                className={"h-12 w-auto"}
                             />
                         </div>
 
@@ -189,7 +197,10 @@ export default function LoginPage() {
                     </div>
 
                     <div className="text-center text-sm pt-2 space-y-4">
-                        <Link href="/reseller/register" className="font-semibold text-secondary-foreground hover:text-primary transition-colors flex items-center justify-center gap-2">
+                        <Link 
+                            href={redirect ? `/reseller/register?redirect=${encodeURIComponent(redirect)}` : "/reseller/register"} 
+                            className="font-semibold text-secondary-foreground hover:text-primary transition-colors flex items-center justify-center gap-2"
+                        >
                             {t("login.register_reseller")} <ArrowRight className={`w-4 h-4 ${isArabic ? "rotate-180" : ""}`} />
                         </Link>
                     </div>

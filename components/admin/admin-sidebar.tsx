@@ -18,9 +18,11 @@ import {
     MessageCircle,
     Phone,
     Briefcase,
-    Truck,
+
     Shield,
     Award,
+    FileText,
+    Truck
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet"
@@ -30,18 +32,15 @@ const menuItems = [
     { icon: LayoutDashboard, key: "admin.sidebar.dashboard", href: "/admin/dashboard" },
     { icon: ShoppingBag, key: "admin.sidebar.orders", href: "/admin/orders" },
     { icon: Package, key: "admin.sidebar.products", href: "/admin/products" },
-    { icon: Users, key: "admin.sidebar.customers", href: "/admin/customers" },
     { icon: Briefcase, key: "admin.sidebar.resellers", href: "/admin/resellers" },
     { icon: Shield, key: "admin.sidebar.account_managers", href: "/admin/account-managers" },
-    { icon: Truck, key: "admin.sidebar.delivery_men", href: "/admin/logisticiens" },
-    { icon: Truck, key: "admin.sidebar.shipping", href: "/admin/shipping" },
+    { icon: FileText, key: "admin.sidebar.invoices", href: "/admin/invoices" },
+    { icon: Truck, key: "admin.sidebar.suppliers", href: "/admin/suppliers" },
+
+
 
     { icon: ImageIcon, key: "admin.sidebar.hero_carousel", href: "/admin/hero-carousel" },
-    // CRM / Marketing
-    { icon: MessageCircle, key: "admin.sidebar.whatsapp_leads", href: "/admin/whatsapp" },
-
     { icon: Settings, key: "admin.sidebar.settings", href: "/admin/settings" },
-    { icon: Award, key: "admin.sidebar.brands", href: "/admin/brands" },
 ]
 
 
@@ -58,15 +57,21 @@ export function AdminSidebar() {
         }
     }, [setLanguage])
 
+    const handleAdminLogout = () => {
+        // Clear the PIN session cookie
+        document.cookie = "admin_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+        window.location.href = "/admin/login"
+    }
+
     const SidebarContent = () => (
         <div className="flex flex-col h-full bg-background/50 backdrop-blur-xl border-r border-white/10">
             <div className="p-6 flex items-center justify-center border-b border-white/10">
                 <Image
                     src={"/logo.png"}
-                    alt={"Didali Store"}
-                    width={142}
-                    height={40}
-                    className={"h-10 w-auto"}
+                    alt={"Miravet"}
+                    width={180}
+                    height={50}
+                    className={"h-12 w-auto"}
                 />
             </div>
 
@@ -95,13 +100,14 @@ export function AdminSidebar() {
             </nav>
 
             <div className="p-4 space-y-3 border-t border-white/10">
-
-                <Link href="/admin/login">
-                    <Button variant="outline" className="w-full justify-start gap-3 h-12 rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/20">
-                        <LogOut className="w-5 h-5" />
-                        <span className="font-medium">{t("admin.sidebar.logout")}</span>
-                    </Button>
-                </Link>
+                <Button 
+                    onClick={handleAdminLogout}
+                    variant="outline" 
+                    className="w-full justify-start gap-3 h-12 rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/20"
+                >
+                    <LogOut className="w-5 h-5" />
+                    <span className="font-medium">{t("admin.sidebar.logout")}</span>
+                </Button>
             </div>
         </div>
     )

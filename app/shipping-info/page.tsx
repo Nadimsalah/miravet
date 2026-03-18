@@ -3,21 +3,10 @@
 import Link from "next/link"
 import { ArrowLeft, Truck } from "lucide-react"
 import { useLanguage } from "@/components/language-provider"
-import { ComingSoonPage } from "@/components/coming-soon-page"
 
 export default function ShippingInfoPage() {
   const { language } = useLanguage()
   const isArabic = language === "ar"
-
-  // Temporary: Coming soon layout for footer page
-  return (
-    <ComingSoonPage
-      titleEn="Shipping Info"
-      titleFr="Informations de livraison"
-      subtitleEn="Detailed shipping information for Didali Store will be available here very soon."
-      subtitleFr="Les informations détaillées sur la livraison pour Didali Store seront disponibles ici très bientôt."
-    />
-  )
 
   return (
     <div className={`min-h-screen bg-background ${isArabic ? "font-[var(--font-almarai)]" : ""}`}>
@@ -31,52 +20,51 @@ export default function ShippingInfoPage() {
             <span>{isArabic ? "العودة إلى الرئيسية" : "Back to Home"}</span>
           </Link>
           <span className="text-xs text-muted-foreground uppercase tracking-[0.25em]">
-            {isArabic ? "معلومات الشحن" : "Shipping Info"}
+            {isArabic ? "معلومات الشحن" : "Livraison"}
           </span>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-10 sm:py-14 max-w-4xl">
         <h1 className={`text-2xl sm:text-3xl font-bold mb-6 ${isArabic ? "text-right" : ""}`}>
-          {isArabic ? "سياسة الشحن لدى ديدالي – مصر" : "Didali Egypt – Shipping Information"}
+          {isArabic ? "سياسة الشحن لدى مرافيت – المغرب" : "Miravet Maroc – Informations de Livraison"}
         </h1>
         <div className={`space-y-5 text-sm sm:text-base text-muted-foreground leading-relaxed ${isArabic ? "text-right" : ""}`}>
           <p>
             {isArabic
-              ? "نقدم خدمة توصيل للطلبات داخل جمهورية مصر العربية من خلال شركاء شحن موثوقين، مع الحرص على توصيل منتجات ديدالي بأفضل حالة."
-              : "We deliver orders across Egypt using trusted courier partners, ensuring your Didali products arrive in the best condition."}
+              ? "نقدم خدمة توصيل احترافية للطلبات داخل المملكة المغربية من خلال أسطولنا الخاص وشركاء شحن موثوقين، مع ضمان احترام سلسلة التبريد للمنتجات الحساسة."
+              : "Nous assurons une livraison professionnelle à travers tout le Royaume du Maroc, via notre propre flotte et des partenaires logistiques de confiance, en garantissant le respect strict de la chaîne du froid pour les produits sensibles."}
           </p>
 
           <h2 className="font-semibold text-foreground flex items-center gap-2">
             <Truck className="w-4 h-4 text-primary" />
-            {isArabic ? "١. مدة التوصيل" : "1. Delivery times"}
+            {isArabic ? "١. مدة التوصيل" : "1. Délais de livraison"}
           </h2>
           <p>
             {isArabic
-              ? "عادةً ما يتم توصيل الطلبات داخل القاهرة والجيزة خلال 1–3 أيام عمل، وداخل باقي المحافظات خلال 2–5 أيام عمل، حسب شركة الشحن والمنطقة."
-              : "Orders in Cairo and Giza are typically delivered within 1–3 business days, and within 2–5 business days for other governorates, depending on the courier and location."}
+              ? "يتم توصيل الطلبات داخل الدار البيضاء والنواحي خلال ٢٤ إلى ٤٨ ساعة عمل. بالنسبة لباقي المدن المغربية، تتراوح المدة بين ٢ إلى ٤ أيام عمل حسب المنطقة."
+              : "Les commandes à Casablanca et ses environs sont livrées sous 24h à 48h ouvrables. Pour les autres villes du Maroc, les délais varient de 2 à 4 jours ouvrables selon la zone géographique."}
           </p>
 
           <h2 className="font-semibold text-foreground">
-            {isArabic ? "٢. رسوم الشحن" : "2. Shipping fees"}
+            {isArabic ? "٢. شروط الشحن والأمان" : "2. Conditions de transport et sécurité"}
           </h2>
           <p>
             {isArabic
-              ? "رسوم الشحن تختلف حسب المحافظة وقيمة الطلب. في بعض العروض، قد نقدم شحنًا مجانيًا للطلبات التي تتجاوز مبلغًا معينًا كما هو موضح في صفحة الدفع."
-              : "Shipping fees vary by governorate and order value. During some promotions, we may offer free shipping above a certain order amount, as shown at checkout."}
+              ? "بصفتنا متخصصين في المنتجات البيطرية، نولي أهمية قصوى لنقل اللقاحات والأدوية في ظروف حرارية مثالية لضمان فعاليتها عند وصولها إليكم."
+              : "En tant que spécialistes vétérinaires, nous accordons une importance capitale au transport des vaccins et médicaments dans des conditions thermiques optimales pour garantir leur efficacité à réception."}
           </p>
 
           <h2 className="font-semibold text-foreground">
-            {isArabic ? "٣. متابعة الشحنة" : "3. Tracking your shipment"}
+            {isArabic ? "٣. رسوم التوصيل" : "3. Frais de livraison"}
           </h2>
           <p>
             {isArabic
-              ? "بعد شحن الطلب، يمكن أن تتلقى رسالة نصية أو WhatsApp من شركة الشحن برقم التتبع أو تفاصيل التوصيل. في حال وجود أي استفسار، يمكنك التواصل معنا عبر صفحة اتصل بنا."
-              : "Once your order is dispatched, you may receive an SMS or WhatsApp from the courier with tracking details. For any questions, you can reach us via the Contact Us page."}
+              ? "تختلف رسوم التوصيل بناءً على حجم الطلبية والوجهة. كجزء من عروضنا المهنية، نقدم توصيلاً مجانياً للطلبيات التي تتجاوز مبلغاً معيناً كما هو موضح في سلة المشتريات."
+              : "Les frais de livraison varient selon l'importance de la commande et la destination. Dans le cadre de nos offres professionnelles, nous proposons la gratuité de livraison pour les commandes dépassant un certain seuil, comme indiqué dans votre panier."}
           </p>
         </div>
       </main>
     </div>
   )
 }
-

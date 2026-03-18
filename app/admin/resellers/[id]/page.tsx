@@ -22,20 +22,21 @@ import {
     UserCheck,
     CreditCard
 } from "lucide-react"
-import { getCustomerById, getCustomerOrders, type Customer, type Order, updateCustomerStatus } from "@/lib/supabase-api"
+import { 
+    getCustomerById, 
+    getCustomerOrders, 
+    getResellerByUserId,
+    type Customer, 
+    type Order, 
+    updateCustomerStatus,
+    updateResellerStatus
+} from "@/lib/supabase-api"
 import { supabase } from "@/lib/supabase"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import Link from "next/link"
 import { formatPrice } from "@/lib/utils"
 import { useLanguage } from "@/components/language-provider"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue
-} from "@/components/ui/select"
 
 export default function ResellerProfilePage() {
     const { t } = useLanguage()
@@ -47,15 +48,53 @@ export default function ResellerProfilePage() {
     const [orders, setOrders] = useState<Order[]>([])
     const [loading, setLoading] = useState(true)
 
+    const handleUpdateStatus = async (newStatus: string) => {
+        if (!reseller) return
+        
+        setLoading(true)
+        try {
+            // Use resellerId (from params) which is the actual user_id (UUID)
+            // This ensures both tables get updated correctly even if their IDs differ
+            const [resellerResult, customerResult] = await Promise.all([
+                updateResellerStatus(resellerId, newStatus),
+                updateCustomerStatus(resellerId, newStatus)
+            ])
+            
+            // Also update the profile role if activating
+            if (newStatus === 'active') {
+                await supabase.from('profiles').update({ role: 'RESELLER' }).eq('id', resellerId)
+            }
+            
+            if (resellerResult || customerResult) {
+                toast.success(`Reseller status updated to ${newStatus}`)
+                setReseller(prev => prev ? { ...prev, status: newStatus } : null)
+            } else {
+                toast.error("Failed to update status")
+            }
+        } catch (err) {
+            console.error("Error updating status:", err)
+            toast.error("Error updating status")
+        } finally {
+            setLoading(false)
+        }
+    }
+
     useEffect(() => {
         async function loadData() {
             if (!resellerId) return
             setLoading(true)
-            const [customerData, ordersData] = await Promise.all([
-                getCustomerById(resellerId),
+            const [resellerData, ordersData] = await Promise.all([
+                getResellerByUserId(resellerId),
                 getCustomerOrders(resellerId)
             ])
-            setReseller(customerData)
+
+            let finalReseller = resellerData
+            if (!finalReseller) {
+                // Fallback to customer table check
+                finalReseller = await getCustomerById(resellerId)
+            }
+
+            setReseller(finalReseller)
             setOrders(ordersData)
             setLoading(false)
         }
@@ -67,7 +106,6 @@ export default function ResellerProfilePage() {
         company_name: "",
         ice: ""
     })
-    const [resellerType, setResellerType] = useState<string>("reseller")
 
     useEffect(() => {
         if (reseller) {
@@ -75,39 +113,8 @@ export default function ResellerProfilePage() {
                 company_name: reseller.company_name || "",
                 ice: reseller.ice || ""
             })
-            setResellerType((reseller as any).reseller_type || "reseller")
         }
     }, [reseller])
-
-    const handleUpdateStatus = async (newStatus: string) => {
-        if (!reseller) return
-        const result = await updateCustomerStatus(reseller.id, newStatus)
-        if (result) {
-            toast.success(`Reseller status updated to ${newStatus}`)
-            setReseller(prev => prev ? { ...prev, status: newStatus } : null)
-        } else {
-            toast.error("Failed to update status")
-        }
-    }
-
-    const handleUpdateType = async () => {
-        if (!reseller) return
-        setLoading(true)
-        const { data, error } = await supabase
-            .from('customers')
-            .update({ reseller_type: resellerType })
-            .eq('id', reseller.id)
-            .select()
-            .single()
-
-        if (error) {
-            toast.error("Failed to update reseller type")
-        } else {
-            toast.success("Reseller type updated")
-            setReseller(data as Customer)
-        }
-        setLoading(false)
-    }
 
     const handleSaveBilling = async () => {
         if (!reseller) return
@@ -154,7 +161,8 @@ export default function ResellerProfilePage() {
         )
     }
 
-    const totalSpent = reseller.total_spent || 0
+    const totalSpent = orders.reduce((acc, order) => acc + (Number(order.total) || 0), 0)
+    const totalOrdersCount = orders.length
 
     return (
         <div className="min-h-screen bg-background relative overflow-hidden font-sans">
@@ -180,14 +188,20 @@ export default function ResellerProfilePage() {
                         </Button>
                         <div>
                             <div className="flex items-center gap-3">
-                                <h1 className="text-3xl font-black text-foreground tracking-tight">{reseller.name}</h1>
-                                <Badge className={`rounded-lg h-6 px-2.5 border-0 ${reseller.status === 'active' ? 'bg-green-500/10 text-green-500' : 'bg-amber-500/10 text-amber-500'
+                                <h1 className="text-4xl font-black bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent tracking-tight">
+                                    {reseller.name}
+                                </h1>
+                                <Badge className={`rounded-xl h-7 px-3 border-0 font-bold shadow-sm ${
+                                    reseller.status === 'active' 
+                                        ? 'bg-emerald-500/10 text-emerald-500' 
+                                        : 'bg-amber-500/10 text-amber-500'
                                     }`}>
                                     {reseller.status === 'pending_approval' ? t("admin.resellers.pending_approval") : reseller.status?.replace('_', ' ')}
                                 </Badge>
                             </div>
-                            <p className="text-muted-foreground font-medium mt-1">
-                                ID Partenaire : {reseller.id.split('-')[0].toUpperCase()}
+                            <p className="text-muted-foreground/60 font-bold mt-2 flex items-center gap-2">
+                                <span className="w-1 h-1 rounded-full bg-primary" />
+                                ID Partenaire : {reseller.id.substring(0, 8).toUpperCase()}
                             </p>
                         </div>
                     </div>
@@ -202,34 +216,30 @@ export default function ResellerProfilePage() {
                                 Approuver le compte
                             </Button>
                         )}
-                        <Button variant="outline" className="rounded-2xl h-12 px-6 bg-white/5 border-white/10 hover:bg-red-500/10 hover:text-red-500 transition-all gap-2 font-bold">
-                            <Ban className="w-5 h-5" />
-                            Geler le compte
-                        </Button>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-12">
                     {/* Metrics Grid */}
                     <div className="xl:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <div className="glass-strong p-6 rounded-[2.5rem] border border-white/10 shadow-xl group">
-                            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center mb-4 transition-transform group-hover:scale-110">
-                                <ShoppingBag className="w-6 h-6" />
+                        <div className="glass-strong p-8 rounded-[3rem] border border-white/10 shadow-2xl group transition-all duration-500 hover:border-blue-500/30">
+                            <div className="w-14 h-14 rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center mb-6 transition-transform group-hover:scale-110 group-hover:rotate-3">
+                                <ShoppingBag className="w-7 h-7" />
                             </div>
-                            <p className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-1">
+                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">
                                 Commandes totales
                             </p>
-                            <h3 className="text-2xl font-black text-foreground">{orders.length}</h3>
+                            <h3 className="text-4xl font-black text-foreground tracking-tighter">{totalOrdersCount}</h3>
                         </div>
 
-                        <div className="glass-strong p-6 rounded-[2.5rem] border border-white/10 shadow-xl group text-emerald-500">
-                            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-4 transition-transform group-hover:scale-110">
-                                <CreditCard className="w-6 h-6" />
+                        <div className="glass-strong p-8 rounded-[3rem] border border-white/10 shadow-2xl group transition-all duration-500 hover:border-emerald-500/30">
+                            <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-6 transition-transform group-hover:scale-110 group-hover:-rotate-3">
+                                <CreditCard className="w-7 h-7" />
                             </div>
-                            <p className="text-xs font-black text-emerald-500/70 uppercase tracking-widest mb-1">
+                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">
                                 Volume total
                             </p>
-                            <h3 className="text-2xl font-black text-foreground">MAD {formatPrice(totalSpent)}</h3>
+                            <h3 className="text-4xl font-black text-foreground tracking-tighter">MAD {formatPrice(totalSpent)}</h3>
                         </div>
 
                     </div>
@@ -275,34 +285,8 @@ export default function ResellerProfilePage() {
                                             <Globe className="w-3.5 h-3.5" />
                                             Visiter
                                         </a>
-                                    ) : <p className="font-bold text-muted-foreground text-sm">N/A</p>}
+                                    ) : <p className="font-bold text-muted-foreground/40 text-sm italic">Aucun site</p>}
                                 </div>
-                            </div>
-                        </div>
-
-                        {/* Account Type Controls */}
-                        <div className="mt-6 pt-6 border-t border-white/5 relative z-10 space-y-3">
-                            <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest block mb-1.5">
-                                Type de partenaire
-                            </label>
-                            <div className="flex items-center gap-3">
-                                <Select value={resellerType} onValueChange={setResellerType}>
-                                    <SelectTrigger className="w-full rounded-2xl bg-background/50 border-white/10">
-                                        <SelectValue placeholder="Sélectionner le type de partenaire" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="reseller">Revendeur</SelectItem>
-                                        <SelectItem value="partner">Partenaire</SelectItem>
-                                        <SelectItem value="wholesaler">Grossiste</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <Button
-                                    onClick={handleUpdateType}
-                                    className="rounded-2xl whitespace-nowrap"
-                                    disabled={loading}
-                                >
-                                    Enregistrer
-                                </Button>
                             </div>
                         </div>
                     </div>

@@ -13,9 +13,8 @@ export async function GET() {
       id,
       user_id,
       company_name,
-      phone,
       city,
-      user:profiles!user_id (name, email, phone)
+      user:profiles (name, email, phone)
     `)
 
   if (resellersError) {

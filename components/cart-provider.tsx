@@ -1,7 +1,6 @@
 "use client"
 
 import React, { createContext, useContext, useState, useEffect } from "react"
-import { toast } from "sonner"
 
 export interface CartItem {
     id: string
@@ -24,6 +23,8 @@ interface CartContextType {
     clearCart: () => void
     cartCount: number
     isInitialized: boolean
+    isCartOpen: boolean
+    setIsCartOpen: (open: boolean) => void
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -31,6 +32,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 export function CartProvider({ children }: { children: React.ReactNode }) {
     const [items, setItems] = useState<CartItem[]>([])
     const [isInitialized, setIsInitialized] = useState(false)
+    const [isCartOpen, setIsCartOpen] = useState(false)
 
     // Load from local storage
     useEffect(() => {
@@ -62,24 +64,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 const updatedItems = [...currentItems]
                 const item = updatedItems[existingItemIndex]
                 updatedItems[existingItemIndex].quantity = item.quantity + newItem.quantity
-                toast.success("Cart updated", {
-                    description: `${newItem.name} quantity increased.`,
-                })
                 return updatedItems
             } else {
-                toast.success("Added to cart", {
-                    description: `${newItem.name} added to your cart.`,
-                })
                 return [...currentItems, newItem]
             }
         })
+        setIsCartOpen(true)
     }, [])
 
     const removeItem = React.useCallback((id: string, size?: string) => {
         setItems((currentItems) =>
             currentItems.filter((item) => !(item.id === id && item.size === size))
         )
-        toast.info("Item removed from cart")
     }, [])
 
     const updateQuantity = React.useCallback((id: string, quantity: number, size?: string) => {
@@ -109,7 +105,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         clearCart,
         cartCount,
         isInitialized,
-    }), [items, addItem, removeItem, updateQuantity, clearCart, cartCount, isInitialized])
+        isCartOpen,
+        setIsCartOpen,
+    }), [items, addItem, removeItem, updateQuantity, clearCart, cartCount, isInitialized, isCartOpen])
 
     return (
         <CartContext.Provider value={contextValue}>

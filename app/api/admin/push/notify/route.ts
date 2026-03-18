@@ -7,7 +7,7 @@ export async function POST(req: Request) {
 
         const result = await sendPushNotification({
             title: title || 'Test Notification 🔔',
-            body: body || 'This is a test notification from Didali.',
+            body: body || 'This is a test notification from Miravet.',
             url: url || '/admin/dashboard',
             tag: tag || 'test-push'
         })

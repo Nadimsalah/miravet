@@ -11,10 +11,13 @@ import { Label } from "@/components/ui/label"
 import { supabase } from "@/lib/supabase"
 import { Loader2, ArrowRight, User, Lock, Mail, Phone, Building2, FileText, Globe } from "lucide-react"
 import { toast } from "sonner"
+import { useSearchParams } from "next/navigation"
 
 export default function ResellerRegisterPage() {
     const { t, language, dir } = useLanguage()
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const redirect = searchParams.get('redirect')
     const [isLoading, setIsLoading] = useState(false)
     const isArabic = language === "ar"
 
@@ -72,7 +75,8 @@ export default function ResellerRegisterPage() {
 
             // Redirect to login while account awaits activation
             setTimeout(() => {
-                router.push('/login')
+                const loginUrl = redirect ? `/login?redirect=${encodeURIComponent(redirect)}` : '/login'
+                router.push(loginUrl)
             }, 2000)
 
         } catch (error: any) {
@@ -94,7 +98,7 @@ export default function ResellerRegisterPage() {
                     <Link href="/">
                         <Image
                             src={"/logo.png"}
-                            alt={"Didali Store"}
+                            alt={"Miravet"}
                             width={178}
                             height={50}
                             className={"h-12 w-auto"}
@@ -144,7 +148,7 @@ export default function ResellerRegisterPage() {
                         <div className="lg:hidden flex justify-center mb-6">
                             <Image
                                 src={"/logo.png"}
-                                alt={"Didali Store"}
+                                alt={"Miravet"}
                                 width={140}
                                 height={40}
                                 className={"h-10 w-auto"}

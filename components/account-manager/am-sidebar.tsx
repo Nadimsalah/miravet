@@ -40,7 +40,7 @@ export function AccountManagerSidebar() {
             <div className="p-6 flex items-center justify-center border-b border-white/10">
                 <Image
                     src={"/logo.png"}
-                    alt={"Didali Store"}
+                    alt={"Miravet"}
                     width={142}
                     height={40}
                     className={"h-10 w-auto"}

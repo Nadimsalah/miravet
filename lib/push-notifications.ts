@@ -2,7 +2,7 @@ import webpush from 'web-push'
 import { createClient } from '@supabase/supabase-js'
 import { getAdminSettings } from './supabase-api'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xpkvpimvgxbnovxuzdxj.supabase.co'
 const supabaseServiceRole = process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-key'
 
 const supabase = createClient(supabaseUrl, supabaseServiceRole)

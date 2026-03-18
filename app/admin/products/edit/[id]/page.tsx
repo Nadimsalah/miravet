@@ -6,6 +6,7 @@ import { AdminSidebar } from "@/components/admin/admin-sidebar"
 import { useLanguage } from "@/components/language-provider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import {
     ArrowLeft,
@@ -23,6 +24,8 @@ import {
     Trash,
     Package,
     Wand2,
+    Award,
+    Tags,
     Image as ImageIcon
 } from "lucide-react"
 import Link from "next/link"
@@ -50,30 +53,22 @@ export default function EditProductPage() {
     // Form state
     const [title, setTitle] = useState("")
     const [description, setDescription] = useState("")
-    const [category, setCategory] = useState("")
+    const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+    const [expandedCategories, setExpandedCategories] = useState<string[]>([])
     const [price, setPrice] = useState("")
-    const [compareAtPrice, setCompareAtPrice] = useState("")
-    const [resellerPrice, setResellerPrice] = useState("")
-    const [partnerPrice, setPartnerPrice] = useState("")
-    const [wholesalerPrice, setWholesalerPrice] = useState("")
-    const [resellerMinQty, setResellerMinQty] = useState("")
-    const [partnerMinQty, setPartnerMinQty] = useState("")
-    const [wholesalerMinQty, setWholesalerMinQty] = useState("")
     const [stock, setStock] = useState("")
     const [sku, setSku] = useState("")
     const [status, setStatus] = useState("active")
     const [benefits, setBenefits] = useState<string[]>([])
     const [ingredients, setIngredients] = useState("")
     const [howToUse, setHowToUse] = useState("")
-    const [categories, setCategories] = useState<{ id: string, name: string, slug: string }[]>([])
+    const [categories, setCategories] = useState<{ id: string, name: string, slug: string, parent_id?: string | null }[]>([])
     const [images, setImages] = useState<string[]>([])
     const [uploading, setUploading] = useState(false)
     const [warehouses, setWarehouses] = useState<any[]>([])
     const [selectedWarehouse, setSelectedWarehouse] = useState("")
     const [showWarehouseDialog, setShowWarehouseDialog] = useState(false)
     const [newWarehouseName, setNewWarehouseName] = useState("")
-    const [brandId, setBrandId] = useState<string>("")
-    const [brands, setBrands] = useState<{ id: string, name: string, logo: string | null }[]>([])
 
     // AI Rewrite State
     const [rewriting, setRewriting] = useState<string | null>(null)
@@ -85,25 +80,19 @@ export default function EditProductPage() {
     useEffect(() => {
         async function loadProduct() {
             setLoading(true)
-            const [product, categoriesData, warehousesData, brandsData] = await Promise.all([
+            const [product, categoriesData, warehousesData] = await Promise.all([
                 getProductById(productId),
-                supabase.from('categories').select('id, name, slug').order('name'),
-                supabase.from('warehouses').select('id, name').order('name'),
-                supabase.from('brands').select('id, name, logo').order('name')
+                supabase.from('categories').select('id, name, slug, parent_id').order('name'),
+                supabase.from('warehouses').select('id, name').order('name')
             ])
 
             if (product) {
                 setTitle(product.title)
                 setDescription(product.description || "")
-                setCategory(product.category)
+                if (product.category) {
+                    setSelectedCategories(product.category.split(', '))
+                }
                 setPrice(product.price.toString())
-                setCompareAtPrice(product.compare_at_price?.toString() || "")
-                setResellerPrice(product.reseller_price ? (product.reseller_price / 1.2).toFixed(2) : "")
-                setPartnerPrice(product.partner_price ? (product.partner_price / 1.2).toFixed(2) : "")
-                setWholesalerPrice(product.wholesaler_price ? (product.wholesaler_price / 1.2).toFixed(2) : "")
-                setResellerMinQty(product.reseller_min_qty?.toString() || "")
-                setPartnerMinQty(product.partner_min_qty?.toString() || "")
-                setWholesalerMinQty(product.wholesaler_min_qty?.toString() || "")
                 setStock(product.stock.toString())
                 setSku(product.sku)
                 setStatus(product.status)
@@ -112,7 +101,7 @@ export default function EditProductPage() {
                 setHowToUse(product.how_to_use || "")
                 setImages(product.images || [])
                 setSelectedWarehouse(product.warehouse_id || "")
-                setBrandId(product.brand_id || "")
+                setSelectedWarehouse(product.warehouse_id || "")
             }
 
             if (categoriesData.data) {
@@ -123,9 +112,6 @@ export default function EditProductPage() {
                 setWarehouses(warehousesData.data)
             }
 
-            if (brandsData.data) {
-                setBrands(brandsData.data)
-            }
 
             // Fetch related products (initially some active products)
             const { data: prodData } = await supabase
@@ -296,7 +282,7 @@ export default function EditProductPage() {
                 body: JSON.stringify({
                     title,
                     description,
-                    category,
+                    category: selectedCategories.join(', '),
                     availableProducts: relatedProducts
                 })
             })
@@ -321,15 +307,15 @@ export default function EditProductPage() {
             .update({
                 title,
                 description,
-                category,
+                category: selectedCategories.join(', '),
                 price: price ? parseFloat(price) : 0,
-                compare_at_price: compareAtPrice ? parseFloat(compareAtPrice) : null,
-                reseller_price: resellerPrice ? parseFloat(resellerPrice) * 1.2 : null,
-                partner_price: partnerPrice ? parseFloat(partnerPrice) * 1.2 : null,
-                wholesaler_price: wholesalerPrice ? parseFloat(wholesalerPrice) * 1.2 : null,
-                reseller_min_qty: resellerMinQty ? parseInt(resellerMinQty) : null,
-                partner_min_qty: partnerMinQty ? parseInt(partnerMinQty) : null,
-                wholesaler_min_qty: wholesalerMinQty ? parseInt(wholesalerMinQty) : null,
+                compare_at_price: null,
+                reseller_price: null,
+                partner_price: null,
+                wholesaler_price: null,
+                reseller_min_qty: null,
+                partner_min_qty: null,
+                wholesaler_min_qty: null,
                 stock: stock ? parseInt(stock) : 0,
                 sku,
                 status,
@@ -337,8 +323,7 @@ export default function EditProductPage() {
                 ingredients,
                 how_to_use: howToUse,
                 images,
-                warehouse_id: selectedWarehouse || null,
-                brand_id: brandId || null
+                warehouse_id: selectedWarehouse || null
             })
             .eq('id', productId)
 
@@ -627,73 +612,177 @@ export default function EditProductPage() {
                         <section className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 space-y-6">
                             <h3 className="text-lg font-bold text-gray-900 border-b border-gray-50 pb-4">Organisation</h3>
 
-                            <div className="space-y-3">
-                                <label className="text-sm font-semibold text-gray-700">Catégorie</label>
-                                <div className="relative">
-                                    <select
-                                        value={category || ""}
-                                        onChange={(e) => setCategory(e.target.value)}
-                                        className="w-full h-12 rounded-xl border border-gray-200 bg-white px-4 text-base focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-gray-700 appearance-none shadow-sm"
-                                    >
-                                        <option value="" disabled>Sélectionner une catégorie</option>
-                                        {categories.map((cat) => (
-                                            <option key={cat.id} value={cat.slug}>{cat.name}</option>
-                                        ))}
-                                    </select>
-                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                            {/* Status Selector */}
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between text-xs font-black uppercase tracking-widest text-slate-500">
+                                    <span>Statut de publication</span>
+                                    <Badge variant="outline" className={status === 'active' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-600 border-slate-100'}>
+                                        {status === 'active' ? 'En ligne' : 'Brouillon'}
+                                    </Badge>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-100/50 rounded-2xl border border-slate-200/60 transition-all focus-within:ring-4 focus-within:ring-indigo-500/5">
+                                    {[
+                                        { id: 'draft', label: 'Brouillon', icon: '📎' },
+                                        { id: 'active', label: 'Publier', icon: '🚀' }
+                                    ].map((s) => (
+                                        <button
+                                            key={s.id}
+                                            type="button"
+                                            onClick={() => setStatus(s.id)}
+                                            className={`flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-black transition-all duration-300 ${status === s.id ? 'bg-white text-[#0f172a] shadow-xl shadow-black/5 ring-1 ring-black/5' : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'}`}
+                                        >
+                                            <span className="text-lg opacity-80">{s.icon}</span>
+                                            {s.label}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
 
-                            <div className="space-y-3">
-                                <label className="text-sm font-semibold text-gray-700">Marque (Brand)</label>
-                                <div className="relative">
-                                    <select
-                                        value={brandId || ""}
-                                        onChange={(e) => setBrandId(e.target.value)}
-                                        className="w-full h-12 rounded-xl border border-gray-200 bg-white px-4 text-base focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-gray-700 appearance-none shadow-sm"
-                                    >
-                                        <option value="">Sélectionner une marque</option>
-                                        {brands.map((brand) => (
-                                            <option key={brand.id} value={brand.id}>{brand.name}</option>
-                                        ))}
-                                    </select>
-                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                                    {brandId && (
-                                        <div className="mt-2 flex items-center gap-2 p-2 bg-gray-50 rounded-lg border border-gray-100">
-                                            {brands.find(b => b.id === brandId)?.logo ? (
-                                                <div className="relative w-8 h-8 rounded-md bg-white border overflow-hidden flex items-center justify-center p-0.5">
-                                                    <Image
-                                                        src={brands.find(b => b.id === brandId)?.logo || ""}
-                                                        alt=""
-                                                        fill
-                                                        className="object-contain"
-                                                    />
-                                                </div>
-                                            ) : (
-                                                <div className="w-8 h-8 rounded-md bg-white border flex items-center justify-center">
-                                                    <ImageIcon className="w-4 h-4 text-gray-300" />
-                                                </div>
-                                            )}
-                                            <span className="text-xs font-medium text-gray-600">
-                                                {brands.find(b => b.id === brandId)?.name}
-                                            </span>
-                                        </div>
-                                    )}
+                            {/* Multi-Category Selection */}
+                            <div className="space-y-4 pt-4 border-t border-slate-100">
+                                <div className="flex items-center justify-between">
+                                    <label className="text-xs font-black uppercase tracking-widest text-slate-500">
+                                        Catégories du catalogue
+                                    </label>
+                                    <span className="text-[10px] font-bold text-indigo-600 px-2 py-1 bg-indigo-50 rounded-lg">
+                                        {selectedCategories.length} sélec.
+                                    </span>
                                 </div>
+
+                                {/* Selected Pills Display */}
+                                {selectedCategories.length > 0 && (
+                                    <div className="flex flex-wrap gap-2 mb-4">
+                                        {selectedCategories.map(catName => (
+                                            <Badge 
+                                                key={catName} 
+                                                className="bg-indigo-600 text-white rounded-lg px-3 py-1.5 flex items-center gap-2 group transition-all hover:pr-1"
+                                            >
+                                                <span className="text-xs font-bold leading-none">{catName}</span>
+                                                <button 
+                                                    onClick={() => setSelectedCategories(selectedCategories.filter(c => c !== catName))}
+                                                    className="opacity-60 hover:opacity-100 transition-opacity p-0.5 rounded-full hover:bg-white/20"
+                                                >
+                                                    <X className="w-3 h-3" />
+                                                </button>
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                )}
+
+                                <div className="relative group/search">
+                                    <div className="max-h-[400px] overflow-y-auto pr-2 custom-scrollbar space-y-3 p-1">
+                                            {categories.filter(c => !c.parent_id).map((mainCat) => {
+                                                const isExpanded = expandedCategories.includes(mainCat.id);
+                                                const hasSubcats = categories.some(sub => sub.parent_id === mainCat.id);
+                                                
+                                                return (
+                                                    <div key={mainCat.id} className="space-y-2">
+                                                        {/* Main Category Row */}
+                                                        <div 
+                                                            className={`group flex items-center justify-between p-3 rounded-2xl transition-all border-2 ${selectedCategories.includes(mainCat.name) ? 'bg-indigo-50 border-indigo-200 shadow-md shadow-indigo-100/50' : 'bg-white border-slate-100 hover:border-slate-200 hover:shadow-lg'}`}
+                                                        >
+                                                            <div 
+                                                                onClick={() => {
+                                                                    if (selectedCategories.includes(mainCat.name)) {
+                                                                        setSelectedCategories(selectedCategories.filter(c => c !== mainCat.name))
+                                                                    } else {
+                                                                        setSelectedCategories([...selectedCategories, mainCat.name])
+                                                                    }
+                                                                }}
+                                                                className="flex items-center gap-3 flex-1 cursor-pointer"
+                                                            >
+                                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl transition-all ${selectedCategories.includes(mainCat.name) ? 'bg-indigo-600 text-white rotate-6 scale-110 shadow-lg shadow-indigo-200' : 'bg-slate-50 text-slate-400 group-hover:scale-110 group-hover:rotate-3'}`}>
+                                                                    {mainCat.name.includes('Vaccin') ? '💉' : 
+                                                                        mainCat.name.includes('Para') ? '🦟' : 
+                                                                        mainCat.name.includes('Infec') ? '💊' : 
+                                                                        mainCat.name.includes('Anesth') ? '🧪' : '📦'}
+                                                                </div>
+                                                                <span className={`text-sm font-black transition-colors ${selectedCategories.includes(mainCat.name) ? 'text-indigo-900' : 'text-slate-700'}`}>
+                                                                    {mainCat.name}
+                                                                </span>
+                                                            </div>
+
+                                                            <div className="flex items-center gap-2">
+                                                                {hasSubcats && (
+                                                                    <button 
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            if (isExpanded) {
+                                                                                setExpandedCategories(expandedCategories.filter(id => id !== mainCat.id))
+                                                                            } else {
+                                                                                setExpandedCategories([...expandedCategories, mainCat.id])
+                                                                            }
+                                                                        }}
+                                                                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${isExpanded ? 'bg-indigo-100 text-indigo-600 rotate-180' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
+                                                                    >
+                                                                        <ChevronDown className="w-4 h-4" />
+                                                                    </button>
+                                                                )}
+                                                                <div 
+                                                                    onClick={() => {
+                                                                        if (selectedCategories.includes(mainCat.name)) {
+                                                                            setSelectedCategories(selectedCategories.filter(c => c !== mainCat.name))
+                                                                        } else {
+                                                                            setSelectedCategories([...selectedCategories, mainCat.name])
+                                                                        }
+                                                                    }}
+                                                                    className={`w-6 h-6 rounded-full flex items-center justify-center transition-all cursor-pointer ${selectedCategories.includes(mainCat.name) ? 'bg-indigo-600 scale-100' : 'bg-slate-100 scale-50 opacity-0 group-hover:opacity-100'}`}
+                                                                >
+                                                                    <Check className="w-3 h-3 text-white" />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Subcategories (Nested) - Only shown when expanded */}
+                                                        {isExpanded && (
+                                                            <div className="grid grid-cols-1 gap-2 pl-4 animate-in slide-in-from-top-2 duration-300">
+                                                                {categories.filter(sub => sub.parent_id === mainCat.id).map(subCat => (
+                                                                    <div 
+                                                                        key={subCat.id}
+                                                                        onClick={() => {
+                                                                            if (selectedCategories.includes(subCat.name)) {
+                                                                                setSelectedCategories(selectedCategories.filter(c => c !== subCat.name))
+                                                                            } else {
+                                                                                setSelectedCategories([...selectedCategories, subCat.name])
+                                                                            }
+                                                                        }}
+                                                                        className={`group flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-all border ${selectedCategories.includes(subCat.name) ? 'bg-white border-indigo-200 shadow-sm shadow-indigo-100' : 'bg-slate-50/30 border-transparent hover:border-slate-200 hover:bg-white'}`}
+                                                                    >
+                                                                        <div className="flex items-center gap-3">
+                                                                            <div className={`w-1.5 h-1.5 rounded-full transition-all ${selectedCategories.includes(subCat.name) ? 'bg-indigo-600 scale-150 shadow-[0_0_8px_rgba(79,70,229,0.5)]' : 'bg-slate-300 group-hover:bg-slate-400'}`} />
+                                                                            <span className={`text-xs font-bold transition-colors ${selectedCategories.includes(subCat.name) ? 'text-indigo-600' : 'text-slate-500 group-hover:text-slate-700'}`}>
+                                                                                {subCat.name}
+                                                                            </span>
+                                                                        </div>
+                                                                        {selectedCategories.includes(subCat.name) && (
+                                                                            <div className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-pulse" />
+                                                                        )}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                    </div>
+                                </div>
+                                <p className="text-[10px] text-slate-400 font-bold italic">
+                                    Astuce : Les produits peuvent appartenir à plusieurs catégories pour une meilleure visibilité.
+                                </p>
                             </div>
 
-                            <div className="space-y-3">
-                                <label className="text-sm font-semibold text-gray-700">Statut</label>
-                                <div className="relative">
-                                    <select
-                                        value={status || "draft"}
-                                        onChange={(e) => setStatus(e.target.value)}
-                                        className="w-full h-12 rounded-xl border border-gray-200 bg-white px-4 text-base focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-gray-700 appearance-none shadow-sm"
-                                    >
-                                        <option value="draft">Brouillon</option>
-                                        <option value="active">Actif</option>
-                                    </select>
-                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+
+                            {/* Product Type (Placeholder in Edit) */}
+                            <div className="space-y-4 pt-4 border-t border-slate-100">
+                                <label className="text-xs font-black uppercase tracking-widest text-slate-500">
+                                    Type de produit
+                                </label>
+                                <div className="relative group/type">
+                                    <Tags className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within/type:text-indigo-500 transition-colors" />
+                                    <Input 
+                                        placeholder="ex: Antibiotique, Complément..." 
+                                        className="bg-white border-2 border-slate-100 h-14 pl-12 text-sm font-bold rounded-2xl shadow-sm focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all placeholder:text-slate-300" 
+                                    />
                                 </div>
                             </div>
                         </section>
@@ -702,97 +791,31 @@ export default function EditProductPage() {
                         <section className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 space-y-6">
                             <h3 className="text-lg font-bold text-gray-900 border-b border-gray-50 pb-4">Prix</h3>
 
-                            <div className="space-y-3">
-                                <label className="text-sm font-semibold text-gray-700">Price (MAD)</label>
-                                <Input
-                                    type="number"
-                                    value={price || ""}
-                                    onChange={(e) => setPrice(e.target.value)}
-                                    placeholder="0.00"
-                                    className="h-12 text-base bg-gray-50/50 border-gray-200"
-                                />
-                            </div>
-
-                            <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-semibold text-gray-700">Prix Revendeur HT (MAD)</label>
-                                    <div className="relative">
+                            <div className="space-y-6">
+                                {/* Single Sales Price */}
+                                <div className="space-y-3">
+                                    <label className="text-xs font-black uppercase tracking-widest text-slate-500">
+                                        Prix de vente (MAD)
+                                    </label>
+                                    <div className="relative group/price">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 border-r border-slate-200 pr-3">
+                                            <span className="text-[10px] font-black text-slate-400">MAD</span>
+                                        </div>
                                         <Input
                                             type="number"
-                                            value={resellerPrice || ""}
-                                            onChange={(e) => setResellerPrice(e.target.value)}
+                                            value={price || ""}
+                                            onChange={(e) => setPrice(e.target.value)}
                                             placeholder="0.00"
-                                            className="h-12 text-base bg-blue-50/50 border-blue-200 text-blue-900 focus:bg-white transition-colors"
+                                            className="bg-white border-2 border-slate-100 h-14 pl-20 text-xl font-black rounded-2xl shadow-sm focus:ring-4 focus:ring-green-500/5 focus:border-green-500 transition-all text-slate-900"
                                         />
                                     </div>
-                                    <p className="text-[11px] text-blue-700">
-                                        TTC ≈ {((Number(resellerPrice || 0) * 1.2) || 0).toFixed(2)} MAD (TVA 20%)
-                                    </p>
-                                    <Input
-                                        type="number"
-                                        value={resellerMinQty || ""}
-                                        onChange={(e) => setResellerMinQty(e.target.value)}
-                                        placeholder="Quantité min pour prix revendeur"
-                                        className="h-10 text-sm bg-blue-50/80 border-blue-200 text-blue-900"
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-sm font-semibold text-gray-700">Prix Partenaire HT (MAD)</label>
-                                    <div className="relative">
-                                        <Input
-                                            type="number"
-                                            value={partnerPrice || ""}
-                                            onChange={(e) => setPartnerPrice(e.target.value)}
-                                            placeholder="0.00"
-                                            className="h-12 text-base bg-purple-50/50 border-purple-200 text-purple-900 focus:bg-white transition-colors"
-                                        />
+                                    <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                                        <div className="w-2 h-2 rounded-full bg-slate-300" />
+                                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight">
+                                            HT ≈ <span className="text-slate-900">{((Number(price || 0) / 1.2) || 0).toFixed(2)} MAD</span> (TVA 20%)
+                                        </p>
                                     </div>
-                                    <p className="text-[11px] text-purple-700">
-                                        TTC ≈ {((Number(partnerPrice || 0) * 1.2) || 0).toFixed(2)} MAD (TVA 20%)
-                                    </p>
-                                    <Input
-                                        type="number"
-                                        value={partnerMinQty || ""}
-                                        onChange={(e) => setPartnerMinQty(e.target.value)}
-                                        placeholder="Quantité min pour prix partenaire"
-                                        className="h-10 text-sm bg-purple-50/80 border-purple-200 text-purple-900"
-                                    />
                                 </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-sm font-semibold text-gray-700">Prix Grossiste HT (MAD)</label>
-                                    <div className="relative">
-                                        <Input
-                                            type="number"
-                                            value={wholesalerPrice || ""}
-                                            onChange={(e) => setWholesalerPrice(e.target.value)}
-                                            placeholder="0.00"
-                                            className="h-12 text-base bg-emerald-50/50 border-emerald-200 text-emerald-900 focus:bg-white transition-colors"
-                                        />
-                                    </div>
-                                    <p className="text-[11px] text-emerald-700">
-                                        TTC ≈ {((Number(wholesalerPrice || 0) * 1.2) || 0).toFixed(2)} MAD (TVA 20%)
-                                    </p>
-                                    <Input
-                                        type="number"
-                                        value={wholesalerMinQty || ""}
-                                        onChange={(e) => setWholesalerMinQty(e.target.value)}
-                                        placeholder="Quantité min pour prix grossiste"
-                                        className="h-10 text-sm bg-emerald-50/80 border-emerald-200 text-emerald-900"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="space-y-3">
-                                <label className="text-sm font-semibold text-gray-700">Prix de comparaison (Optionnel)</label>
-                                <Input
-                                    type="number"
-                                    value={compareAtPrice || ""}
-                                    onChange={(e) => setCompareAtPrice(e.target.value)}
-                                    placeholder="0.00"
-                                    className="h-12 text-base bg-gray-50/50 border-gray-200"
-                                />
                             </div>
                         </section>
 

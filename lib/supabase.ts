@@ -1,9 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
 
 // Use placeholders for build time if env vars are missing
-// HARDCODED credentials for Project A (ewrelkbdqzywdjrgsadt) to fix persistent env issues
-const supabaseUrl = 'https://ewrelkbdqzywdjrgsadt.supabase.co'
-const supabaseAnonKey = 'sb_publishable_hWakXphh0eSr3vVbg82w1g_VsEd21D4'
+// HARDCODED credentials for New Project (xpkvpimvgxbnovxuzdxj)
+const supabaseUrl = 'https://xpkvpimvgxbnovxuzdxj.supabase.co'
+const supabaseAnonKey = 'sb_publishable_6xmP9TH-uqXry1kVg-7riQ_Ych3oUTK'
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 
 if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
@@ -12,7 +12,7 @@ if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
 
 // Standard client for client-side operations (respects RLS)
 if (typeof window !== 'undefined') {
-    console.log('Supabase Browser Init (Project A Forced):', {
+    console.log('Supabase Browser Init (New Project Forced):', {
         url: supabaseUrl,
         keyPrefix: supabaseAnonKey?.substring(0, 15) + '...'
     })

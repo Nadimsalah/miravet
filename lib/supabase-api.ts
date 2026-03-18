@@ -1,12 +1,5 @@
 import { supabase, supabaseAdmin } from './supabase'
 
-export interface Brand {
-    id: string
-    name: string
-    logo: string | null
-    slug: string
-    created_at: string
-}
 
 export interface Product {
     id: string
@@ -35,8 +28,6 @@ export interface Product {
     how_to_use_ar: string | null
     sales_count: number
     warehouse_id: string | null
-    brand_id?: string | null
-    brand?: Brand | null
     created_at: string
     updated_at: string
 }
@@ -312,7 +303,8 @@ export async function getProducts(filters?: {
         .order('created_at', { ascending: false })
 
     if (filters?.category) {
-        query = query.eq('category', filters.category)
+        // Use ilike to handle comma-separated categories in the text column
+        query = query.ilike('category', `%${filters.category}%`)
     }
 
     if (filters?.brand_id) {
@@ -397,126 +389,12 @@ export async function getProducts(filters?: {
     return data as Product[]
 }
 
-export async function getBrands() {
-    const { data, error } = await supabase
-        .from('brands')
-        .select('*')
-        .order('name', { ascending: true })
-
-    if (error) {
-        console.error('❌ Supabase Error (Brands):', error.message || error, {
-            code: error.code,
-            details: error.details,
-            hint: error.hint
-        })
-        return []
-    }
-
-    return data as Brand[]
-}
-
-export async function getBrandBySlug(slug: string) {
-    const { data, error } = await supabase
-        .from('brands')
-        .select('*')
-        .eq('slug', slug)
-        .single()
-
-    if (error) {
-        if (error.code === 'PGRST116') return null // Not found is fine
-        console.error('Error fetching brand by slug:', error.message)
-        return null
-    }
-
-    return data as Brand
-}
-
-export async function createBrand(brand: Partial<Brand>) {
-    const { data, error } = await supabase
-        .from('brands')
-        .insert(brand)
-        .select()
-        .single()
-
-    if (error) {
-        console.error('❌ Supabase Brand Create Error:', error.message, {
-            code: error.code,
-            details: error.details,
-            hint: error.hint
-        })
-        throw new Error(error.message || 'Failed to create brand')
-    }
-
-    return data as Brand
-}
-
-export async function updateBrand(id: string, brand: Partial<Brand>) {
-    const { data, error } = await supabase
-        .from('brands')
-        .update(brand)
-        .eq('id', id)
-        .select()
-        .single()
-
-    if (error) {
-        console.error('❌ Supabase Brand Update Error:', error.message, {
-            code: error.code,
-            details: error.details,
-            hint: error.hint
-        })
-        throw new Error(error.message || 'Failed to update brand')
-    }
-
-    return data as Brand
-}
-
-export async function deleteBrand(id: string) {
-    const { error } = await supabase
-        .from('brands')
-        .delete()
-        .eq('id', id)
-
-    if (error) {
-        console.error('❌ Error deleting brand:', error)
-        throw error
-    }
-
-    return true
-}
-
-export async function uploadBrandLogo(
-    file: File,
-    slug: string
-): Promise<{ success: boolean; url?: string; error?: string }> {
-    try {
-        const fileExt = file.name.split('.').pop()
-        const fileName = `brands/${slug}-${Date.now()}.${fileExt}`
-
-        const { error: uploadError } = await supabase.storage
-            .from('product-images') // Reusing existing bucket
-            .upload(fileName, file, { upsert: true })
-
-        if (uploadError) {
-            console.error('Error uploading logo:', uploadError)
-            return { success: false, error: uploadError.message }
-        }
-
-        const { data: { publicUrl } } = supabase.storage
-            .from('product-images')
-            .getPublicUrl(fileName)
-
-        return { success: true, url: publicUrl }
-    } catch (error) {
-        console.error('Error in uploadBrandLogo:', error)
-        return { success: false, error: 'Failed to upload logo' }
-    }
-}
 
 
 export async function getProductById(id: string) {
     const { data, error } = await supabase
         .from('products')
-        .select('*, brand:brands(*)')
+        .select('*')
         .eq('id', id)
         .single()
 
@@ -628,12 +506,27 @@ export async function getOrders(filters?: {
     }
 }
 
-export async function getCustomerOrders(customerId: string) {
-    const { data, error } = await supabase
+export async function getCustomerOrders(identifier: string) {
+    // Try to find if it's a reseller first
+    const { data: resellerData } = await supabase
+        .from('resellers')
+        .select('id')
+        .eq('user_id', identifier)
+        .maybeSingle()
+
+    let query = supabase
         .from('orders')
         .select('*')
-        .eq('customer_id', customerId)
         .order('created_at', { ascending: false })
+
+    if (resellerData) {
+        // If it's a reseller, filter by reseller_id AND customer_id (sometimes both are set)
+        query = query.or(`customer_id.eq.${identifier},reseller_id.eq.${resellerData.id}`)
+    } else {
+        query = query.eq('customer_id', identifier)
+    }
+
+    const { data, error } = await query
 
     if (error) {
         console.error('Error fetching customer orders:', error)
@@ -916,31 +809,98 @@ export async function updateCustomerStatus(customerId: string, status: string) {
     return data as Customer
 }
 
+export async function updateResellerStatus(id: string, status: string) {
+    const { data, error } = await supabase
+        .from('resellers')
+        .update({ status })
+        .eq('id', id)
+        .select()
+        .single()
+
+    if (error) {
+        // Try fallback with user_id just in case
+        const { data: retryData, error: retryError } = await supabase
+            .from('resellers')
+            .update({ status })
+            .eq('user_id', id)
+            .select()
+            .single()
+
+        if (retryError) {
+            console.error('Error updating reseller status:', retryError)
+            return null
+        }
+        return retryData
+    }
+
+    return data
+}
+
 export async function getCurrentUserRole(userId?: string): Promise<string | null> {
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+    if (sessionError || !session?.user) return null
+
     if (!userId) {
-        const { data: { session }, error } = await supabase.auth.getSession()
-        if (error || !session?.user) return null
         userId = session.user.id
     }
 
+    // First try profiles table (source of truth)
     const { data, error } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', userId)
         .single()
 
-    if (error) {
-        return 'customer'
+    if (!error && data?.role) {
+        return data.role as string
     }
 
-    if (!data) {
-        return 'customer'
+    // Fallback to JWT user_metadata when profiles table has no record
+    // (e.g. when trigger was broken and profile wasn't created yet)
+    const metaRole = session.user.user_metadata?.role
+    if (metaRole) {
+        return metaRole as string
     }
 
-    return data.role as string
+    // Final fallback
+    return 'customer'
 }
 
+export async function getResellerByUserId(userId: string) {
+    const { data, error } = await supabase
+        .from('resellers')
+        .select(`
+            *,
+            profile:profiles(*)
+        `)
+        .eq('user_id', userId)
+        .maybeSingle()
+
+    if (error) {
+        console.error('Error fetching reseller by userId:', error)
+        return null
+    }
+
+    if (!data) return null
+
+    // Transform for component compatibility
+    return {
+        ...data,
+        name: data.profile?.name || 'Unknown',
+        email: data.profile?.email || 'N/A',
+        phone: data.profile?.phone || data.phone || null,
+        role: data.profile?.role || 'reseller'
+    } as any
+}
+
+
 export type ResellerTier = 'reseller' | 'partner' | 'wholesaler' | null
+
+export async function getCurrentUserId(): Promise<string | null> {
+    const { data: { session }, error } = await supabase.auth.getSession()
+    if (error || !session?.user) return null
+    return session.user.id
+}
 
 export async function getCurrentResellerTier(userId?: string): Promise<ResellerTier> {
     if (!userId) {
@@ -974,17 +934,16 @@ export async function getDashboardStats() {
         .select('total, status')
 
     const totalRevenue = orders
-        ?.filter(o => o.status === 'delivered')
+        ?.filter(o => o.status !== 'cancelled')
         .reduce((sum, order) => sum + order.total, 0) || 0
 
     const completedOrders = orders?.filter(o => o.status === 'delivered').length || 0
     const pendingOrders = orders?.filter(o => o.status === 'pending' || o.status === 'processing').length || 0
 
-    // Get total resellers
+    // Get total resellers from resellers table (source of truth for business)
     const { count: resellerCount } = await supabase
-        .from('customers')
+        .from('resellers')
         .select('*', { count: 'exact', head: true })
-        .eq('role', 'reseller')
 
     // Get total customers (Guests)
     // We count unique emails from orders that are NOT linked to a reseller
@@ -1260,23 +1219,51 @@ export async function reorderHeroCarousel(
     }
 }
 
-export async function getCategories() {
-    const { data, error } = await supabase
+export async function getCategories(filters?: { onlyMain?: boolean, parentId?: string }) {
+    let query = supabase
         .from('categories')
         .select('*')
         .order('name')
 
+    if (filters?.onlyMain) {
+        query = query.is('parent_id', null)
+    }
+
+    if (filters?.parentId) {
+        query = query.eq('parent_id', filters.parentId)
+    }
+
+    const { data, error } = await query
+
     if (error) {
-        console.error('Error fetching categories:', {
-            message: error.message,
-            code: error.code,
-            details: error.details,
-            hint: error.hint
-        })
+        console.error('Error fetching categories:', error.message)
         return []
     }
 
-    return data as { id: string, name: string, slug: string, name_ar?: string }[]
+    return data as { id: string, name: string, slug: string, name_ar?: string, parent_id?: string | null }[]
+}
+
+export async function getCategoryBySlug(slug: string) {
+    // We include children in the select to allow sub-category navigation
+    const { data, error } = await supabase
+        .from('categories')
+        .select('*, children:categories!parent_id(*)')
+        .eq('slug', slug)
+        .maybeSingle()
+
+    if (error) {
+        console.error('Error fetching category by slug:', error.message)
+        return null
+    }
+
+    return data as { 
+        id: string, 
+        name: string, 
+        slug: string, 
+        name_ar?: string, 
+        parent_id?: string | null,
+        children?: any[]
+    } | null
 }
 
 export async function getAdvancedAnalytics() {

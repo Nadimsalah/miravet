@@ -3,21 +3,10 @@
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { useLanguage } from "@/components/language-provider"
-import { ComingSoonPage } from "@/components/coming-soon-page"
 
 export default function PrivacyPolicyPage() {
   const { language } = useLanguage()
   const isArabic = language === "ar"
-
-  // Temporary: Coming soon layout for footer page
-  return (
-    <ComingSoonPage
-      titleEn="Privacy Policy"
-      titleFr="Politique de confidentialité"
-      subtitleEn="Our updated privacy and data protection policy for Didali Store will be published here very soon."
-      subtitleFr="Notre politique de confidentialité et de protection des données pour Didali Store sera publiée ici très bientôt."
-    />
-  )
 
   return (
     <div className={`min-h-screen bg-background ${isArabic ? "font-[var(--font-almarai)]" : ""}`}>
@@ -31,78 +20,59 @@ export default function PrivacyPolicyPage() {
             <span>{isArabic ? "العودة إلى الرئيسية" : "Back to Home"}</span>
           </Link>
           <span className="text-xs text-muted-foreground uppercase tracking-[0.25em]">
-            {isArabic ? "سياسة الخصوصية" : "Privacy Policy"}
+            {isArabic ? "سياسة الخصوصية" : "Confidentialité"}
           </span>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-10 sm:py-14 max-w-4xl">
         <h1 className={`text-2xl sm:text-3xl font-bold mb-6 ${isArabic ? "text-right" : ""}`}>
-          {isArabic ? "سياسة الخصوصية لديدالي – مصر" : "Didali Egypt – Privacy Policy"}
+          {isArabic ? "سياسة الخصوصية لمرافيت – المغرب" : "Miravet Maroc – Politique de Confidentialité"}
         </h1>
         <div className={`space-y-5 text-sm sm:text-base text-muted-foreground leading-relaxed ${isArabic ? "text-right" : ""}`}>
           <p>
             {isArabic
-              ? "هذه السياسة تشرح كيفية قيام ديدالي مصر بجمع واستخدام وحماية بياناتك الشخصية وفقًا لأحكام قانون حماية البيانات الشخصية المصري رقم 151 لسنة 2020 واللوائح ذات الصلة."
-              : "This policy explains how Didali Egypt collects, uses, and protects your personal data in accordance with Egyptian Personal Data Protection Law No. 151 of 2020 and applicable regulations."}
+              ? "هذه السياسة تشرح كيفية قيام مرافيت المغرب بجمع واستخدام وحماية بياناتك الشخصية وفقًا للتشريعات المغربية الجاري بها العمل والمتعلقة بحماية الأشخاص الذاتيين تجاه معالجة المعطيات ذات الطابع الشخصي."
+              : "Cette politique explique comment Miravet Maroc collecte, utilise et protège vos données personnelles conformément à la législation marocaine en vigueur (Loi 09-08) relative à la protection des personnes physiques à l'égard du traitement des données à caractère personnel."}
           </p>
 
           <h2 className="font-semibold text-foreground">
-            {isArabic ? "١. البيانات التي نقوم بجمعها" : "1. Information we collect"}
+            {isArabic ? "١. البيانات التي نقوم بجمعها" : "1. Informations collectées"}
           </h2>
           <p>
             {isArabic
-              ? "قد نقوم بجمع بيانات مثل الاسم، رقم الهاتف، البريد الإلكتروني، عنوان التسليم، وسجل الطلبات عند الشراء من موقعنا أو عند التواصل معنا عبر نموذج الاتصال أو واتساب."
-              : "We may collect data such as your name, phone number, email address, delivery address, and order history when you purchase from our website or contact us via forms or WhatsApp."}
+              ? "نقوم بجمع البيانات اللازمة لتنفيذ طلبياتكم المهنية: الاسم، اسم الشركة، رقم الهاتف، البريد الإلكتروني، وعنوان التسليم."
+              : "Nous collectons les données nécessaires à l'exécution de vos commandes professionnelles : nom, nom de l'entreprise, numéro de téléphone, email et adresse de livraison."}
           </p>
 
           <h2 className="font-semibold text-foreground">
-            {isArabic ? "٢. كيفية استخدام البيانات" : "2. How we use your data"}
+            {isArabic ? "٢. كيفية استخدام البيانات" : "2. Utilisation de vos données"}
           </h2>
           <p>
             {isArabic
-              ? "نستخدم بياناتك لمعالجة الطلبات، توصيل المنتجات داخل مصر، التواصل بشأن حالة الطلب أو خدمة العملاء، وإرسال عروض تسويقية بعد الحصول على موافقتك الصريحة."
-              : "We use your data to process orders, deliver products within Egypt, communicate about order status or customer service, and send marketing offers where you have given explicit consent."}
+              ? "نستخدم بياناتك حصرياً لمعالجة الطلبات، ضمان التوصيل في المغرب، والتواصل معكم بخصوص حسابكم المهني أو العروض الخاصة بالموزعين."
+              : "Nous utilisons vos données exclusivement pour traiter les commandes, assurer la livraison au Maroc, et communiquer avec vous concernant votre compte professionnel ou les offres réservées aux distributeurs."}
           </p>
 
           <h2 className="font-semibold text-foreground">
-            {isArabic ? "٣. مشاركة البيانات مع الغير" : "3. Sharing with third parties"}
+            {isArabic ? "٣. حماية البيانات" : "3. Protection des données"}
           </h2>
           <p>
             {isArabic
-              ? "قد نشارك بياناتك بشكل محدود مع شركات الشحن أو مزودي خدمات الدفع داخل مصر فقط بالقدر اللازم لتنفيذ الطلب، مع التزامهم بالحفاظ على سرية البيانات."
-              : "We may share your data in a limited way with shipping partners and payment providers in Egypt, strictly for order fulfillment and subject to confidentiality obligations."}
+              ? "تلتزم مرافيت بضمان أمن معطياتكم وتخزينها في بيئة آمنة تمنع أي وصول غير مصرح به."
+              : "Miravet s'engage à garantir la sécurité de vos données et à les stocker dans un environnement sécurisé empêchant tout accès non autorisé."}
           </p>
 
           <h2 className="font-semibold text-foreground">
-            {isArabic ? "٤. حقوقك" : "4. Your rights"}
+            {isArabic ? "٤. حقوقك" : "4. Vos droits"}
           </h2>
           <p>
             {isArabic
-              ? "يحق لك طلب الوصول إلى بياناتك، تصحيحها، أو طلب مسحها، وكذلك سحب موافقتك على استخدام البيانات التسويقية، وذلك من خلال التواصل معنا عبر صفحة الاتصال."
-              : "You have the right to request access to your data, rectification, deletion, and to withdraw your consent for marketing use, by contacting us through our contact page."}
-          </p>
-
-          <h2 className="font-semibold text-foreground">
-            {isArabic ? "٥. الاحتفاظ بالبيانات" : "5. Data retention"}
-          </h2>
-          <p>
-            {isArabic
-              ? "نحتفظ بالبيانات فقط للمدة اللازمة لأغراض المعالجة والامتثال للالتزامات القانونية والضريبية في مصر، ثم يتم حذفها أو إخفاؤها عن الهوية."
-              : "We retain your data only for as long as necessary for processing and to comply with legal and tax obligations in Egypt, after which it is deleted or anonymised."}
-          </p>
-
-          <h2 className="font-semibold text-foreground">
-            {isArabic ? "٦. التواصل" : "6. Contact"}
-          </h2>
-          <p>
-            {isArabic
-              ? "لأي أسئلة بخصوص سياسة الخصوصية أو بياناتك، يمكنك التواصل معنا من خلال نموذج الاتصال في الموقع أو قنوات التواصل الرسمية لدينا."
-              : "For any questions regarding this policy or your data, please contact us via the website contact form or our official communication channels."}
+              ? "لديكم الحق في الوصول إلى بياناتكم الشخصية، تصحيحها، أو طلب حذفها وفقاً للقانون المعمول به، وذلك عبر مراسلتنا من خلال صفحة الاتصال."
+              : "Vous disposez d'un droit d'accès, de rectification et de suppression de vos données personnelles conformément à la loi en vigueur, en nous contactant via notre page de contact."}
           </p>
         </div>
       </main>
     </div>
   )
 }
-

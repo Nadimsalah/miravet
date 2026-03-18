@@ -49,7 +49,36 @@ export async function GET(req: Request) {
             }
         })
 
-        return NextResponse.json({ resellers })
+        // 3. Calculate total revenue for delivered orders
+        let totalRevenue = 0
+        if (resellers.length > 0) {
+            const resellerIds = resellers.map(r => r.id)
+            const resellerEmails = resellers.map(r => r.user?.email).filter(Boolean)
+            const hasGlobalDigital = resellers.some(r =>
+                r.company_name?.toUpperCase().includes('DIGITAUX') ||
+                r.company_name?.toUpperCase().includes('DIGITAL GLOBAL')
+            )
+
+            const orParts = []
+            if (resellerIds.length > 0) orParts.push(`reseller_id.in.(${resellerIds.join(',')})`)
+            if (resellerEmails.length > 0) {
+                const emailsStr = resellerEmails.map((e: string) => `"${e}"`).join(',')
+                orParts.push(`customer_email.in.(${emailsStr})`)
+            }
+            if (hasGlobalDigital) orParts.push(`reseller_id.is.null`)
+
+            if (orParts.length > 0) {
+                const { data: orders } = await supabaseAdmin
+                    .from('orders')
+                    .select('total, status')
+                    .or(orParts.join(','))
+                    .eq('status', 'delivered')
+
+                totalRevenue = orders?.reduce((acc, curr) => acc + (curr.total || 0), 0) || 0
+            }
+        }
+
+        return NextResponse.json({ resellers, totalRevenue })
     } catch (error: any) {
         console.error('Fetch Resellers Error:', error)
         return NextResponse.json({ error: error.message }, { status: 500 })

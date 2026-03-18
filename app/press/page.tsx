@@ -44,7 +44,7 @@ export default function PressPage() {
           <Link href="/" className="flex-shrink-0 relative group">
             <Image
               src="/logo.webp"
-              alt="Didali Store"
+              alt="Miravet"
               width={142}
               height={40}
               className="h-8 w-auto transition-transform duration-300 group-hover:scale-105"
@@ -66,12 +66,12 @@ export default function PressPage() {
               {isArabic ? "في الإعلام" : "In the Press"}
             </p>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground">
-              {isArabic ? "ديدالي في الصحافة العالمية" : "Didali in the international press"}
+              {isArabic ? "ديدالي في الصحافة العالمية" : "Miravet in the international press"}
             </h1>
             <p className="text-muted-foreground text-base sm:text-lg leading-relaxed">
               {isArabic
                 ? "على مدار أكثر من 20 عامًا، ظهرت ديدالي في مجلات وصحف عالمية كمرجع في زيت الأرجان المغربي ومنتجات العناية الطبيعية."
-                : "For more than 20 years, Didali has been featured in international magazines and newspapers as a reference for Moroccan argan oil and natural beauty rituals."}
+                : "For more than 20 years, Miravet has been featured in international magazines and newspapers as a reference for Moroccan argan oil and natural beauty rituals."}
             </p>
             <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
               {isArabic
@@ -110,14 +110,14 @@ export default function PressPage() {
                     "/press-2.jpg",
                     isArabic
                       ? "صفحة مجلة تعرض منتجات ديدالي"
-                      : "Magazine spread showcasing Didali products",
+                      : "Magazine spread showcasing Miravet products",
                   )
                 }
                 className="block relative aspect-square rounded-3xl overflow-hidden shadow-xl shadow-black/10 focus:outline-none"
               >
                 <img
                   src="/press-2.jpg"
-                  alt={isArabic ? "صفحة مجلة تعرض منتجات ديدالي" : "Magazine spread showcasing Didali products"}
+                  alt={isArabic ? "صفحة مجلة تعرض منتجات ديدالي" : "Magazine spread showcasing Miravet products"}
                   className="w-full h-full object-cover cursor-zoom-in"
                 />
               </button>
@@ -154,7 +154,7 @@ export default function PressPage() {
             <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
               {isArabic
                 ? "التغطية الصحفية التي حصلت عليها ديدالي في مجلات الجمال والصحة حول العالم تؤكد التزامنا بالجودة، الأصالة، والنتائج الملموسة."
-                : "The press coverage Didali has received in beauty and health magazines around the world underlines our commitment to quality, authenticity, and visible results."}
+                : "The press coverage Miravet has received in beauty and health magazines around the world underlines our commitment to quality, authenticity, and visible results."}
             </p>
           </div>
 
@@ -167,7 +167,7 @@ export default function PressPage() {
               <p>
                 {isArabic
                   ? "توصي العديد من المقالات بمنتجات ديدالي ضمن روتين العناية اليومية، خاصة زيت الأرجان الذي يقدَّم كعنصر أساسي للبشرة والشعر."
-                  : "Many feature stories recommend Didali products as part of a daily routine, with our argan oil often presented as an essential step for skin and hair."}
+                  : "Many feature stories recommend Miravet products as part of a daily routine, with our argan oil often presented as an essential step for skin and hair."}
               </p>
             </div>
             <div className="space-y-3 text-sm sm:text-base text-muted-foreground leading-relaxed">
@@ -194,7 +194,7 @@ export default function PressPage() {
           <p className="text-muted-foreground leading-relaxed">
             {isArabic
               ? "تسوقي منتجات ديدالي المميزة وجربي بنفسك جودة زيت الأرجان المغربي التي لفتت أنظار الصحافة الدولية."
-              : "Explore Didali&apos;s signature products and experience the Moroccan argan oil quality that has caught the attention of international press."}
+              : "Explore Miravet&apos;s signature products and experience the Moroccan argan oil quality that has caught the attention of international press."}
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <Button asChild size="lg" className="rounded-full shadow-lg shadow-primary/25">

@@ -2,24 +2,13 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { ArrowLeft, Leaf, Recycle, Droplets, Globe2 } from "lucide-react"
+import { ArrowLeft, Leaf, Heart, ShieldCheck, Globe2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/components/language-provider"
-import { ComingSoonPage } from "@/components/coming-soon-page"
 
 export default function SustainabilityPage() {
   const { language } = useLanguage()
   const isArabic = language === "ar"
-
-  // Temporary: Coming soon layout for footer page
-  return (
-    <ComingSoonPage
-      titleEn="Sustainability"
-      titleFr="Durabilité"
-      subtitleEn="Our full sustainability commitments and initiatives will be detailed here very soon."
-      subtitleFr="Nos engagements et initiatives en matière de durabilité seront détaillés ici très bientôt."
-    />
-  )
 
   return (
     <div className={`min-h-screen bg-background ${isArabic ? "font-[var(--font-almarai)]" : ""}`}>
@@ -35,8 +24,8 @@ export default function SustainabilityPage() {
           </Link>
           <Link href="/" className="flex-shrink-0 relative group">
             <Image
-              src="/logo.webp"
-              alt="Didali Store"
+              src="/logo.png"
+              alt="Miravet"
               width={142}
               height={40}
               className="h-8 w-auto transition-transform duration-300 group-hover:scale-105"
@@ -55,29 +44,29 @@ export default function SustainabilityPage() {
         <div className="container mx-auto px-4 py-16 sm:py-24 relative z-10 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           <div className={`space-y-6 ${isArabic ? "text-right" : ""}`}>
             <p className="text-xs font-semibold tracking-[0.35em] uppercase text-primary/80">
-              {isArabic ? "جمال مسؤول • من المغرب إلى مصر" : "Responsible Beauty • From Morocco to Egypt"}
+              {isArabic ? "التزامنا بالاستدامة • في المغرب" : "Notre Engagement • Au Maroc"}
             </p>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground">
-              {isArabic ? "الاستدامة في ديدالي" : "Sustainability at Didali"}
+              {isArabic ? "الاستدامة والمسؤولية في مرافيت" : "Durabilité et Responsabilité chez Miravet"}
             </h1>
             <p className="text-muted-foreground text-base sm:text-lg leading-relaxed">
               {isArabic
-                ? "منذ عام 1999 ونحن نؤمن أن جمال الأرغان الحقيقي لا يكتمل إلا عندما يحترم الأرض والناس الذين يقفون وراءه. في ديدالي، الاستدامة ليست مجرد كلمة، بل طريقة عمل يومية."
-                : "Since 1999, we believe that the true beauty of argan oil is only complete when it respects both the earth and the people behind it. At Didali, sustainability is not a slogan – it is a daily way of working."}
+                ? "في مرافيت، نؤمن أن صحة الحيوان لا تنفصل عن صحة كوكبنا. منذ عام 1999، نلتزم بممارسات مسؤولة تضمن توفير أفضل العلاجات مع تقليل أثرنا البيئي."
+                : "Chez Miravet, nous croyons que la santé animale est indissociable de la santé de notre planète. Depuis 1999, nous nous engageons dans des pratiques responsables pour garantir les meilleurs soins tout en minimisant notre impact environnemental."}
             </p>
             <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
               {isArabic
-                ? "نعمل مع تعاونيات محلية في المغرب، نختار مكوناتنا بعناية، ونصمم عبوات تهدف لتقليل الأثر البيئي مع الحفاظ على جودة المنتجات التي تحبينها."
-                : "We work closely with local cooperatives in Morocco, carefully select our ingredients, and design packaging that aims to reduce environmental impact while preserving the quality you love."}
+                ? "من تحسين كفاءة التبريد في مخازننا إلى دعم المبادرات المحلية لصحة الحيوان، نحن فخورون بالمساهمة في بناء مستقبل مستدام للقطاع البيطري في المغرب."
+                : "De l'optimisation de l'efficacité énergétique de nos entrepôts frigorifiques au soutien des initiatives locales pour la santé animale, nous sommes fiers de contribuer à un avenir durable pour le secteur vétérinaire au Maroc."}
             </p>
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 text-emerald-700 text-xs font-semibold uppercase tracking-[0.2em]">
-                <Leaf className="w-3.5 h-3.5" />
-                {isArabic ? "مكونات أنظف" : "Clean Ingredients"}
+                <Heart className="w-3.5 h-3.5" />
+                {isArabic ? "رفاهية الحيوان" : "Bien-être Animal"}
               </div>
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-xs font-semibold uppercase tracking-[0.2em]">
-                <Recycle className="w-3.5 h-3.5" />
-                {isArabic ? "عبوات مدروسة" : "Thoughtful Packaging"}
+                <ShieldCheck className="w-3.5 h-3.5" />
+                {isArabic ? "جودة مسؤولة" : "Qualité Responsable"}
               </div>
             </div>
           </div>
@@ -87,7 +76,7 @@ export default function SustainabilityPage() {
               <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl shadow-black/10">
                 <Image
                   src="/hero-showcase-5.jpg"
-                  alt={isArabic ? "أشجار الأرجان في الطبيعة" : "Argan trees in nature"}
+                  alt="Veterinary sustainability"
                   fill
                   className="object-cover"
                 />
@@ -95,7 +84,7 @@ export default function SustainabilityPage() {
               <div className="relative aspect-square rounded-3xl overflow-hidden shadow-xl shadow-black/10">
                 <Image
                   src="/hero-showcase-6.jpg"
-                  alt={isArabic ? "تفاصيل زيت الأرجان النقي" : "Details of pure argan oil"}
+                  alt="Animal health care"
                   fill
                   className="object-cover"
                 />
@@ -105,7 +94,7 @@ export default function SustainabilityPage() {
               <div className="relative aspect-square rounded-3xl overflow-hidden shadow-xl shadow-black/10">
                 <Image
                   src="/hero-showcase-2.jpg"
-                  alt={isArabic ? "زيت الأرجان في عبوة زجاجية" : "Argan oil in glass bottle"}
+                  alt="Professional storage"
                   fill
                   className="object-cover"
                 />
@@ -113,7 +102,7 @@ export default function SustainabilityPage() {
               <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl shadow-black/10">
                 <Image
                   src="/hero-showcase-1.jpg"
-                  alt={isArabic ? "منابع الأرجان في المغرب" : "Argan origins in Morocco"}
+                  alt="Local distribution"
                   fill
                   className="object-cover"
                 />
@@ -128,55 +117,55 @@ export default function SustainabilityPage() {
         <div className="container mx-auto px-4 max-w-5xl space-y-12">
           <div className={`space-y-4 text-center max-w-2xl mx-auto ${isArabic ? "rtl" : ""}`}>
             <h2 className="text-2xl sm:text-3xl font-bold text-foreground">
-              {isArabic ? "ثلاث ركائز للاستدامة في ديدالي" : "Three Pillars of Sustainability at Didali"}
+              {isArabic ? "ركائزنا للعمل المسؤول" : "Nos Piliers pour une Action Responsable"}
             </h2>
             <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">
               {isArabic
-                ? "نوازن بين الجودة العالية واحترام الإنسان والبيئة، من شجرة الأرجان في المغرب حتى روتين العناية اليومي في مصر."
-                : "We balance high quality with respect for people and the planet – from the argan tree in Morocco to your daily ritual in Egypt."}
+                ? "نحن نضع الجودة والأخلاق في قلب كل ما نقوم به، لخدمة شركائنا البياطرة وحماية البيئة المغربية."
+                : "Nous plaçons la qualité et l'éthique au cœur de tout ce que nous faisons, pour servir nos partenaires vétérinaires et protéger l'environnement marocain."}
             </p>
           </div>
 
           <div className={`grid md:grid-cols-3 gap-6 sm:gap-8 ${isArabic ? "rtl" : ""}`}>
             <div className="glass-subtle rounded-3xl p-6 space-y-3">
               <div className="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-700">
-                <Droplets className="w-5 h-5" />
+                <Globe2 className="w-5 h-5" />
               </div>
               <h3 className="font-semibold text-foreground">
-                {isArabic ? "مكونات نقية ومسؤولة" : "Pure, Responsible Ingredients"}
+                {isArabic ? "لوجستيات صديقة للبيئة" : "Logistique Éco-efficiente"}
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {isArabic
-                  ? "نستخدم زيت أرجان نقي ومكونات مختارة بعناية، ونتجنب الإضافات غير الضرورية، لنعطي بشرتك وشعرك ما يحتاجه فقط."
-                  : "We use pure argan oil and carefully selected ingredients, avoiding unnecessary additives so your skin and hair receive only what they truly need."}
+                  ? "نعمل باستمرار على تحسين مسارات التوزيع وكفاءة الشاحنات لتقليل انبعاثات الكربون مع ضمان وصول الأدوية واللقاحات في الوقت المناسب."
+                  : "Nous optimisons constamment nos tournées de distribution et l'efficacité de nos camions pour réduire l'empreinte carbone tout en garantissant des délais de livraison minimaux."}
               </p>
             </div>
 
             <div className="glass-subtle rounded-3xl p-6 space-y-3">
               <div className="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-700">
-                <Globe2 className="w-5 h-5" />
+                <Leaf className="w-5 h-5" />
               </div>
               <h3 className="font-semibold text-foreground">
-                {isArabic ? "دعم المجتمعات المحلية" : "Supporting Local Communities"}
+                {isArabic ? "إدارة النفايات الطبية" : "Gestion Responsable des Déchets"}
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {isArabic
-                  ? "نعمل مع تعاونيات نسائية في المغرب لضمان دخل عادل وتحسين ظروف العمل، مع الحفاظ على المهارات التقليدية."
-                  : "We work with women-led cooperatives in Morocco, ensuring fair income and better working conditions while preserving traditional expertise."}
+                  ? "نلتزم بدعم البياطرة في الإدارة المسؤولة للتغليف والنفايات المرتبطة بالمنتجات، لضمان حماية التربة والمياه الجوفية في المغرب."
+                  : "Nous sensibilisons nos partenaires à la gestion responsable des emballages et déchets liés aux produits, afin de préserver les sols et les nappes phréatiques du Maroc."}
               </p>
             </div>
 
             <div className="glass-subtle rounded-3xl p-6 space-y-3">
               <div className="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-primary/10 text-primary">
-                <Recycle className="w-5 h-5" />
+                <Heart className="w-5 h-5" />
               </div>
               <h3 className="font-semibold text-foreground">
-                {isArabic ? "عبوات واعية بالبيئة" : "Eco‑Conscious Packaging"}
+                {isArabic ? "دعم الصحة الواحدة (One Health)" : "Soutien à l'approche One Health"}
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {isArabic
-                  ? "نختار عبوات يمكن إعادة تدويرها قدر الإمكان، ونقلل من المواد الزائدة بدون التأثير على حماية المنتج."
-                  : "We choose packaging that is as recyclable as possible and minimize excess materials, without compromising product protection."}
+                  ? "نؤمن أن صحة البشر والحيوانات والبيئة مترابطة. استثماراتنا تركز على الوقاية من الأمراض الحيوانية لضمان سلامة الجميع في مجتمعنا."
+                  : "Nous pensons que la santé des humains, des animaux et de l'environnement est liée. Nos investissements se concentrent sur la prévention pour assurer la sécurité de tous."}
               </p>
             </div>
           </div>
@@ -187,19 +176,19 @@ export default function SustainabilityPage() {
       <section className="py-16 sm:py-20 bg-secondary/5 border-t border-border/40">
         <div className={`container mx-auto px-4 max-w-3xl text-center space-y-6 ${isArabic ? "rtl" : ""}`}>
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground">
-            {isArabic ? "اختاري جمالاً يحترم الكوكب" : "Choose beauty that respects the planet"}
+            {isArabic ? "شاركنا في بناء مستقبل صحي" : "Participez avec nous à un avenir sain"}
           </h2>
           <p className="text-muted-foreground leading-relaxed">
             {isArabic
-              ? "كل منتج من ديدالي هو خطوة صغيرة نحو روتين عناية أجمل وأكثر وعياً. اختاري منتجات تعكس قيمك وتدلّل بشرتك في نفس الوقت."
-              : "Every Didali product is a small step towards a more beautiful and conscious routine. Choose treatments that reflect your values and pamper your skin at the same time."}
+              ? "من خلال اختيار مرافيت كمورد لكم، أنتم تختارون شريكاً يلتزم بالجودة والأمان والمسؤولية تجاه البيئة والمجتمع المغربي."
+              : "En choisissant Miravet comme fournisseur, vous choisissez un partenaire qui s'engage pour la qualité, la sécurité et la responsabilité envers l'environnement et la société marocaine."}
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <Button asChild size="lg" className="rounded-full shadow-lg shadow-primary/25">
-              <Link href="/#shop">{isArabic ? "تسوقي المنتجات" : "Shop Products"}</Link>
+              <Link href="/#produits">{isArabic ? "اكتشف منتجاتنا" : "Découvrir nos Produits"}</Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="rounded-full bg-transparent">
-              <Link href="/our-story">{isArabic ? "اقرئي قصتنا" : "Read Our Story"}</Link>
+              <Link href="/our-story">{isArabic ? "قصتنا الكاملة" : "Notre Histoire"}</Link>
             </Button>
           </div>
         </div>
@@ -207,4 +196,3 @@ export default function SustainabilityPage() {
     </div>
   )
 }
-

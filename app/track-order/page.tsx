@@ -16,8 +16,8 @@ export default function TrackOrderPage() {
     <ComingSoonPage
       titleEn="Track Order"
       titleFr="Suivre une commande"
-      subtitleEn="Live order tracking and status updates from Didali Store are coming very soon."
-      subtitleFr="Le suivi en temps réel de vos commandes Didali Store arrive très bientôt."
+      subtitleEn="Live order tracking and status updates from Miravet are coming very soon."
+      subtitleFr="Le suivi en temps réel de vos commandes Miravet arrive très bientôt."
     />
   )
 

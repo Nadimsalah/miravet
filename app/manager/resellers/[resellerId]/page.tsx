@@ -52,7 +52,9 @@ export default function ResellerProfilePage() {
     }, [setLanguage])
 
     useEffect(() => {
-        if (resellerId) loadData()
+        if (resellerId && resellerId !== 'undefined') {
+            loadData()
+        }
     }, [resellerId])
 
     async function loadData() {
@@ -62,42 +64,17 @@ export default function ResellerProfilePage() {
             if (!user) throw new Error("Unauthorized")
             setAmId(user.id)
 
-            // 1. Fetch Reseller Details with Profile and Customer fallbacks
-            const { data: rawRes, error: resError } = await supabase
-                .from('resellers')
-                .select('*, user:profiles!user_id(name, email, phone)')
-                .eq('id', resellerId)
-                .single()
+            // Use the API route which handles server-side fetching and assignments check
+            const res = await fetch(`/api/manager/resellers/${resellerId}?amId=${user.id}`)
+            const data = await res.json()
 
-            if (resError) throw resError
+            if (!res.ok) throw new Error(data.error || "Failed to load reseller details")
 
-            // Fetch customer record for fallbacks
-            const { data: customer } = await supabase
-                .from('customers')
-                .select('*')
-                .eq('id', rawRes.user_id)
-                .maybeSingle()
-
-            const mergedReseller = {
-                ...rawRes,
-                company_name: rawRes.company_name && rawRes.company_name !== 'Personal Account' ? rawRes.company_name : (customer?.company_name || rawRes.company_name),
-                city: rawRes.city || customer?.city || "Morocco",
-                phone: rawRes.phone || customer?.phone || rawRes.user?.phone || "N/A"
-            }
-            setReseller(mergedReseller)
-
-            // 2. Fetch Reseller Orders (Matching by reseller_id OR customer_id OR email)
-            const emailFilter = mergedReseller.user?.email ? `,customer_email.ilike.${mergedReseller.user.email}` : ''
-            const { data: ordersData, error: ordersError } = await supabase
-                .from('orders')
-                .select('*')
-                .or(`reseller_id.eq.${resellerId},customer_id.eq.${rawRes.user_id}${emailFilter}`)
-                .order('created_at', { ascending: false })
-
-            if (ordersError) throw ordersError
-            setOrders(ordersData)
+            setReseller(data.reseller)
+            setOrders(data.orders || [])
 
         } catch (error: any) {
+            console.error('Error loading data:', error)
             toast.error(error.message)
         } finally {
             setLoading(false)

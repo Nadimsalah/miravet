@@ -24,7 +24,8 @@ import {
     Award,
     Image as ImageIcon,
     Loader2,
-    Save
+    Save,
+    ChevronRight,
 } from "lucide-react"
 import { Notifications } from "@/components/admin/notifications"
 import Link from "next/link"
@@ -39,14 +40,6 @@ import {
     DialogTrigger,
     DialogFooter
 } from "@/components/ui/dialog"
-import {
-    getBrands,
-    createBrand,
-    updateBrand,
-    deleteBrand,
-    uploadBrandLogo,
-    type Brand
-} from "@/lib/supabase-api"
 import { toast } from "sonner"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
@@ -120,23 +113,18 @@ export default function AdminProductsPage() {
     const [searchQuery, setSearchQuery] = useState("")
     const [products, setProducts] = useState<Product[]>([])
     const [loading, setLoading] = useState(true)
-    const [categories, setCategories] = useState<{ id: string, name: string, slug: string, name_ar?: string }[]>([])
+    const [categories, setCategories] = useState<{ id: string, name: string, slug: string, name_ar?: string, parent_id?: string | null }[]>([])
     const [newCategoryName, setNewCategoryName] = useState("")
     const [newCategoryNameAr, setNewCategoryNameAr] = useState("")
     const [isTranslating, setIsTranslating] = useState(false)
     const [showCategoryDialog, setShowCategoryDialog] = useState(false)
     const [categorySearch, setCategorySearch] = useState("")
-    const [brands, setBrands] = useState<Brand[]>([])
-    const [showBrandDialog, setShowBrandDialog] = useState(false)
     const [brandSearch, setBrandSearch] = useState("")
 
-    // Brand Form State
-    const [editingBrand, setEditingBrand] = useState<Brand | null>(null)
-    const [brandName, setBrandName] = useState("")
-    const [brandSlug, setBrandSlug] = useState("")
-    const [logoFile, setLogoFile] = useState<File | null>(null)
-    const [logoPreview, setLogoPreview] = useState<string | null>(null)
     const [isSavingBrand, setIsSavingBrand] = useState(false)
+    const [selectedParentId, setSelectedParentId] = useState<string | null>(null)
+    const [parentAddingSubId, setParentAddingSubId] = useState<string | null>(null)
+    const [newSubCategoryName, setNewSubCategoryName] = useState("")
 
 
     // Fetch products from Supabase
@@ -147,8 +135,7 @@ export default function AdminProductsPage() {
     }, [])
 
     async function loadBrands() {
-        const data = await getBrands()
-        setBrands(data)
+        // Removed brands loading
     }
 
     async function loadCategories() {
@@ -173,7 +160,8 @@ export default function AdminProductsPage() {
             .from('categories')
             .insert({
                 name: newCategoryName,
-                slug
+                slug,
+                parent_id: null
             })
 
         if (error) {
@@ -182,6 +170,29 @@ export default function AdminProductsPage() {
         }
 
         setNewCategoryName("")
+        loadCategories()
+    }
+
+    async function handleAddSubCategory(parentId: string) {
+        if (!newSubCategoryName.trim()) return
+
+        const slug = newSubCategoryName.toLowerCase().replace(/\s+/g, '-')
+
+        const { error } = await supabase
+            .from('categories')
+            .insert({
+                name: newSubCategoryName,
+                slug,
+                parent_id: parentId
+            })
+
+        if (error) {
+            alert('Error adding sub-category: ' + error.message)
+            return
+        }
+
+        setNewSubCategoryName("")
+        setParentAddingSubId(null)
         loadCategories()
     }
 
@@ -204,7 +215,7 @@ export default function AdminProductsPage() {
         setLoading(true)
         const { data, error } = await supabase
             .from('products')
-            .select('*, brand:brands!products_brand_id_fkey(*)')
+            .select('*')
             .order('created_at', { ascending: false })
 
         if (error) {
@@ -227,12 +238,26 @@ export default function AdminProductsPage() {
         if (error) {
             alert('Error deleting product: ' + error.message)
         } else {
-            // Reload products
             loadProducts()
         }
     }
 
-    const tabs = ["Tous", ...categories.map(c => c.slug)]
+    async function handleToggleStatus(product: Product) {
+        const newStatus = product.status === 'active' ? 'draft' : 'active'
+        const { error } = await supabase
+            .from('products')
+            .update({ status: newStatus })
+            .eq('id', product.id)
+
+        if (error) {
+            alert('Error updating status: ' + error.message)
+        } else {
+            setProducts(prev => prev.map(p => p.id === product.id ? { ...p, status: newStatus } : p))
+        }
+    }
+
+    const parentCategories = categories.filter(c => !c.parent_id)
+    const tabs = ["Tous", ...parentCategories.map(c => c.slug)]
 
     const getCategoryName = (slug: string) => {
         if (slug === "Tous") return "Tous"
@@ -241,7 +266,16 @@ export default function AdminProductsPage() {
     }
 
     const filteredProducts = products.filter(product => {
-        const matchesTab = activeTab === "Tous" || product.category === activeTab
+        // Find if product category belongs to the active tab or any of its subcategories
+        const activeCategory = categories.find(c => c.slug === activeTab)
+        const subCategories = activeTab === "Tous" ? [] : categories.filter(c => c.parent_id === activeCategory?.id)
+        const allowedCategoryNames = activeTab === "Tous" 
+            ? null 
+            : [activeCategory?.name, ...subCategories.map(s => s.name)].filter(Boolean).map(n => n?.toLowerCase())
+
+        const matchesTab = activeTab === "Tous" || (
+            product.category && allowedCategoryNames?.some(name => name && product.category?.toLowerCase().includes(name))
+        )
         const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase())
         return matchesTab && matchesSearch
     })
@@ -261,60 +295,8 @@ export default function AdminProductsPage() {
         }
     }
 
-    // Brand management functions
-    function handleLogoSelect(e: React.ChangeEvent<HTMLInputElement>) {
-        const file = e.target.files?.[0]
-        if (!file) return
-        setLogoFile(file)
-        setLogoPreview(URL.createObjectURL(file))
-    }
-
-    async function handleSaveBrand() {
-        if (!brandName || !brandSlug) return
-        setIsSavingBrand(true)
-        try {
-            let logoUrl = editingBrand?.logo
-            if (logoFile) {
-                const res = await uploadBrandLogo(logoFile, brandSlug)
-                if (res.success) {
-                    logoUrl = res.url
-                } else {
-                    toast.error(`Erreur upload logo: ${res.error}`)
-                    setIsSavingBrand(false)
-                    return
-                }
-            }
-
-            if (editingBrand) {
-                await updateBrand(editingBrand.id, { name: brandName, slug: brandSlug, logo: logoUrl })
-                toast.success("Marque modifiée")
-            } else {
-                await createBrand({ name: brandName, slug: brandSlug, logo: logoUrl })
-                toast.success("Marque créée")
-            }
-            setIsSavingBrand(false)
-            setEditingBrand(null)
-            setBrandName("")
-            setBrandSlug("")
-            setLogoFile(null)
-            setLogoPreview(null)
-            loadBrands()
-        } catch (e: any) {
-            console.error("Brand save error:", e)
-            toast.error(`Erreur: ${e.message || "Impossible d'enregistrer la marque"}`)
-            setIsSavingBrand(false)
-        }
-    }
-
     async function handleDeleteBrand(id: string) {
-        if (!confirm("Supprimer cette marque ?")) return
-        try {
-            await deleteBrand(id)
-            toast.success("Marque supprimée")
-            loadBrands()
-        } catch (e) {
-            toast.error("Erreur lors de la suppression")
-        }
+        // Removed brands deletion
     }
 
     const [uploading, setUploading] = useState(false)
@@ -563,17 +545,22 @@ export default function AdminProductsPage() {
                                     <DialogTitle>{t("admin.products.manage_categories")}</DialogTitle>
                                 </DialogHeader>
                                 <div className="space-y-4">
-                                    <div className="flex flex-col gap-3">
-                                        <div className="flex gap-2">
-                                            <Input
-                                                placeholder={t("admin.products.category_name_en")}
-                                                value={newCategoryName}
-                                                onChange={(e) => setNewCategoryName(e.target.value)}
-                                                className="flex-1"
-                                            />
-                                            <Button onClick={handleAddCategory}>
-                                                <Plus className="w-4 h-4 mr-1" /> {t("admin.products.add")}
-                                            </Button>
+                                    <div className="space-y-3">
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-black text-muted-foreground uppercase tracking-wider ml-1">
+                                                Nouvelle Catégorie Principale
+                                            </label>
+                                            <div className="flex gap-2">
+                                                <Input
+                                                    placeholder="Ex: Vaccins, Pharmacie..."
+                                                    value={newCategoryName}
+                                                    onChange={(e) => setNewCategoryName(e.target.value)}
+                                                    className="flex-1 h-10 rounded-xl"
+                                                />
+                                                <Button onClick={handleAddCategory} className="h-10 rounded-xl bg-slate-900">
+                                                    <Plus className="w-4 h-4 mr-1" /> {t("admin.products.add")}
+                                                </Button>
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="relative">
@@ -585,101 +572,90 @@ export default function AdminProductsPage() {
                                             className="pl-8 h-8 text-xs mb-2"
                                         />
                                     </div>
-                                    <div className="space-y-2 max-h-[60vh] overflow-y-auto mt-2 px-1">
+                                    <div className="space-y-4 max-h-[50vh] overflow-y-auto mt-2 px-1 pr-2">
                                         {categories
+                                            .filter(c => !c.parent_id) // Only parent categories first
                                             .filter(c => c.name.toLowerCase().includes(categorySearch.toLowerCase()))
-                                            .map((category) => (
-                                                <div key={category.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                                    <div>
-                                                        <p className="font-medium text-sm">{category.name}</p>
-                                                        <p className="text-[10px] text-muted-foreground/70">{category.slug}</p>
-                                                    </div>
-                                                    <Button
-                                                        size="icon"
-                                                        variant="ghost"
-                                                        onClick={() => handleDeleteCategory(category.id)}
-                                                        className="h-8 w-8 text-red-500 hover:bg-red-50"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </Button>
-                                                </div>
-                                            ))}
-                                    </div>
-                                </div>
-                            </DialogContent>
-                        </Dialog>
+                                            .map((parent) => {
+                                                const subCats = categories.filter(c => c.parent_id === parent.id)
+                                                return (
+                                                    <div key={parent.id} className="space-y-2">
+                                                        <div className="flex items-center justify-between p-3 bg-white border border-gray-100 rounded-2xl shadow-sm">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-8 h-8 rounded-lg bg-primary/5 text-primary flex items-center justify-center font-bold text-xs">
+                                                                    {parent.name[0]}
+                                                                </div>
+                                                                <div>
+                                                                    <p className="font-bold text-sm text-foreground">{parent.name}</p>
+                                                                    <p className="text-[10px] text-muted-foreground/70 font-mono tracking-tighter">{parent.slug}</p>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex items-center gap-1.5">
+                                                                <Button
+                                                                    size="icon"
+                                                                    variant="ghost"
+                                                                    onClick={() => setParentAddingSubId(parentAddingSubId === parent.id ? null : parent.id)}
+                                                                    className={`h-8 w-8 rounded-xl transition-colors ${parentAddingSubId === parent.id ? 'bg-indigo-50 text-indigo-600' : 'text-slate-400 hover:text-indigo-600 hover:bg-indigo-50'}`}
+                                                                >
+                                                                    <Plus className="w-4 h-4" />
+                                                                </Button>
+                                                                <Button
+                                                                    size="icon"
+                                                                    variant="ghost"
+                                                                    onClick={() => handleDeleteCategory(parent.id)}
+                                                                    className="h-8 w-8 text-red-500 hover:bg-red-50 rounded-xl"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </Button>
+                                                            </div>
+                                                        </div>
 
-                        <Dialog open={showBrandDialog} onOpenChange={setShowBrandDialog}>
-                            <DialogTrigger asChild>
-                                <Button variant="outline" className="rounded-full h-9">
-                                    <Award className="w-4 h-4 sm:mr-2" />
-                                    <span className="hidden sm:inline">Marques</span>
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent className="sm:max-w-xl">
-                                <DialogHeader>
-                                    <DialogTitle>Gérer les Marques</DialogTitle>
-                                </DialogHeader>
-                                <div className="space-y-6 pt-4">
-                                    <div className="p-4 bg-muted/30 rounded-2xl border border-white/5 space-y-4">
-                                        <div className="flex gap-4">
-                                            <div className="relative w-20 h-20 rounded-xl border border-dashed flex items-center justify-center overflow-hidden bg-background">
-                                                {logoPreview ? (
-                                                    <Image src={logoPreview} alt="Preview" fill className="object-contain p-2" />
-                                                ) : <ImageIcon className="w-6 h-6 text-muted-foreground" />}
-                                                <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={handleLogoSelect} accept="image/*" />
-                                            </div>
-                                            <div className="flex-1 space-y-2">
-                                                <Input placeholder="Nom Marque" value={brandName} onChange={(e) => {
-                                                    setBrandName(e.target.value)
-                                                    if (!editingBrand) setBrandSlug(e.target.value.toLowerCase().replace(/\s+/g, '-'))
-                                                }} />
-                                                <Input placeholder="slug" value={brandSlug} onChange={(e) => setBrandSlug(e.target.value)} />
-                                            </div>
-                                        </div>
-                                        <div className="flex justify-end gap-2">
-                                            {editingBrand && (
-                                                <Button variant="ghost" size="sm" onClick={() => {
-                                                    setEditingBrand(null)
-                                                    setBrandName("")
-                                                    setBrandSlug("")
-                                                    setLogoPreview(null)
-                                                }}>Annuler</Button>
-                                            )}
-                                            <Button size="sm" onClick={handleSaveBrand} disabled={isSavingBrand}>
-                                                {isSavingBrand ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
-                                                {editingBrand ? "Modifier" : "Ajouter"}
-                                            </Button>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-2 max-h-[40vh] overflow-y-auto">
-                                        {brands.map(brand => (
-                                            <div key={brand.id} className="flex items-center justify-between p-3 glass-strong rounded-xl border border-white/5">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center relative overflow-hidden border">
-                                                        {brand.logo ? <Image src={brand.logo} alt={brand.name} fill className="object-contain p-1" /> : <Award className="w-5 h-5 text-muted-foreground" />}
+                                                        {/* Inline Add Sub-category Input */}
+                                                        {parentAddingSubId === parent.id && (
+                                                            <div className="ml-6 pl-4 border-l-2 border-indigo-500 animate-in slide-in-from-left-2 duration-300">
+                                                                <div className="flex gap-2 bg-indigo-50/50 p-2 rounded-xl border border-indigo-100/50">
+                                                                    <Input
+                                                                        placeholder="Nom de la sous-catégorie..."
+                                                                        value={newSubCategoryName}
+                                                                        autoFocus
+                                                                        onChange={(e) => setNewSubCategoryName(e.target.value)}
+                                                                        className="h-8 text-xs flex-1 bg-white"
+                                                                        onKeyDown={(e) => e.key === 'Enter' && handleAddSubCategory(parent.id)}
+                                                                    />
+                                                                    <Button onClick={() => handleAddSubCategory(parent.id)} className="h-8 text-[10px] px-3 bg-indigo-600">
+                                                                        Ajouter
+                                                                    </Button>
+                                                                    <Button variant="ghost" onClick={() => setParentAddingSubId(null)} className="h-8 w-8 p-0">
+                                                                        <X className="w-3 h-3" />
+                                                                    </Button>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                        
+                                                        {/* Render Sub-categories */}
+                                                        {subCats.length > 0 && (
+                                                            <div className="ml-6 pl-4 border-l-2 border-primary/10 space-y-2">
+                                                                {subCats.map(sub => (
+                                                                    <div key={sub.id} className="flex items-center justify-between p-2.5 bg-gray-50/50 rounded-xl border border-transparent hover:border-gray-200 transition-all">
+                                                                        <div className="flex items-center gap-2">
+                                                                            <ChevronRight className="w-3 h-3 text-muted-foreground/40" />
+                                                                            <p className="font-medium text-xs text-foreground/80">{sub.name}</p>
+                                                                        </div>
+                                                                        <Button
+                                                                            size="icon"
+                                                                            variant="ghost"
+                                                                            onClick={() => handleDeleteCategory(sub.id)}
+                                                                            className="h-7 w-7 text-red-500/60 hover:text-red-500 hover:bg-red-50 rounded-lg"
+                                                                        >
+                                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                                        </Button>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                    <div>
-                                                        <p className="font-bold text-sm">{brand.name}</p>
-                                                        <p className="text-[10px] text-muted-foreground">{brand.slug}</p>
-                                                    </div>
-                                                </div>
-                                                <div className="flex gap-1">
-                                                    <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => {
-                                                        setEditingBrand(brand)
-                                                        setBrandName(brand.name)
-                                                        setBrandSlug(brand.slug)
-                                                        setLogoPreview(brand.logo)
-                                                    }}>
-                                                        <Edit className="w-4 h-4" />
-                                                    </Button>
-                                                    <Button size="icon" variant="ghost" className="h-8 w-8 text-red-500 hover:bg-red-500/10" onClick={() => handleDeleteBrand(brand.id)}>
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        ))}
+                                                )
+                                            })}
                                     </div>
                                 </div>
                             </DialogContent>
@@ -723,16 +699,16 @@ export default function AdminProductsPage() {
 
                 {/* Filters & Controls */}
                 <div className="space-y-6">
-                    <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-background/40 backdrop-blur-md p-1 rounded-2xl border border-white/5">
+                    <div className="flex flex-col lg:flex-row gap-6 justify-between items-center bg-white/50 backdrop-blur-xl p-2 rounded-[2rem] border border-white/20 shadow-xl shadow-black/5">
                         {/* Tabs */}
-                        <div className="flex p-1 bg-white/5 rounded-xl overflow-x-auto max-w-full no-scrollbar w-full sm:w-auto">
+                        <div className="flex p-1.5 bg-slate-100/50 rounded-2xl overflow-x-auto max-w-full no-scrollbar w-full lg:w-auto">
                             {tabs.map((tab) => (
                                 <button
                                     key={tab}
                                     onClick={() => setActiveTab(tab)}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeTab === tab
-                                        ? "bg-primary text-primary-foreground shadow-md"
-                                        : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
+                                    className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${activeTab === tab
+                                        ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200"
+                                        : "text-slate-500 hover:text-indigo-600 hover:bg-white/80"
                                         }`}
                                 >
                                     {getCategoryName(tab)}
@@ -741,13 +717,13 @@ export default function AdminProductsPage() {
                         </div>
 
                         {/* Search */}
-                        <div className="relative w-full sm:w-64">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <div className="relative w-full lg:w-80 group">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
                             <Input
-                                placeholder={t("admin.products.search_placeholder")}
+                                placeholder="Rechercher une référence..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-9 rounded-xl bg-white/5 border-white/10 focus:bg-white/10 h-10"
+                                className="pl-11 pr-4 rounded-xl bg-white border-2 border-slate-100 focus:border-indigo-500 h-12 text-sm font-bold shadow-sm transition-all"
                             />
                         </div>
                     </div>
@@ -821,7 +797,7 @@ export default function AdminProductsPage() {
                                 <thead>
                                     <tr className="border-b border-white/10 bg-white/5 text-left">
                                         <th className="py-4 pl-4 sm:pl-6 text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t("admin.products.table.product")}</th>
-                                        <th className="py-4 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Marque</th>
+
                                         <th className="py-4 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden sm:table-cell">{t("admin.products.table.category")}</th>
                                         <th className="py-4 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Prix en Dirham</th>
                                         <th className="py-4 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden md:table-cell">{t("admin.products.table.stock")}</th>
@@ -857,27 +833,28 @@ export default function AdminProductsPage() {
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="py-4 px-4 whitespace-nowrap">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="h-8 w-8 bg-white rounded-md flex items-center justify-center relative overflow-hidden border">
-                                                            {(product as any).brand?.logo ? (
-                                                                <Image src={(product as any).brand.logo} alt={(product as any).brand.name} fill className="object-contain p-1" />
-                                                            ) : (
-                                                                <Award className="w-4 h-4 text-muted-foreground/30" />
-                                                            )}
-                                                        </div>
-                                                        <span className="text-xs text-muted-foreground">{(product as any).brand?.name || "-"}</span>
-                                                    </div>
-                                                </td>
+
                                                 <td className="py-4 px-4 text-sm text-foreground/80 hidden sm:table-cell">{product.category}</td>
                                                 <td className="py-4 px-4 text-sm font-bold text-foreground whitespace-nowrap">{formatPrice(product.price)}</td>
                                                 <td className="py-4 px-4 text-sm text-muted-foreground hidden md:table-cell font-medium">
                                                     {product.stock} {t("admin.products.units")}
                                                 </td>
                                                 <td className="py-4 px-4">
-                                                    <Badge className={getStatusColor(getStockStatus(product.stock))}>
-                                                        {getStockStatus(product.stock)}
-                                                    </Badge>
+                                                    <div className="flex flex-col gap-1">
+                                                        <Badge className={getStatusColor(getStockStatus(product.stock))}>
+                                                            {getStockStatus(product.stock)}
+                                                        </Badge>
+                                                        <button
+                                                            onClick={() => handleToggleStatus(product)}
+                                                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full transition-all ${
+                                                                product.status === 'active'
+                                                                    ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+                                                                    : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                                                            }`}
+                                                        >
+                                                            {product.status === 'active' ? '● Actif' : '○ Brouillon'}
+                                                        </button>
+                                                    </div>
                                                 </td>
                                                 <td className="py-4 pr-6 text-right">
                                                     <div className="flex items-center justify-end gap-2">

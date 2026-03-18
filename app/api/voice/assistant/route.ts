@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
         // 3. GENERATE AGENT RESPONSE
         console.log('[Voice] Sending to GPT-4o-mini...');
         const systemPrompt = `
-      You are Nova, the Didali Store AI Voice Assistant.
+      You are Nova, the Miravet AI Voice Assistant.
       Greet warmly. Assist with product inquiries. 
       Keep it brief and conversational (max 2-3 sentences).
       Language: ${language === 'ar' ? 'Arabic (Algerian/Darija/MSA)' : 'French/English'}.

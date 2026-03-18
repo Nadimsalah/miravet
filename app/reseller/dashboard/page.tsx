@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useLanguage } from "@/components/language-provider"
 import { supabase } from "@/lib/supabase"
-import { Customer, Order, getCustomerById, getCustomerOrders } from "@/lib/supabase-api"
+import { type Customer, type Order, getCustomerById, getCustomerOrders } from "@/lib/supabase-api"
 import { Badge } from "@/components/ui/badge"
 import { Loader2, Package, ShoppingBag, CreditCard, User, Building2, FileText, Globe, MapPin, LogOut, Eye, Phone, Mail, ShieldAlert } from "lucide-react"
 import Link from "next/link"
@@ -43,37 +43,52 @@ export default function ResellerDashboard() {
                 }
                 setUser(user)
 
-                // 2. Check role to prevent account managers from accessing reseller dashboard
+                // 2. Check role — try profiles table first, then JWT metadata
                 const { data: profileRow } = await supabase
                     .from('profiles')
                     .select('role')
                     .eq('id', user.id)
                     .maybeSingle()
 
-                if (profileRow?.role === 'DELIVERY_MAN') {
+                const role = profileRow?.role || user.user_metadata?.role || ''
+                const normalizedRole = role.toUpperCase()
+
+                if (normalizedRole === 'DELIVERY_MAN') {
                     router.push('/logistique/dashboard')
                     return
                 }
-
-                if (profileRow?.role === 'ACCOUNT_MANAGER') {
-                    // Redirect account managers to their own dashboard
+                if (normalizedRole === 'ACCOUNT_MANAGER') {
                     router.push('/manager/resellers')
                     return
                 }
 
-                if (profileRow?.role === 'ADMIN') {
-                    // Optional: admins go to admin dashboard instead of reseller area
-                    router.push('/admin/dashboard')
-                    return
+                // 3. Try to get Customer Profile from customers table
+                let customerProfile = await getCustomerById(user.id)
+
+                // 4. If no customer record, build profile from JWT user_metadata (trigger may have failed)
+                if (!customerProfile) {
+                    const meta = user.user_metadata || {}
+                    customerProfile = {
+                        id: user.id,
+                        name: meta.full_name || user.email?.split('@')[0] || '',
+                        email: user.email || '',
+                        phone: meta.phone || null,
+                        role: meta.role || 'reseller_pending',
+                        company_name: meta.company_name || null,
+                        ice: meta.ice || null,
+                        website: meta.website || null,
+                        city: meta.city || null,
+                        status: 'pending',
+                        total_orders: 0,
+                        total_spent: 0,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString(),
+                    } as any
                 }
 
-                // 3. Get Customer Profile (reseller details live in `customers` table)
-                const customerProfile = await getCustomerById(user.id)
-                if (customerProfile) {
-                    setProfile(customerProfile)
-                }
+                setProfile(customerProfile)
 
-                // 4. Get Account Manager
+                // 5. Get Account Manager (only if resellers table has entry)
                 const { data: resellerData } = await supabase
                     .from('resellers')
                     .select('id')
@@ -99,7 +114,7 @@ export default function ResellerDashboard() {
                     }
                 }
 
-                // 5. Get Orders
+                // 6. Get Orders
                 if (user.id) {
                     const ordersData = await getCustomerOrders(user.id)
                     setOrders(ordersData)
@@ -114,6 +129,7 @@ export default function ResellerDashboard() {
 
         checkUser()
     }, [router])
+
 
     const handleSignOut = async () => {
         await supabase.auth.signOut()

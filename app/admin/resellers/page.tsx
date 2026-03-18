@@ -58,31 +58,53 @@ export default function ResellersPage() {
                 .from('resellers')
                 .select(`
                     *,
-                    user:profiles!user_id(name, email, role)
+                    user:profiles(name, email, role)
                 `)
                 .order('created_at', { ascending: false })
 
-            if (resError) throw resError
+            if (resError) {
+                console.error("[AdminResellers] resError:", resError)
+                throw resError
+            }
 
-            // 2. Fetch customer records to get total_spent
-            const { data: customersData } = await supabase
-                .from('customers')
-                .select('id, total_spent')
-                .in('id', (resellersData || []).map(r => r.user_id))
+            // 2. Fetch non-cancelled orders to get REAL total_spent
+            const { data: ordersData, error: ordersError } = await supabase
+                .from('orders')
+                .select('reseller_id, total')
+                .neq('status', 'cancelled')
+
+            if (ordersError) {
+                console.error("[AdminResellers] ordersError:", ordersError)
+                // We don't throw heroically, maybe just log and continue with []
+            }
 
             // 3. Fetch assignments
-            const { data: assignments } = await supabase
+            const { data: assignments, error: assignError } = await supabase
                 .from('account_manager_assignments')
                 .select(`
                     customer_id,
                     reseller_id,
-                    account_manager:profiles!account_manager_id(name)
+                    account_manager:profiles(name)
                 `)
                 .is('soft_deleted_at', null)
+            
+            if (assignError) {
+                console.error("[AdminResellers] assignError:", assignError)
+            }
 
             // 4. Merge all data
             const mergedResellers = (resellersData || []).map((r: any) => {
-                const customer = customersData?.find(c => c.id === r.user_id)
+                // Determine normalized role
+                const userRole = r.user?.role?.toLowerCase() || ""
+                let normalizedRole = "reseller"
+                if (userRole.includes("partner")) normalizedRole = "partner"
+                else if (userRole.includes("wholesaler")) normalizedRole = "wholesaler"
+                else if (userRole.includes("reseller")) normalizedRole = "reseller"
+
+                // Calculate real spend for this reseller
+                const resellerOrders = (ordersData || []).filter(o => o.reseller_id === r.id)
+                const realSpent = resellerOrders.reduce((acc, o) => acc + (o.total || 0), 0)
+                
                 const assignment = assignments?.find((a: any) => a.customer_id === r.user_id || a.reseller_id === r.id)
                 
                 return {
@@ -90,23 +112,26 @@ export default function ResellersPage() {
                     reseller_id_db: r.id,
                     name: r.user?.name || "Unknown",
                     email: r.user?.email || "N/A",
-                    role: r.user?.role || "reseller",
+                    role: normalizedRole,
                     status: r.status,
                     company_name: r.company_name,
                     ice: r.ice,
                     city: r.city,
-                    total_spent: customer?.total_spent || 0,
+                    total_spent: realSpent,
                     account_manager_name: (assignment as any)?.account_manager?.name,
                     created_at: r.created_at
                 }
             })
 
-            // Optional: Still filter out some if really needed, but the user wants to see them.
-            // Let's keep them all for now.
             setResellers(mergedResellers as any)
         } catch (error: any) {
-            console.error('Error loading resellers:', error)
-            toast.error(t("admin.resellers.error_loading"))
+            console.error('Error loading resellers DETAILS:', {
+                message: error?.message,
+                details: error?.details,
+                hint: error?.hint,
+                code: error?.code
+            })
+            toast.error(t("admin.resellers.error_loading") + ": " + (error?.message || "Unknown"))
         } finally {
             setLoading(false)
         }
@@ -133,12 +158,17 @@ export default function ResellersPage() {
 
     // Calculate aggregated stats
     const totalSpend = resellers.reduce((acc, r) => acc + (r.total_spent || 0), 0)
-    const totalProfit = totalSpend * 0.28 // Mocking 28% margin for now
 
-    // Calculate counts by type
-    const totalResellers = resellers.filter(r => (r as any).reseller_type === 'reseller' || !(r as any).reseller_type).length
-    const totalPartners = resellers.filter(r => (r as any).reseller_type === 'partner').length
-    const totalWholesalers = resellers.filter(r => (r as any).reseller_type === 'wholesaler').length
+    // Calculate counts accurately by role
+    const totalResellers = resellers.filter(r => 
+        r.role?.toLowerCase().includes('reseller')
+    ).length
+    const totalPartners = resellers.filter(r => 
+        r.role?.toLowerCase().includes('partner')
+    ).length
+    const totalWholesalers = resellers.filter(r => 
+        r.role?.toLowerCase().includes('wholesaler')
+    ).length
 
     const overviewStats = [
         { label: t("admin.resellers.total_resellers"), value: totalResellers, icon: Users, color: "text-blue-500", bg: "bg-blue-500/10" },
@@ -279,13 +309,13 @@ export default function ResellersPage() {
                                                     <div>
                                                         <div className="flex items-center gap-2 mb-1 flex-wrap">
                                                             <p className="font-bold text-foreground text-base tracking-tight">{reseller.name}</p>
-                                                            {(reseller as any).reseller_type && (
-                                                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${(reseller as any).reseller_type === 'partner' ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' :
-                                                                    (reseller as any).reseller_type === 'wholesaler' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
+                                                            {reseller.role && (
+                                                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${reseller.role === 'partner' ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' :
+                                                                    reseller.role === 'wholesaler' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
                                                                         'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                                                                     }`}>
-                                                                    {(reseller as any).reseller_type === 'partner' ? t("admin.resellers.partner") :
-                                                                        (reseller as any).reseller_type === 'wholesaler' ? t("admin.resellers.wholesaler") :
+                                                                    {reseller.role === 'partner' ? t("admin.resellers.partner") :
+                                                                        reseller.role === 'wholesaler' ? t("admin.resellers.wholesaler") :
                                                                             t("admin.resellers.reseller")}
                                                                 </span>
                                                             )}

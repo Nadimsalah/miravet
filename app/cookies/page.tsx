@@ -3,21 +3,10 @@
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { useLanguage } from "@/components/language-provider"
-import { ComingSoonPage } from "@/components/coming-soon-page"
 
 export default function CookiesPage() {
   const { language } = useLanguage()
   const isArabic = language === "ar"
-
-  // Temporary: Coming soon layout for footer page
-  return (
-    <ComingSoonPage
-      titleEn="Cookie Policy"
-      titleFr="Politique de cookies"
-      subtitleEn="Our cookie and tracking policy for Didali Store will be available here very soon."
-      subtitleFr="Notre politique de cookies et de suivi pour Didali Store sera disponible ici très bientôt."
-    />
-  )
 
   return (
     <div className={`min-h-screen bg-background ${isArabic ? "font-[var(--font-almarai)]" : ""}`}>
@@ -31,51 +20,50 @@ export default function CookiesPage() {
             <span>{isArabic ? "العودة إلى الرئيسية" : "Back to Home"}</span>
           </Link>
           <span className="text-xs text-muted-foreground uppercase tracking-[0.25em]">
-            {isArabic ? "سياسة الكوكيز" : "Cookie Policy"}
+            {isArabic ? "سياسة الكوكيز" : "Cookies"}
           </span>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-10 sm:py-14 max-w-4xl">
         <h1 className={`text-2xl sm:text-3xl font-bold mb-6 ${isArabic ? "text-right" : ""}`}>
-          {isArabic ? "سياسة الكوكيز لديدالي – مصر" : "Didali Egypt – Cookie Policy"}
+          {isArabic ? "سياسة الكوكيز لمرافيت – المغرب" : "Miravet Maroc – Politique des Cookies"}
         </h1>
         <div className={`space-y-5 text-sm sm:text-base text-muted-foreground leading-relaxed ${isArabic ? "text-right" : ""}`}>
           <p>
             {isArabic
-              ? "يستخدم موقع ديدالي ملفات تعريف الارتباط (الكوكيز) لتحسين تجربة التصفح وقياس الأداء، بما يتوافق مع القوانين المصرية المنظمة لاستخدام البيانات الإلكترونية."
-              : "Didali&apos;s website uses cookies to improve your browsing experience and measure performance, in line with Egyptian regulations on electronic data usage."}
+              ? "يستخدم موقع مرافيت ملفات تعريف الارتباط (الكوكيز) لضمان عمل منصة الطلبات المهنية بأفضل شكل وتحسين تجربة المستخدم."
+              : "Le site de Miravet utilise des cookies afin de garantir le bon fonctionnement de notre plateforme de commande professionnelle et d'améliorer votre expérience utilisateur."}
           </p>
 
           <h2 className="font-semibold text-foreground">
-            {isArabic ? "١. ما هي الكوكيز؟" : "1. What are cookies?"}
+            {isArabic ? "١. ما هي ملفات الكوكيز؟" : "1. Que sont les cookies ?"}
           </h2>
           <p>
             {isArabic
-              ? "الكوكيز هي ملفات نصية صغيرة تُخزن على متصفحك عند زيارة الموقع، وتسمح لنا بتذكّر تفضيلاتك مثل اللغة أو محتويات عربة التسوق."
-              : "Cookies are small text files stored in your browser when you visit our site, allowing us to remember preferences such as language or cart contents."}
+              ? "الكوكيز هي ملفات نصية صغيرة تُخزن على جهازك، وتساعدنا على تذكر تفضيلاتك المهنية وحماية جلسة دخولك."
+              : "Les cookies sont de petits fichiers texte stockés sur votre terminal, nous permettant de mémoriser vos préférences professionnelles et de sécuriser votre session."}
           </p>
 
           <h2 className="font-semibold text-foreground">
-            {isArabic ? "٢. أنواع الكوكيز التي نستخدمها" : "2. Types of cookies we use"}
+            {isArabic ? "٢. استخدامنا للكوكيز" : "2. Notre utilisation"}
           </h2>
           <p>
             {isArabic
-              ? "نستخدم كوكيز أساسية لعمل الموقع (مثل حفظ الجلسة وعربة التسوق)، وكوكيز تحليلية مجهولة الهوية لمساعدتنا على فهم كيفية استخدام العملاء للموقع وتحسينه."
-              : "We use essential cookies to operate the site (such as session and cart cookies) and anonymous analytics cookies to understand how our website is used and to improve it."}
+              ? "نستخدم الكوكيز الضرورية لتأمين حسابات البياطرة والشركاء، وحفظ محتويات سلة المشتريات، بالإضافة إلى كوكيز تحليلية لقياس أداء الموقع في المغرب."
+              : "Nous utilisons des cookies essentiels pour sécuriser les comptes des vétérinaires et partenaires, mémoriser le panier, ainsi que des cookies analytiques pour mesurer les performances du site au Maroc."}
           </p>
 
           <h2 className="font-semibold text-foreground">
-            {isArabic ? "٣. التحكم في الكوكيز" : "3. Managing cookies"}
+            {isArabic ? "٣. إدارة الكوكيز" : "3. Gestion des cookies"}
           </h2>
           <p>
             {isArabic
-              ? "يمكنك إدارة أو تعطيل الكوكيز من إعدادات المتصفح الخاص بك. يرجى ملاحظة أن إيقاف الكوكيز الأساسية قد يؤثر على عمل بعض وظائف الموقع مثل إتمام الطلبات."
-              : "You can manage or disable cookies in your browser settings. Please note that disabling essential cookies may affect key site functions such as completing orders."}
+              ? "يمكنكم التحكم في ملفات الكوكيز عبر إعدادات المتصفح. يرجى العلم أن تعطيلها قد يؤثر على القدرة على إتمام الطلبات المهنية عبر الموقع."
+              : "Vous pouvez paramétrer vos cookies via votre navigateur. Notez que leur désactivation peut limiter l'utilisation de certaines fonctionnalités, comme le passage de commandes."}
           </p>
         </div>
       </main>
     </div>
   )
 }
-

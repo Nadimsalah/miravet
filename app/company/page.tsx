@@ -7,8 +7,8 @@ export default function CompanyPage() {
     <ComingSoonPage
       titleEn="Company"
       titleFr="Entreprise"
-      subtitleEn="Learn all about Didali Store as a company — story, team and values — very soon."
-      subtitleFr="Découvrez très bientôt tout sur Didali Store en tant qu’entreprise : histoire, équipe et valeurs."
+      subtitleEn="Learn all about Miravet as a company — story, team and values — very soon."
+      subtitleFr="Découvrez très bientôt tout sur Miravet en tant qu’entreprise : histoire, équipe et valeurs."
     />
   )
 }

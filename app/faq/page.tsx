@@ -19,15 +19,6 @@ export default function FaqPage() {
     { q: t("faq.q6"), a: t("faq.a6") },
   ]
 
-  // Temporary: Coming soon layout for footer page
-  return (
-    <ComingSoonPage
-      titleEn="FAQ"
-      titleFr="FAQ"
-      subtitleEn="A curated FAQ experience tailored for Didali Store customers is coming very soon."
-      subtitleFr="Une FAQ claire et complète pour les clients Didali Store arrive très bientôt."
-    />
-  )
 
   return (
     <div className={`min-h-screen bg-background ${isArabic ? "font-[var(--font-almarai)]" : ""}`}>

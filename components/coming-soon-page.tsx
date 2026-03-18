@@ -47,7 +47,7 @@ export function ComingSoonPage({
           <Link href="/" className="flex-shrink-0 relative group">
             <Image
               src="/logo.webp"
-              alt="Didali Store"
+              alt="Miravet"
               width={142}
               height={40}
               className="h-8 w-auto transition-transform duration-300 group-hover:scale-105"

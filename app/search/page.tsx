@@ -187,13 +187,13 @@ export default function SearchPage() {
 
             {/* Header / Search Input Area */}
             <div className="container mx-auto px-4 pt-12 pb-8 relative z-10">
-                <div className="flex items-center gap-4 mb-12">
-                    <Link href="/">
+                <div className="flex items-center justify-center relative mb-12">
+                    <Link href="/" className="absolute left-0">
                         <Button variant="ghost" size="icon" className="rounded-full glass hover:bg-white/20 transition-all">
                             <ChevronLeft className="w-5 h-5" />
                         </Button>
                     </Link>
-                    <Image src="/logo.webp" alt="Didali Store" width={106} height={30} className="h-8 w-auto" />
+                    <Image src="/logo.png" alt="Miravet" width={140} height={40} className="h-10 w-auto" />
                 </div>
 
                 <div className="max-w-3xl mx-auto relative group">

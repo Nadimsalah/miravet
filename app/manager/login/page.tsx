@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { supabase } from "@/lib/supabase"
 import { Loader2, Mail, Lock, Briefcase } from "lucide-react"
 import { toast } from "sonner"
+import { getCurrentUserRole } from "@/lib/supabase-api"
 
 export default function CommercialLoginPage() {
     const router = useRouter()
@@ -20,22 +21,18 @@ export default function CommercialLoginPage() {
         setIsLoading(true)
 
         try {
+            const normalizedEmail = email.trim().toLowerCase()
             const result = await supabase.auth.signInWithPassword({
-                email: email,
+                email: normalizedEmail,
                 password,
             })
 
             if (result.data?.user) {
-                // Fetch role for redirect
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('role')
-                    .eq('id', result.data.user.id)
-                    .single()
+                // Fetch role for redirect using the consolidated helper
+                const role = await getCurrentUserRole(result.data.user.id)
+                const normalizedRole = role?.toUpperCase()
 
-                const role = profile?.role?.toUpperCase()
-
-                if (role === 'ACCOUNT_MANAGER' || role === 'ADMIN') {
+                if (normalizedRole === 'ACCOUNT_MANAGER' || normalizedRole === 'ADMIN') {
                     toast.success("Connexion réussie")
                     router.push('/manager/resellers')
                     router.refresh()
