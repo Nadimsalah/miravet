@@ -1,8 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Standalone output is required for many hosting providers including Hostinger
-  output: 'standalone',
-
   typescript: {
     ignoreBuildErrors: true,
   },
