@@ -8,8 +8,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { getOrders, type Order, updateAdminSettings, getAdminSettings } from "@/lib/supabase-api"
 import { supabase } from "@/lib/supabase"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
 import {
     Search,
     FileText,
@@ -27,7 +25,6 @@ import { toast } from "sonner"
 
 export default function AdminInvoicesPage() {
     const { t, language } = useLanguage()
-    const router = useRouter()
     const [searchQuery, setSearchQuery] = useState("")
     const [orders, setOrders] = useState<Order[]>([])
     const [totalOrders, setTotalOrders] = useState(0)
@@ -172,10 +169,26 @@ export default function AdminInvoicesPage() {
         }
     }
 
-    const printInvoice = (order: Order) => {
-        // Cette fonction n'est plus indispensable car on utilise <Link> directement,
-        // mais on la garde au cas où d'autres composants l'appellent.
-        router.push(`/admin/orders/${order.id}?print=true`)
+    const printInvoice = async (order: Order) => {
+        setSelectedOrder(order)
+        setTimeout(async () => {
+            const element = document.getElementById('printable-invoice')
+            if (!element) return
+            const origClass = element.className
+            element.className = "bg-white text-black p-8 w-[800px] block"
+            try {
+                const html2pdf = (await import('html2pdf.js')).default
+                await html2pdf().set({
+                    margin: 0.5,
+                    filename: `facture_${order.order_number}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true },
+                    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+                }).from(element).save()
+            } finally {
+                element.className = origClass
+            }
+        }, 300)
     }
 
     return (
@@ -286,13 +299,15 @@ export default function AdminInvoicesPage() {
                                                         </Badge>
                                                     </td>
                                                     <td className="py-4 pr-6 text-right">
-                                                        <Link 
-                                                            href={`/admin/orders/${order.id}?print=true`}
-                                                            className="inline-flex items-center justify-center rounded-lg bg-primary py-2 px-4 text-xs font-bold text-white shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95 whitespace-nowrap"
+                                                        <Button 
+                                                            variant="default"
+                                                            size="sm" 
+                                                            onClick={() => printInvoice(order)}
+                                                            className="rounded-lg shadow-xl shadow-primary/20"
                                                         >
                                                             <FileText className="w-4 h-4 mr-2" />
                                                             Générer la Facture
-                                                        </Link>
+                                                        </Button>
                                                     </td>
                                                 </tr>
                                             ))

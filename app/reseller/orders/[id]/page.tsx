@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useParams, useRouter, useSearchParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { useLanguage } from "@/components/language-provider"
 import { supabase } from "@/lib/supabase"
 import { getOrderById, type Order, type OrderItem, getAdminSettings } from "@/lib/supabase-api"
@@ -24,22 +24,18 @@ import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import Link from "next/link"
 import { formatPrice } from "@/lib/utils"
-import { toast } from "sonner"
 
 export default function ResellerOrderDetailsPage() {
     const { language } = useLanguage()
     const isArabic = language === "ar"
     const params = useParams()
     const router = useRouter()
-    const searchParams = useSearchParams()
     const orderId = params.id as string
-    const autoPrint = searchParams.get('print') === 'true'
 
     const [order, setOrder] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [printType, setPrintType] = useState<'bon_commande' | 'facture' | null>(null)
     const [signatureUrl, setSignatureUrl] = useState("")
-    const [isGeneratingPdf, setIsGeneratingPdf] = useState(false)
 
     useEffect(() => {
         async function loadOrder() {
@@ -65,9 +61,6 @@ export default function ResellerOrderDetailsPage() {
                 console.error("Order not found or access denied")
             }
             setLoading(false)
-            if (autoPrint) {
-                setTimeout(() => window.print(), 500)
-            }
         }
         loadOrder()
     }, [orderId, router])
@@ -169,14 +162,27 @@ export default function ResellerOrderDetailsPage() {
                     <div className="flex gap-3">
                         {!loading && order && (order.status.toLowerCase() === 'processing' || order.status.toLowerCase() === 'pending') && (
                             <Button
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    requestAnimationFrame(() => {
-                                        window.print();
-                                    });
+                                onClick={async () => {
+                                    setPrintType('bon_commande')
+                                    const element = document.getElementById('printable-invoice')
+                                    if (!element) return
+                                    const origClass = element.className
+                                    element.className = "bg-white text-black p-8 w-[800px] block"
+                                    try {
+                                        const html2pdf = (await import('html2pdf.js')).default
+                                        await html2pdf().set({
+                                            margin: 0.5,
+                                            filename: `bon_commande_${order.order_number}.pdf`,
+                                            image: { type: 'jpeg', quality: 0.98 },
+                                            html2canvas: { scale: 2, useCORS: true },
+                                            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+                                        }).from(element).save()
+                                    } finally {
+                                        element.className = origClass
+                                    }
                                 }}
                                 variant="outline"
-                                className="bg-white text-gray-600 border-gray-200 min-w-[150px]"
+                                className="bg-white text-gray-600 border-gray-200"
                             >
                                 <FileText className="w-4 h-4 mr-2" />
                                 {isArabic ? "بون الطلب" : "Bon de Commande"}
@@ -185,13 +191,26 @@ export default function ResellerOrderDetailsPage() {
 
                         {!loading && order && ['shipped', 'delivered'].includes(order.status.toLowerCase()) && (
                             <Button
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    requestAnimationFrame(() => {
-                                        window.print();
-                                    });
+                                onClick={async () => {
+                                    setPrintType('facture')
+                                    const element = document.getElementById('printable-invoice')
+                                    if (!element) return
+                                    const origClass = element.className
+                                    element.className = "bg-white text-black p-8 w-[800px] block"
+                                    try {
+                                        const html2pdf = (await import('html2pdf.js')).default
+                                        await html2pdf().set({
+                                            margin: 0.5,
+                                            filename: `facture_${order.order_number}.pdf`,
+                                            image: { type: 'jpeg', quality: 0.98 },
+                                            html2canvas: { scale: 2, useCORS: true },
+                                            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+                                        }).from(element).save()
+                                    } finally {
+                                        element.className = origClass
+                                    }
                                 }}
-                                className="bg-primary text-white hover:bg-primary/90 min-w-[150px]"
+                                className="bg-primary text-white hover:bg-primary/90"
                             >
                                 <FileText className="w-4 h-4 mr-2" />
                                 {isArabic ? "الفاتورة" : "Télécharger la Facture"}

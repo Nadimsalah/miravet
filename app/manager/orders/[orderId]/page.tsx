@@ -27,7 +27,7 @@ import { formatPrice } from "@/lib/utils"
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
 import Link from "next/link"
-import { useParams, useRouter, useSearchParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import Image from "next/image"
 import {
     Dialog,
@@ -42,8 +42,6 @@ import { Input } from "@/components/ui/input"
 export default function OrderDetailsPage() {
     const { orderId } = useParams()
     const router = useRouter()
-    const searchParams = useSearchParams()
-    const autoPrint = searchParams.get('print') === 'true'
     const { t } = useLanguage()
 
     // Flattened State
@@ -76,11 +74,6 @@ export default function OrderDetailsPage() {
             toast.error(error.message)
         } finally {
             setLoading(false)
-            if (autoPrint) {
-                setTimeout(() => {
-                    requestAnimationFrame(() => window.print())
-                }, 500)
-            }
         }
     }
 
@@ -125,11 +118,26 @@ export default function OrderDetailsPage() {
 
 
 
-    const handlePrint = () => {
+    const handlePrint = async () => {
         setPrintType('bon_commande')
-        requestAnimationFrame(() => {
-            window.print()
-        })
+        setTimeout(async () => {
+            const element = document.getElementById('printable-invoice')
+            if (!element) return
+            const origClass = element.className
+            element.className = "bg-white text-black p-8 w-[800px] block"
+            try {
+                const html2pdf = (await import('html2pdf.js')).default
+                await html2pdf().set({
+                    margin: 0.5,
+                    filename: `bon_commande_${order.order_number}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true },
+                    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+                }).from(element).save()
+            } finally {
+                element.className = origClass
+            }
+        }, 300)
     }
 
     if (loading) return (

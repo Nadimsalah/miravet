@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { getOrderDetailsAdmin, updateOrderStatusAdmin } from "@/app/actions/admin-orders"
-import { useParams, useRouter, useSearchParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { AdminSidebar } from "@/components/admin/admin-sidebar"
 import { useLanguage } from "@/components/language-provider"
 import { Badge } from "@/components/ui/badge"
@@ -39,8 +39,6 @@ export default function OrderDetailsPage() {
     const params = useParams()
     const router = useRouter()
     const orderId = params.id as string
-    const searchParams = useSearchParams()
-    const autoPrint = searchParams.get('print') === 'true'
 
     // Flattened State (View Model)
     const [order, setOrder] = useState<any>(null)
@@ -71,15 +69,6 @@ export default function OrderDetailsPage() {
             toast.error(error.message)
         } finally {
             setLoading(false)
-            if (autoPrint) {
-                // On mobile, Safari and others might block print if it's too fast or on load.
-                // We use a longer delay and requestAnimationFrame to ensure the page is stable.
-                setTimeout(() => {
-                    requestAnimationFrame(() => {
-                        window.print()
-                    })
-                }, 1500)
-            }
         }
     }
 
@@ -120,11 +109,26 @@ export default function OrderDetailsPage() {
         setUpdating(false)
     }
 
-    const handlePrint = (type: 'bon_commande' | 'delivery_note' = 'bon_commande') => {
+    const handlePrint = async (type: 'bon_commande' | 'delivery_note' = 'bon_commande') => {
         setPrintType(type)
-        requestAnimationFrame(() => {
-            window.print()
-        })
+        setTimeout(async () => {
+            const element = document.getElementById('printable-invoice')
+            if (!element) return
+            const origClass = element.className
+            element.className = "bg-white text-black p-8 w-[800px] block"
+            try {
+                const html2pdf = (await import('html2pdf.js')).default
+                await html2pdf().set({
+                    margin: 0.5,
+                    filename: `${type}_${order.order_number}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true },
+                    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+                }).from(element).save()
+            } finally {
+                element.className = origClass
+            }
+        }, 300)
     }
 
     const getStatusColor = (status: string) => {
