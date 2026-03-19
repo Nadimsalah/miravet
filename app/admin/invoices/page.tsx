@@ -286,19 +286,12 @@ export default function AdminInvoicesPage() {
                                                         </Badge>
                                                     </td>
                                                     <td className="py-4 pr-6 text-right">
-                                                        <Link href={`/admin/orders/${order.id}?print=true`}>
-                                                            <Button 
-                                                                variant="default"
-                                                                size="sm" 
-                                                                className="rounded-lg shadow-xl shadow-primary/20"
-                                                                onClick={(e) => {
-                                                                    // Show a quick loader so user knows something is happening
-                                                                    toast.loading("Ouverture de la facture...", { duration: 1000 });
-                                                                }}
-                                                            >
-                                                                <FileText className="w-4 h-4 mr-2" />
-                                                                Générer la Facture
-                                                            </Button>
+                                                        <Link 
+                                                            href={`/admin/orders/${order.id}?print=true`}
+                                                            className="inline-flex items-center justify-center rounded-lg bg-primary py-2 px-4 text-xs font-bold text-white shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95 whitespace-nowrap"
+                                                        >
+                                                            <FileText className="w-4 h-4 mr-2" />
+                                                            Générer la Facture
                                                         </Link>
                                                     </td>
                                                 </tr>

@@ -72,7 +72,13 @@ export default function OrderDetailsPage() {
         } finally {
             setLoading(false)
             if (autoPrint) {
-                setTimeout(() => window.print(), 500)
+                // On mobile, Safari and others might block print if it's too fast or on load.
+                // We use a longer delay and requestAnimationFrame to ensure the page is stable.
+                setTimeout(() => {
+                    requestAnimationFrame(() => {
+                        window.print()
+                    })
+                }, 1500)
             }
         }
     }
