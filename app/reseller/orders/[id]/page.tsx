@@ -162,24 +162,9 @@ export default function ResellerOrderDetailsPage() {
                     <div className="flex gap-3">
                         {!loading && order && (order.status.toLowerCase() === 'processing' || order.status.toLowerCase() === 'pending') && (
                             <Button
-                                onClick={async () => {
-                                    setPrintType('bon_commande')
-                                    const element = document.getElementById('printable-invoice')
-                                    if (!element) return
-                                    const origClass = element.className
-                                    element.className = "bg-white text-black p-8 w-[800px] block"
-                                    try {
-                                        const html2pdf = (await import('html2pdf.js')).default
-                                        await html2pdf().set({
-                                            margin: 0.5,
-                                            filename: `bon_commande_${order.order_number}.pdf`,
-                                            image: { type: 'jpeg', quality: 0.98 },
-                                            html2canvas: { scale: 2, useCORS: true },
-                                            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-                                        }).from(element).save()
-                                    } finally {
-                                        element.className = origClass
-                                    }
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    window.open(`/print/order/${order.id}`, '_blank');
                                 }}
                                 variant="outline"
                                 className="bg-white text-gray-600 border-gray-200"
@@ -191,24 +176,9 @@ export default function ResellerOrderDetailsPage() {
 
                         {!loading && order && ['shipped', 'delivered'].includes(order.status.toLowerCase()) && (
                             <Button
-                                onClick={async () => {
-                                    setPrintType('facture')
-                                    const element = document.getElementById('printable-invoice')
-                                    if (!element) return
-                                    const origClass = element.className
-                                    element.className = "bg-white text-black p-8 w-[800px] block"
-                                    try {
-                                        const html2pdf = (await import('html2pdf.js')).default
-                                        await html2pdf().set({
-                                            margin: 0.5,
-                                            filename: `facture_${order.order_number}.pdf`,
-                                            image: { type: 'jpeg', quality: 0.98 },
-                                            html2canvas: { scale: 2, useCORS: true },
-                                            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-                                        }).from(element).save()
-                                    } finally {
-                                        element.className = origClass
-                                    }
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    window.open(`/print/invoice/${order.id}`, '_blank');
                                 }}
                                 className="bg-primary text-white hover:bg-primary/90"
                             >

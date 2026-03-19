@@ -169,26 +169,9 @@ export default function AdminInvoicesPage() {
         }
     }
 
-    const printInvoice = async (order: Order) => {
-        setSelectedOrder(order)
-        setTimeout(async () => {
-            const element = document.getElementById('printable-invoice')
-            if (!element) return
-            const origClass = element.className
-            element.className = "bg-white text-black p-8 w-[800px] block"
-            try {
-                const html2pdf = (await import('html2pdf.js')).default
-                await html2pdf().set({
-                    margin: 0.5,
-                    filename: `facture_${order.order_number}.pdf`,
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { scale: 2, useCORS: true },
-                    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-                }).from(element).save()
-            } finally {
-                element.className = origClass
-            }
-        }, 300)
+    const printInvoice = (order: Order) => {
+        // Redirige vers une page dédiée à l'impression, beaucoup plus stable sur mobile
+        window.open(`/print/order/${order.id}`, '_blank')
     }
 
     return (
