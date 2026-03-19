@@ -120,9 +120,15 @@ export default function OrderDetailsPage() {
 
     const handlePrint = async () => {
         setPrintType('bon_commande')
+        const toastId = toast.loading(t("manager.order_details.loading") || "Préparation du document...")
+        setIsUpdating(true)
         setTimeout(async () => {
             const element = document.getElementById('printable-invoice')
-            if (!element) return
+            if (!element) {
+                toast.error("Erreur: Section introuvable", { id: toastId })
+                setIsUpdating(false)
+                return
+            }
             const origClass = element.className
             element.className = "bg-white text-black p-8 w-[800px] block"
             try {
@@ -131,13 +137,18 @@ export default function OrderDetailsPage() {
                     margin: 0.5,
                     filename: `bon_commande_${order.order_number}.pdf`,
                     image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { scale: 2, useCORS: true },
+                    html2canvas: { scale: 2, useCORS: true, logging: false },
                     jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
                 }).from(element).save()
+                toast.success("Document téléchargé !", { id: toastId })
+            } catch (err) {
+                console.error(err)
+                toast.error("Échec du téléchargement", { id: toastId })
             } finally {
                 element.className = origClass
+                setIsUpdating(false)
             }
-        }, 300)
+        }, 100)
     }
 
     if (loading) return (
