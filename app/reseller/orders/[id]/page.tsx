@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { useLanguage } from "@/components/language-provider"
 import { supabase } from "@/lib/supabase"
 import { getOrderById, type Order, type OrderItem, getAdminSettings } from "@/lib/supabase-api"
@@ -31,7 +31,9 @@ export default function ResellerOrderDetailsPage() {
     const isArabic = language === "ar"
     const params = useParams()
     const router = useRouter()
+    const searchParams = useSearchParams()
     const orderId = params.id as string
+    const autoPrint = searchParams.get('print') === 'true'
 
     const [order, setOrder] = useState<any>(null)
     const [loading, setLoading] = useState(true)
@@ -63,6 +65,9 @@ export default function ResellerOrderDetailsPage() {
                 console.error("Order not found or access denied")
             }
             setLoading(false)
+            if (autoPrint) {
+                setTimeout(() => window.print(), 500)
+            }
         }
         loadOrder()
     }, [orderId, router])
@@ -164,91 +169,31 @@ export default function ResellerOrderDetailsPage() {
                     <div className="flex gap-3">
                         {!loading && order && (order.status.toLowerCase() === 'processing' || order.status.toLowerCase() === 'pending') && (
                             <Button
-                                disabled={isGeneratingPdf}
-                                onClick={async () => {
-                                    setIsGeneratingPdf(true)
-                                    const toastId = toast.loading(isArabic ? "جاري تجهيز الملف..." : "Préparation du fichier...")
-                                    try {
-                                        setPrintType('bon_commande')
-                                        // Slight delay to let React render the print section
-                                        await new Promise(r => setTimeout(r, 100))
-                                        const element = document.getElementById('printable-invoice')
-                                        if (!element) throw new Error("Element de facture introuvable")
-                                        
-                                        const origClass = element.className
-                                        element.className = "bg-white text-black p-8 w-[800px] block"
-                                        
-                                        const html2pdf = (await import('html2pdf.js')).default
-                                        await html2pdf().set({
-                                            margin: 0.5,
-                                            filename: `bon_commande_${order.order_number}.pdf`,
-                                            image: { type: 'jpeg', quality: 0.98 },
-                                            html2canvas: { scale: 2, useCORS: true, logging: false },
-                                            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-                                        }).from(element).save()
-                                        
-                                        element.className = origClass
-                                        toast.success(isArabic ? "تم التحميل!" : "Téléchargé !", { id: toastId })
-                                    } catch (err: any) {
-                                        console.error(err)
-                                        toast.error(`Échec: ${err?.message || String(err)}`, { id: toastId, duration: 10000 })
-                                    } finally {
-                                        setIsGeneratingPdf(false)
-                                    }
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    requestAnimationFrame(() => {
+                                        window.print();
+                                    });
                                 }}
                                 variant="outline"
                                 className="bg-white text-gray-600 border-gray-200 min-w-[150px]"
                             >
-                                {isGeneratingPdf && printType === 'bon_commande' ? (
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                ) : (
-                                    <FileText className="w-4 h-4 mr-2" />
-                                )}
+                                <FileText className="w-4 h-4 mr-2" />
                                 {isArabic ? "بون الطلب" : "Bon de Commande"}
                             </Button>
                         )}
 
                         {!loading && order && ['shipped', 'delivered'].includes(order.status.toLowerCase()) && (
                             <Button
-                                disabled={isGeneratingPdf}
-                                onClick={async () => {
-                                    setIsGeneratingPdf(true)
-                                    const toastId = toast.loading(isArabic ? "جاري التجهيز..." : "Génération de la facture...")
-                                    try {
-                                        setPrintType('facture')
-                                        // Slight delay to let React render the print section
-                                        await new Promise(r => setTimeout(r, 100))
-                                        const element = document.getElementById('printable-invoice')
-                                        if (!element) throw new Error("Element de facture introuvable")
-                                        
-                                        const origClass = element.className
-                                        element.className = "bg-white text-black p-8 w-[800px] block"
-                                        
-                                        const html2pdf = (await import('html2pdf.js')).default
-                                        await html2pdf().set({
-                                            margin: 0.5,
-                                            filename: `facture_${order.order_number}.pdf`,
-                                            image: { type: 'jpeg', quality: 0.98 },
-                                            html2canvas: { scale: 2, useCORS: true, logging: false },
-                                            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-                                        }).from(element).save()
-                                        
-                                        element.className = origClass
-                                        toast.success(isArabic ? "تم التحميل!" : "Facture téléchargée !", { id: toastId })
-                                    } catch (err: any) {
-                                        console.error(err)
-                                        toast.error(`Échec: ${err?.message || String(err)}`, { id: toastId, duration: 10000 })
-                                    } finally {
-                                        setIsGeneratingPdf(false)
-                                    }
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    requestAnimationFrame(() => {
+                                        window.print();
+                                    });
                                 }}
                                 className="bg-primary text-white hover:bg-primary/90 min-w-[150px]"
                             >
-                                {isGeneratingPdf && printType === 'facture' ? (
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                ) : (
-                                    <FileText className="w-4 h-4 mr-2" />
-                                )}
+                                <FileText className="w-4 h-4 mr-2" />
                                 {isArabic ? "الفاتورة" : "Télécharger la Facture"}
                             </Button>
                         )}

@@ -169,35 +169,10 @@ export default function AdminInvoicesPage() {
         }
     }
 
-    const printInvoice = async (order: Order) => {
-        setSelectedOrder(order)
-        const toastId = toast.loading("Génération du document...")
-        
-        setTimeout(async () => {
-            const element = document.getElementById('printable-invoice')
-            if (!element) {
-                toast.error("Erreur: Section introuvable", { id: toastId })
-                return
-            }
-            const origClass = element.className
-            element.className = "bg-white text-black p-8 w-[800px] block"
-            try {
-                const html2pdf = (await import('html2pdf.js')).default
-                await html2pdf().set({
-                    margin: 0.5,
-                    filename: `facture_${order.order_number}.pdf`,
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { scale: 2, useCORS: true, logging: false },
-                    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-                }).from(element).save()
-                toast.success("Document téléchargé !", { id: toastId })
-            } catch (err) {
-                console.error(err)
-                toast.error("Échec du téléchargement", { id: toastId })
-            } finally {
-                element.className = origClass
-            }
-        }, 100)
+    const printInvoice = (order: Order) => {
+        // Au lieu de générer un PDF lourd en arrière-plan, 
+        // on ouvre simplement la page de la commande avec une instruction d'impression native (comme sur PC).
+        window.open(`/admin/orders/${order.id}?print=true`, '_blank')
     }
 
     return (

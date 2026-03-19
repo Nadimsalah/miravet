@@ -27,7 +27,7 @@ import { formatPrice } from "@/lib/utils"
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
 import Link from "next/link"
-import { useParams, useRouter } from "next/navigation"
+import { useParams, useRouter, useSearchParams } from "next/navigation"
 import Image from "next/image"
 import {
     Dialog,
@@ -42,6 +42,8 @@ import { Input } from "@/components/ui/input"
 export default function OrderDetailsPage() {
     const { orderId } = useParams()
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const autoPrint = searchParams.get('print') === 'true'
     const { t } = useLanguage()
 
     // Flattened State
@@ -74,6 +76,11 @@ export default function OrderDetailsPage() {
             toast.error(error.message)
         } finally {
             setLoading(false)
+            if (autoPrint) {
+                setTimeout(() => {
+                    requestAnimationFrame(() => window.print())
+                }, 500)
+            }
         }
     }
 
@@ -118,37 +125,11 @@ export default function OrderDetailsPage() {
 
 
 
-    const handlePrint = async () => {
+    const handlePrint = () => {
         setPrintType('bon_commande')
-        const toastId = toast.loading(t("manager.order_details.loading") || "Préparation du document...")
-        setIsUpdating(true)
-        setTimeout(async () => {
-            const element = document.getElementById('printable-invoice')
-            if (!element) {
-                toast.error("Erreur: Section introuvable", { id: toastId })
-                setIsUpdating(false)
-                return
-            }
-            const origClass = element.className
-            element.className = "bg-white text-black p-8 w-[800px] block"
-            try {
-                const html2pdf = (await import('html2pdf.js')).default
-                await html2pdf().set({
-                    margin: 0.5,
-                    filename: `bon_commande_${order.order_number}.pdf`,
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { scale: 2, useCORS: true, logging: false },
-                    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-                }).from(element).save()
-                toast.success("Document téléchargé !", { id: toastId })
-            } catch (err) {
-                console.error(err)
-                toast.error("Échec du téléchargement", { id: toastId })
-            } finally {
-                element.className = origClass
-                setIsUpdating(false)
-            }
-        }, 100)
+        requestAnimationFrame(() => {
+            window.print()
+        })
     }
 
     if (loading) return (
