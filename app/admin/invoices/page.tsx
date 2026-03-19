@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { getOrders, type Order, updateAdminSettings, getAdminSettings } from "@/lib/supabase-api"
 import { supabase } from "@/lib/supabase"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
 import {
     Search,
     FileText,
@@ -25,6 +27,7 @@ import { toast } from "sonner"
 
 export default function AdminInvoicesPage() {
     const { t, language } = useLanguage()
+    const router = useRouter()
     const [searchQuery, setSearchQuery] = useState("")
     const [orders, setOrders] = useState<Order[]>([])
     const [totalOrders, setTotalOrders] = useState(0)
@@ -170,9 +173,9 @@ export default function AdminInvoicesPage() {
     }
 
     const printInvoice = (order: Order) => {
-        // Au lieu de générer un PDF lourd en arrière-plan, 
-        // on ouvre simplement la page de la commande avec une instruction d'impression native (comme sur PC).
-        window.open(`/admin/orders/${order.id}?print=true`, '_blank')
+        // Cette fonction n'est plus indispensable car on utilise <Link> directement,
+        // mais on la garde au cas où d'autres composants l'appellent.
+        router.push(`/admin/orders/${order.id}?print=true`)
     }
 
     return (
@@ -283,15 +286,20 @@ export default function AdminInvoicesPage() {
                                                         </Badge>
                                                     </td>
                                                     <td className="py-4 pr-6 text-right">
-                                                        <Button 
-                                                            variant="default"
-                                                            size="sm" 
-                                                            onClick={() => printInvoice(order)}
-                                                            className="rounded-lg shadow-xl shadow-primary/20"
-                                                        >
-                                                            <FileText className="w-4 h-4 mr-2" />
-                                                            Générer la Facture
-                                                        </Button>
+                                                        <Link href={`/admin/orders/${order.id}?print=true`}>
+                                                            <Button 
+                                                                variant="default"
+                                                                size="sm" 
+                                                                className="rounded-lg shadow-xl shadow-primary/20"
+                                                                onClick={(e) => {
+                                                                    // Show a quick loader so user knows something is happening
+                                                                    toast.loading("Ouverture de la facture...", { duration: 1000 });
+                                                                }}
+                                                            >
+                                                                <FileText className="w-4 h-4 mr-2" />
+                                                                Générer la Facture
+                                                            </Button>
+                                                        </Link>
                                                     </td>
                                                 </tr>
                                             ))
