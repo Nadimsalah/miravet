@@ -191,7 +191,7 @@ export default function ResellerOrderDetailsPage() {
                                         toast.success(isArabic ? "تم التحميل!" : "Téléchargé !", { id: toastId })
                                     } catch (err: any) {
                                         console.error(err)
-                                        toast.error(isArabic ? "فشل التحميل" : "Échec du téléchargement", { id: toastId })
+                                        toast.error(`Échec: ${err?.message || String(err)}`, { id: toastId, duration: 10000 })
                                     } finally {
                                         setIsGeneratingPdf(false)
                                     }
@@ -237,7 +237,7 @@ export default function ResellerOrderDetailsPage() {
                                         toast.success(isArabic ? "تم التحميل!" : "Facture téléchargée !", { id: toastId })
                                     } catch (err: any) {
                                         console.error(err)
-                                        toast.error(isArabic ? "فشل التحميل" : "Échec: Veuillez réessayer", { id: toastId })
+                                        toast.error(`Échec: ${err?.message || String(err)}`, { id: toastId, duration: 10000 })
                                     } finally {
                                         setIsGeneratingPdf(false)
                                     }
