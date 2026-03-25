@@ -112,7 +112,6 @@ export default function SettingsPage() {
 
     const sections = [
         { id: "general", label: t("admin.settings.tabs.general"), icon: Globe },
-        { id: "marketing", label: t("admin.settings.tabs.marketing"), icon: Megaphone },
         { id: "payments", label: t("admin.settings.tabs.payments"), icon: CreditCard },
         { id: "notifications", label: t("admin.settings.tabs.alerts"), icon: Bell },
         { id: "security", label: t("admin.settings.tabs.security"), icon: Lock },
@@ -262,103 +261,40 @@ export default function SettingsPage() {
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            </TabsContent>
 
-                            {/* Marketing Settings */}
-                            <TabsContent value="marketing" className="space-y-6 m-0">
-                                <div className="glass rounded-3xl p-8 border-white/20 shadow-xl space-y-8">
-                                    <div className="flex items-center gap-3 border-b border-border/10 pb-4">
-                                        <div className="p-2 bg-amber-500/10 rounded-lg">
-                                            <Megaphone className="w-5 h-5 text-amber-500" />
+                                    {/* Delivery Fees Section */}
+                                    <div className="glass rounded-3xl p-8 border-white/20 shadow-xl space-y-6">
+                                        <div className="flex items-center gap-3 border-b border-border/10 pb-4">
+                                            <div className="p-2 bg-amber-500/10 rounded-lg">
+                                                <Truck className="w-5 h-5 text-amber-500" />
+                                            </div>
+                                            <h3 className="font-bold text-lg">Livraison / Frais de port</h3>
                                         </div>
-                                        <h3 className="font-bold text-lg">{t("admin.settings.marketing.title")}</h3>
-                                    </div>
 
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                        {/* EN Section */}
                                         <div className="space-y-6">
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <span className="px-2 py-0.5 rounded-md bg-white/10 text-[10px] font-bold tracking-widest uppercase">{t("admin.settings.marketing.label.en_content")}</span>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-bold ml-1">{t("admin.settings.marketing.label.announcement")}</label>
-                                                <textarea
-                                                    rows={2}
-                                                    value={settings.announcement_bar || ""}
-                                                    onChange={(e) => handleChange("announcement_bar", e.target.value)}
-                                                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-primary/50 focus:outline-none transition-all text-sm resize-none"
-                                                    placeholder="Exclusive deals on Workstations | Free Shipping on Orders over 1000 MAD"
+                                            <div className="p-5 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between group hover:bg-white/10 transition-all">
+                                                <div className="space-y-1">
+                                                    <p className="font-bold text-sm">Activer les frais de livraison</p>
+                                                    <p className="text-xs text-muted-foreground">Si désactivé, les frais seront de 0 MAD lors de la commande.</p>
+                                                </div>
+                                                <Switch
+                                                    checked={settings.delivery_fees_enabled === "true"}
+                                                    onCheckedChange={(checked) => handleChange("delivery_fees_enabled", checked ? "true" : "false")}
                                                 />
                                             </div>
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-bold ml-1">{t("admin.settings.marketing.label.hero_title")}</label>
-                                                <Input
-                                                    value={settings.hero_title || ""}
-                                                    onChange={(e) => handleChange("hero_title", e.target.value)}
-                                                    className="rounded-xl h-12 bg-white/5 border-white/10"
-                                                    placeholder="Next-Gen IT Infrastructure"
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-bold ml-1">{t("admin.settings.marketing.label.hero_subtitle")}</label>
-                                                <textarea
-                                                    rows={3}
-                                                    value={settings.hero_subtitle || ""}
-                                                    onChange={(e) => handleChange("hero_subtitle", e.target.value)}
-                                                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-primary/50 focus:outline-none transition-all text-sm resize-none"
-                                                    placeholder="Empowering your business with high-performance hardware..."
-                                                />
-                                            </div>
-                                        </div>
 
-                                        {/* AR Section */}
-                                        <div className="space-y-6" dir="rtl">
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <span className="px-2 py-0.5 rounded-md bg-white/10 text-[10px] font-bold tracking-widest uppercase">{t("admin.settings.marketing.label.ar_content")}</span>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-bold mr-1">الإعلان العلوي</label>
-                                                <textarea
-                                                    rows={2}
-                                                    value={settings.announcement_bar_ar || ""}
-                                                    onChange={(e) => handleChange("announcement_bar_ar", e.target.value)}
-                                                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-primary/50 focus:outline-none transition-all text-sm resize-none font-arabic"
-                                                    placeholder="عروض حصرية على محطات العمل | شحن مجاني للطلبات فوق ١٠٠٠ د.م"
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-bold mr-1">عنوان البانر الرئيسي</label>
-                                                <Input
-                                                    value={settings.hero_title_ar || ""}
-                                                    onChange={(e) => handleChange("hero_title_ar", e.target.value)}
-                                                    className="rounded-xl h-12 bg-white/5 border-white/10 font-arabic"
-                                                    placeholder="بنية تحتية لتقنية المعلومات من الجيل القادم"
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-bold mr-1">الوصف الفرعي</label>
-                                                <textarea
-                                                    rows={3}
-                                                    value={settings.hero_subtitle_ar || ""}
-                                                    onChange={(e) => handleChange("hero_subtitle_ar", e.target.value)}
-                                                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-primary/50 focus:outline-none transition-all text-sm resize-none font-arabic"
-                                                    placeholder="تمكين عملك بأجهزة عالية الأداء وحلول تقنية مبتكرة..."
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-4 pt-4 border-t border-border/10">
-                                        <div className="max-w-xs space-y-2">
-                                            <label className="text-sm font-bold ml-1">{t("admin.settings.marketing.label.promo_code")}</label>
-                                            <Input
-                                                value={settings.promo_code || ""}
-                                                onChange={(e) => handleChange("promo_code", e.target.value)}
-                                                className="rounded-xl h-12 bg-primary/5 border-primary/20 font-bold uppercase tracking-widest text-primary focus:bg-primary/10 transition-all placeholder:text-primary/30"
-                                                placeholder="TECH2026"
-                                            />
-                                            <p className="text-[10px] text-muted-foreground ml-1 italic">{t("admin.settings.marketing.promo_desc")}</p>
+                                            {settings.delivery_fees_enabled === "true" && (
+                                                <div className="space-y-2 animate-in slide-in-from-top-4 duration-300">
+                                                    <label className="text-sm font-bold ml-1">Montant des frais de livraison (MAD)</label>
+                                                    <Input
+                                                        type="number"
+                                                        value={settings.delivery_fee_amount !== undefined ? settings.delivery_fee_amount : ""}
+                                                        onChange={(e) => handleChange("delivery_fee_amount", e.target.value)}
+                                                        className="rounded-xl h-12 bg-white/5 border-white/10 font-black text-amber-500"
+                                                        placeholder="50"
+                                                    />
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

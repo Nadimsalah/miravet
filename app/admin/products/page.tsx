@@ -35,6 +35,7 @@ import { formatPrice, cn } from "@/lib/utils"
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
@@ -543,6 +544,9 @@ export default function AdminProductsPage() {
                             <DialogContent className="sm:max-w-md">
                                 <DialogHeader>
                                     <DialogTitle>{t("admin.products.manage_categories")}</DialogTitle>
+                                    <DialogDescription className="sr-only">
+                                        Gérez les catégories et sous-catégories de produits.
+                                    </DialogDescription>
                                 </DialogHeader>
                                 <div className="space-y-4">
                                     <div className="space-y-3">

@@ -19,7 +19,8 @@ import {
     Search,
     MapPin,
     Loader2,
-    Phone
+    Phone,
+    Edit
 } from "lucide-react"
 import {
     Dialog,
@@ -29,7 +30,15 @@ import {
     DialogTitle,
     DialogFooter
 } from "@/components/ui/dialog"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+    DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu"
 import { toast } from "sonner"
+import { ChevronDown } from "lucide-react"
 import Image from "next/image"
 import { supabase } from "@/lib/supabase"
 import { formatPrice } from "@/lib/utils"
@@ -45,7 +54,7 @@ export default function OrderDetailsPage() {
     const [loading, setLoading] = useState(true)
     const [updating, setUpdating] = useState(false)
     // Print State
-    const [printType, setPrintType] = useState<'bon_commande' | 'delivery_note' | null>(null)
+    const [printType, setPrintType] = useState<'bon_commande' | 'delivery_note' | 'invoice' | null>(null)
 
     // Set French as default for dashboard
     useEffect(() => {
@@ -109,8 +118,9 @@ export default function OrderDetailsPage() {
         setUpdating(false)
     }
 
-    const handlePrint = (type: 'bon_commande' | 'delivery_note' = 'bon_commande') => {
-        window.open(`/print/order/${order.id}`, '_blank')
+    const handlePrint = (type: 'bon_commande' | 'delivery_note' | 'invoice' = 'bon_commande', withSignature = true, edit = false) => {
+        setPrintType(type)
+        window.open(`/print/order/${order.id}?type=${type}${withSignature ? '' : '&signature=false'}${edit ? '&edit=true' : ''}`, '_blank')
     }
 
     const getStatusColor = (status: string) => {
@@ -202,13 +212,62 @@ export default function OrderDetailsPage() {
                             <p className="text-[10px] text-muted-foreground">{new Date(order.created_at).toLocaleString()}</p>
                         </div>
                     </div>
-                    {/* Bon de Commande Button - Visible on all steps except 'pending' or 'cancelled' */}
-                    {order.status.toLowerCase() !== 'pending' && order.status.toLowerCase() !== 'cancelled' && (
-                        <Button onClick={() => handlePrint('bon_commande')} className="bg-primary text-primary-foreground hover:bg-primary/90">
-                            <FileText className="w-4 h-4 mr-2" />
-                            Bon de Commande
-                        </Button>
-                    )}
+                    <div className="flex items-center gap-2">
+                        {/* Invoice Button - Visible when shipped or delivered */}
+                        {(order.status === 'shipped' || order.status === 'delivered') && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" className="border-primary text-primary hover:bg-primary/10">
+                                        <FileText className="w-4 h-4 mr-2" />
+                                        Générer Facture
+                                        <ChevronDown className="w-4 h-4 ml-2" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-56 glass-strong border-white/10 rounded-2xl shadow-2xl">
+                                    <DropdownMenuItem onClick={() => handlePrint('invoice', true, true)} className="rounded-xl flex items-center gap-2 py-3 focus:bg-primary/10 transition-colors">
+                                        <Edit className="w-4 h-4 text-primary" />
+                                        <span>Modifier & Imprimer</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator className="bg-white/5" />
+                                    <DropdownMenuItem onClick={() => handlePrint('invoice', true)} className="rounded-xl flex items-center gap-2 py-3 focus:bg-primary/10 transition-colors">
+                                        <FileText className="w-4 h-4 text-emerald-500" />
+                                        <span>Avec Signature</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handlePrint('invoice', false)} className="rounded-xl flex items-center gap-2 py-3 focus:bg-primary/10 transition-colors">
+                                        <FileText className="w-4 h-4 text-slate-400" />
+                                        <span>Sans Signature</span>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
+                        {/* Bon de Commande / Livraison Button - Visible on all steps except 'pending' or 'cancelled' */}
+                        {order.status.toLowerCase() !== 'pending' && order.status.toLowerCase() !== 'cancelled' && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+                                        <FileText className="w-4 h-4 mr-2" />
+                                        {order.status === 'shipped' || order.status === 'delivered' ? 'Bon de Livraison' : 'Bon de Commande'}
+                                        <ChevronDown className="w-4 h-4 ml-2" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-56 glass-strong border-white/10 rounded-2xl shadow-2xl">
+                                    <DropdownMenuItem onClick={() => handlePrint(order.status === 'shipped' || order.status === 'delivered' ? 'delivery_note' : 'bon_commande', true, true)} className="rounded-xl flex items-center gap-2 py-3 focus:bg-primary/10 transition-colors">
+                                        <Edit className="w-4 h-4 text-primary" />
+                                        <span>Modifier & Imprimer</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator className="bg-white/5" />
+                                    <DropdownMenuItem onClick={() => handlePrint(order.status === 'shipped' || order.status === 'delivered' ? 'delivery_note' : 'bon_commande', true)} className="rounded-xl flex items-center gap-2 py-3 focus:bg-primary/10 transition-colors">
+                                        <FileText className="w-4 h-4 text-emerald-500" />
+                                        <span>Avec Signature</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handlePrint(order.status === 'shipped' || order.status === 'delivered' ? 'delivery_note' : 'bon_commande', false)} className="rounded-xl flex items-center gap-2 py-3 focus:bg-primary/10 transition-colors">
+                                        <FileText className="w-4 h-4 text-slate-400" />
+                                        <span>Sans Signature</span>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
+                    </div>
                 </header>
 
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 print:hidden">
@@ -448,7 +507,7 @@ export default function OrderDetailsPage() {
                         </div>
                         <div className="text-right">
                             <h1 className="text-2xl font-black text-gray-900 uppercase">
-                                {printType === 'delivery_note' ? 'BON DE LIVRAISON' : 'BON DE COMMANDE'}
+                                {printType === 'invoice' ? 'FACTURE' : (order.status === 'shipped' || order.status === 'delivered' ? 'BON DE LIVRAISON' : 'BON DE COMMANDE')}
                             </h1>
                             <div className="text-sm mt-2">
                                 <p><span className="font-bold">N° Commande:</span> {order.order_number}</p>

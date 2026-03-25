@@ -164,7 +164,7 @@ export default function ResellerOrderDetailsPage() {
                             <Button
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    window.open(`/print/order/${order.id}`, '_blank');
+                                    window.open(`/print/order/${order.id}?type=bon_commande`, '_blank');
                                 }}
                                 variant="outline"
                                 className="bg-white text-gray-600 border-gray-200"
@@ -178,7 +178,7 @@ export default function ResellerOrderDetailsPage() {
                             <Button
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    window.open(`/print/invoice/${order.id}`, '_blank');
+                                    window.open(`/print/order/${order.id}?type=invoice`, '_blank');
                                 }}
                                 className="bg-primary text-white hover:bg-primary/90"
                             >
@@ -345,125 +345,6 @@ export default function ResellerOrderDetailsPage() {
                     </div>
                 </div>
             </div>
-
-            {/* Printable "Bon de Commande" Section */}
-            <div id="printable-invoice" className="hidden print:block bg-white text-black p-0 min-h-screen font-sans">
-                {/* Header */}
-                {/* Header */}
-                <div className="flex justify-between items-start border-b-2 border-slate-900 pb-6 mb-8">
-                    <div className="space-y-4">
-                        <img 
-                            src="/logo.png" 
-                            alt="Miravet Logo" 
-                            className="h-16 w-auto object-contain"
-                        />
-                        <div className="text-[11px] leading-relaxed text-slate-600">
-                            <p className="font-black text-slate-900 text-sm">MIRAVET SARL</p>
-                            <p>Grossisterie Vétérinaire Premium</p>
-                            <p>Casablanca, Maroc</p>
-                            <p className="font-bold text-slate-800">ICE: 003125896000078</p>
-                            <p>Tél: +212 5 22 45 05 07</p>
-                            <p>Email: contact@miravet.ma</p>
-                        </div>
-                    </div>
-                    <div className="text-right">
-                        <h1 className="text-2xl font-black text-gray-900 uppercase">
-                            {printType === 'facture' ? 'FACTURE' : 'BON DE COMMANDE'}
-                        </h1>
-                        <div className="text-sm mt-2">
-                            <p><span className="font-bold">{printType === 'facture' ? 'N° Facture:' : 'N° Commande:'}</span> {order.order_number}</p>
-                            <p><span className="font-bold">Date:</span> {new Date().toLocaleDateString('fr-FR')}</p>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Client & Shipping Info */}
-                <div className="grid grid-cols-2 gap-8 mb-8">
-                    <div>
-                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Client</h3>
-                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 text-sm">
-                            <p className="font-bold text-gray-900 uppercase">{order.reseller?.company_name || order.customer_name}</p>
-                            {order.reseller?.ice && (
-                                <p className="font-bold text-primary mt-1">ICE: {order.reseller.ice}</p>
-                            )}
-                            <p className="text-gray-600 mt-2">Contact: {order.reseller?.profile?.name || order.customer_name}</p>
-                            <p className="text-gray-600">{order.customer_email}</p>
-                            <p className="text-gray-600">{order.customer_phone}</p>
-                        </div>
-                    </div>
-                    <div>
-                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 text-right">Adresse de Livraison</h3>
-                        <div className="text-sm text-right">
-                            <p className="font-bold text-gray-900">{order.customer_name}</p>
-                            <p className="text-gray-600">{order.address_line1}</p>
-                            {order.address_line2 && <p className="text-gray-600">{order.address_line2}</p>}
-                            <p className="text-gray-600 uppercase font-medium">{order.city}, {order.governorate}</p>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Items Table */}
-                <table className="w-full mb-8 border-collapse">
-                    <thead>
-                        <tr className="border-b-2 border-gray-900 text-gray-900">
-                            <th className="py-2 text-left text-xs font-bold uppercase tracking-wider">Désignation</th>
-                            <th className="py-2 text-center text-xs font-bold uppercase tracking-wider">Qté</th>
-                            <th className="py-2 text-right text-xs font-bold uppercase tracking-wider">P.U (HT)</th>
-                            <th className="py-2 text-right text-xs font-bold uppercase tracking-wider">Total (HT)</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                        {order.order_items.map((item: any, i: number) => (
-                            <tr key={i}>
-                                <td className="py-3 text-sm">
-                                    <p className="font-bold text-gray-900">{item.product_title}</p>
-                                    {item.variant_name && <p className="text-xs text-gray-500">{item.variant_name}</p>}
-                                </td>
-                                <td className="py-3 text-center text-sm font-medium">{item.quantity}</td>
-                                <td className="py-3 text-right text-sm text-gray-600">{formatPrice(item.price)} MAD</td>
-                                <td className="py-3 text-right text-sm font-bold text-gray-900">{formatPrice(item.subtotal)} MAD</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-
-                {/* Totals */}
-                <div className="flex justify-end mb-12">
-                    <div className="w-1/3 space-y-2">
-                        <div className="flex justify-between text-sm text-gray-600">
-                            <span>Total HT</span>
-                            <span>{formatPrice(order.subtotal)} MAD</span>
-                        </div>
-                        <div className="flex justify-between text-sm text-gray-600">
-                            <span>Livraison</span>
-                            <span>{formatPrice(order.shipping_cost)} MAD</span>
-                        </div>
-                        <div className="flex justify-between text-lg font-black text-gray-900 pt-2 border-t-2 border-gray-900">
-                            <span>TOTAL TTC</span>
-                            <span>{formatPrice(order.total)} MAD</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Footer / Signatures */}
-                <div className="flex justify-between items-end pt-8 border-t border-gray-100">
-                    <div className="text-[10px] text-gray-400 max-w-[60%]">
-                        <p className="font-bold">Conditions de paiement:</p>
-                        <p>Paiement à la réception de la marchandise. Miravet SARL reste propriétaire des marchandises jusqu'au paiement intégral.</p>
-                    </div>
-                    <div className="text-center">
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Cachet et Signature</p>
-                        {signatureUrl ? (
-                            <div className="h-20 w-40 flex items-center justify-center">
-                                <img src={signatureUrl} alt="Signature Miravet" className="max-h-full max-w-full object-contain mix-blend-multiply" />
-                            </div>
-                        ) : (
-                            <div className="h-20 w-40 border border-gray-200 rounded-xl bg-gray-50/50"></div>
-                        )}
-                    </div>
-                </div>
-            </div>
-
         </div>
     )
 }

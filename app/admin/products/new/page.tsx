@@ -103,11 +103,9 @@ export default function NewProductPage() {
         { id: 1, label: "Titre & Description", icon: <FileText />, desc: "L'essence de votre produit" },
         { id: 2, label: "Images du produit", icon: <ImageIcon />, desc: "Donnez vie à votre catalogue" },
         { id: 3, label: "Catégories", icon: <Layers />, desc: "Organisation hiérarchique" },
-        { id: 4, label: "Garantie & support", icon: <Award />, desc: "Confiance et accompagnement" },
-        { id: 5, label: "Tarification", icon: <Wallet />, desc: "Stratégie de prix unifiée" },
-        { id: 6, label: "Stock", icon: <Warehouse />, desc: "Gestion des inventaires" },
-        { id: 7, label: "Produits suggérés", icon: <Plus />, desc: "Ventes croisées intelligentes" },
-        { id: 8, label: "Publication", icon: <Package />, desc: "Lancement final" }
+        { id: 4, label: "Tarification", icon: <Wallet />, desc: "Stratégie de prix unifiée" },
+        { id: 5, label: "Produits suggérés", icon: <Plus />, desc: "Ventes croisées intelligentes" },
+        { id: 6, label: "Publication", icon: <Package />, desc: "Lancement final" }
     ]
 
     const nextStep = () => {
@@ -177,14 +175,22 @@ export default function NewProductPage() {
     }
 
     const handlePublish = async () => {
-        if (!price || parseFloat(price) <= 0) { alert("Le prix est obligatoire."); setCurrentStep(5); return }
+        if (!price || parseFloat(price) <= 0) { alert("Le prix est obligatoire."); setCurrentStep(4); return }
         setIsPublishing(true)
+        
+        let finalSku = sku
+        if (!finalSku) {
+            const base = title.trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 3) || "GEN"
+            const rand = Math.floor(1000 + Math.random() * 9000)
+            finalSku = `${base}-${rand}`
+        }
+
         try {
             const { error } = await supabase.from('products').insert({
                 title, description, price: parseFloat(price), stock: stock ? parseInt(stock) : 0,
                 status: status.toLowerCase(), images, benefits, ingredients, how_to_use: howToUse,
                 category: selectedCategories.join(', '), warehouse_id: selectedWarehouse || null,
-                sku,
+                sku: finalSku,
                 supplier_id: supplierId || null,
                 purchase_price: purchasePrice ? parseFloat(purchasePrice) : null,
                 profit_margin_percentage: profitMargin ? parseFloat(profitMargin) : null
@@ -353,15 +359,6 @@ export default function NewProductPage() {
                                     )}
 
                                     {currentStep === 4 && (
-                                        <textarea 
-                                            value={howToUse} 
-                                            onChange={(e)=>setHowToUse(e.target.value)} 
-                                            placeholder="Ex: 2 ans pièces et main d'œuvre, Support VIP 24/7..." 
-                                            className="w-full min-h-[300px] p-10 text-xl font-black border-none bg-slate-50 rounded-[3rem] focus:bg-indigo-50/30 focus:ring-[10px] focus:ring-indigo-100/50 transition-all shadow-inner text-indigo-900"
-                                        />
-                                    )}
-
-                                    {currentStep === 5 && (
                                         <div className="max-w-md mx-auto space-y-6 text-center">
                                             
                                             <div className="space-y-3 text-left">
@@ -423,25 +420,7 @@ export default function NewProductPage() {
                                         </div>
                                     )}
 
-                                    {currentStep === 6 && (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                            <div className="space-y-4">
-                                                <label className="text-xs font-black uppercase text-slate-400 tracking-widest pl-4">Unités disponibles</label>
-                                                <Input type="number" value={stock} onChange={(e)=>setStock(e.target.value)} placeholder="En stock" className="h-24 px-8 text-3xl font-black rounded-[2.5rem] bg-slate-50 border-none focus:bg-white focus:ring-[8px] focus:ring-slate-100 shadow-sm" />
-                                            </div>
-                                            <div className="space-y-4">
-                                                <label className="text-xs font-black uppercase text-slate-400 tracking-widest pl-4">Référence SKU</label>
-                                                <div className="flex gap-2">
-                                                    <Input value={sku} onChange={(e)=>setSku(e.target.value)} placeholder="SKU-XXX" className="h-24 px-8 text-2xl font-mono uppercase bg-slate-50 border-none rounded-[2.5rem] flex-1 focus:ring-0" />
-                                                    <button onClick={generateSku} className="w-24 h-24 rounded-[2.5rem] bg-slate-900 text-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xl">
-                                                        <Wand2 className="w-8 h-8" />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {currentStep === 7 && (
+                                    {currentStep === 5 && (
                                         <div className="space-y-6">
                                             <div className="relative">
                                                 <Search className="absolute left-8 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -461,7 +440,7 @@ export default function NewProductPage() {
                                         </div>
                                     )}
 
-                                    {currentStep === 8 && (
+                                    {currentStep === 6 && (
                                         <div className="max-w-sm mx-auto space-y-10 text-center">
                                             <div className="flex flex-col gap-4">
                                                 <label className="text-xs font-black uppercase text-slate-400">Statut de Visibilité</label>

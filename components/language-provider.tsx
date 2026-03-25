@@ -791,6 +791,7 @@ const translations = {
         "manager.order_details.back": "Retour",
         "manager.order_details.order_number": "Commande n° {number}",
         "manager.order_details.bon_de_commande": "Bon de Commande",
+        "manager.order_details.bon_de_livraison": "Bon de Livraison",
         "manager.order_details.company_customer": "Entreprise / Client",
         "manager.order_details.contact": "Contact:",
         "manager.order_details.ref": "RÉF:",
@@ -819,6 +820,7 @@ const translations = {
 
         // Bon de Commande (Print)
         "print.bon_de_commande": "BON DE COMMANDE",
+        "print.bon_de_livraison": "BON DE LIVRAISON",
         "print.order_number": "N° Commande:",
         "print.date": "Date:",
         "print.client": "CLIENT",
@@ -1140,6 +1142,8 @@ const translations = {
 
         // Accessibility
         "accessibility.go_to_slide": "Go to slide",
+        "manager.order_details.bon_de_livraison": "Delivery Note",
+        "print.bon_de_livraison": "DELIVERY NOTE",
         // Dashboard - Admin
         "dashboard.admin.title": "Dashboard",
         "dashboard.admin.overview": "Detailed overview",
@@ -1395,6 +1399,8 @@ const translations = {
         "hero.schedule_call": "تحديد موعد",
         "section.exclusive_promos": "العروض والحصريات",
         "section.exclusive_promos_subtitle": "اكتشف أفضل العروض الحصرية للمهنيين البياطرة",
+        "manager.order_details.bon_de_livraison": "بون التسليم",
+        "print.bon_de_livraison": "بون التسليم",
     }
 }
 

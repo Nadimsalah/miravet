@@ -17,11 +17,21 @@ import {
     Loader2,
     Check,
     X,
-    Image as ImageIcon
+    Image as ImageIcon,
+    Edit,
+    ChevronDown
 } from "lucide-react"
 import { formatPrice } from "@/lib/utils"
 import Image from "next/image"
 import { toast } from "sonner"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+    DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu"
+
 
 export default function AdminInvoicesPage() {
     const { t, language } = useLanguage()
@@ -32,6 +42,12 @@ export default function AdminInvoicesPage() {
     const [signatureUrl, setSignatureUrl] = useState("")
     const [uploading, setUploading] = useState(false)
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+    const [stats, setStats] = useState({
+        totalRevenue: 0,
+        invoiceCount: 0,
+        deliveredRevenue: 0,
+        pendingRevenue: 0
+    })
 
     // Pagination State
     const [currentPage, setCurrentPage] = useState(1)
@@ -56,10 +72,22 @@ export default function AdminInvoicesPage() {
                 limit: ITEMS_PER_PAGE,
                 offset: offset,
             })
-            // Only invoices for all orders or just shipped/delivered?
-            // User requested: "see table ofall orders wth option download pdf of facture"
             setOrders(data)
             setTotalOrders(count)
+            
+            // Calculate stats from all orders (ideally this would be a separate quick query)
+            const { data: allOrders } = await supabase.from('orders').select('total, status')
+            if (allOrders) {
+                const s = allOrders.reduce((acc, order) => {
+                    acc.totalRevenue += order.total
+                    acc.invoiceCount += 1
+                    if (order.status === 'delivered') acc.deliveredRevenue += order.total
+                    if (['pending', 'processing'].includes(order.status.toLowerCase())) acc.pendingRevenue += order.total
+                    return acc
+                }, { totalRevenue: 0, invoiceCount: 0, deliveredRevenue: 0, pendingRevenue: 0 })
+                setStats(s)
+            }
+
             setLoading(false)
         }
         loadOrders()
@@ -169,9 +197,9 @@ export default function AdminInvoicesPage() {
         }
     }
 
-    const printInvoice = (order: Order) => {
+    const printInvoice = (order: Order, withSignature = true, edit = false) => {
         // Redirige vers une page dédiée à l'impression, beaucoup plus stable sur mobile
-        window.open(`/print/order/${order.id}`, '_blank')
+        window.open(`/print/order/${order.id}?type=invoice${withSignature ? '' : '&signature=false'}${edit ? '&edit=true' : ''}`, '_blank')
     }
 
     return (
@@ -197,6 +225,23 @@ export default function AdminInvoicesPage() {
                         </div>
                     </div>
                 </header>
+                
+                {/* Stats Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                    {[
+                        { label: "Total Factures", value: stats.invoiceCount, sub: "Toutes les commandes", color: "text-blue-500", bg: "bg-blue-500/10" },
+                        { label: "Chiffre d'Affaire", value: `${formatPrice(stats.totalRevenue)} MAD`, sub: "Revenu total brut", color: "text-emerald-500", bg: "bg-emerald-500/10" },
+                        { label: "Revenu Encaissé", value: `${formatPrice(stats.deliveredRevenue)} MAD`, sub: "Commandes livrées", color: "text-green-500", bg: "bg-green-500/10" },
+                        { label: "En Attente", value: `${formatPrice(stats.pendingRevenue)} MAD`, sub: "Encours de traitement", color: "text-yellow-500", bg: "bg-yellow-500/10" }
+                    ].map((stat, i) => (
+                        <div key={i} className="glass-strong rounded-3xl p-6 border border-white/5 relative overflow-hidden group hover:scale-[1.02] transition-all">
+                            <div className={`absolute top-0 right-0 w-24 h-24 ${stat.bg} rounded-bl-full opacity-50 -mr-8 -mt-8 blur-2xl group-hover:scale-150 transition-transform`} />
+                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">{stat.label}</p>
+                            <h3 className={`text-2xl font-black ${stat.color} mb-1`}>{stat.value}</h3>
+                            <p className="text-[10px] text-muted-foreground font-medium">{stat.sub}</p>
+                        </div>
+                    ))}
+                </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     {/* Upload Signature Section */}
@@ -282,15 +327,34 @@ export default function AdminInvoicesPage() {
                                                         </Badge>
                                                     </td>
                                                     <td className="py-4 pr-6 text-right">
-                                                        <Button 
-                                                            variant="default"
-                                                            size="sm" 
-                                                            onClick={() => printInvoice(order)}
-                                                            className="rounded-lg shadow-xl shadow-primary/20"
-                                                        >
-                                                            <FileText className="w-4 h-4 mr-2" />
-                                                            Générer la Facture
-                                                        </Button>
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button 
+                                                                    variant="default"
+                                                                    size="sm" 
+                                                                    className="rounded-lg shadow-xl shadow-primary/20"
+                                                                >
+                                                                    <FileText className="w-4 h-4 mr-2" />
+                                                                    Générer la Facture
+                                                                    <ChevronDown className="w-4 h-4 ml-1" />
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end" className="w-48 glass-strong border-white/10 rounded-2xl shadow-2xl">
+                                                                 <DropdownMenuItem onClick={() => printInvoice(order, true, true)} className="rounded-xl flex items-center gap-2 py-3 focus:bg-primary/10 transition-colors">
+                                                                    <Edit className="w-4 h-4 text-primary" />
+                                                                    <span>Modifier & Imprimer</span>
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuSeparator className="bg-white/5" />
+                                                                <DropdownMenuItem onClick={() => printInvoice(order, true)} className="rounded-xl flex items-center gap-2 py-3 focus:bg-primary/10 transition-colors">
+                                                                    <FileText className="w-4 h-4 text-emerald-500" />
+                                                                    <span>Avec Signature</span>
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem onClick={() => printInvoice(order, false)} className="rounded-xl flex items-center gap-2 py-3 focus:bg-primary/10 transition-colors">
+                                                                    <FileText className="w-4 h-4 text-slate-400" />
+                                                                    <span>Sans Signature</span>
+                                                                </DropdownMenuItem>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
                                                     </td>
                                                 </tr>
                                             ))
@@ -458,7 +522,7 @@ export default function AdminInvoicesPage() {
                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Cachet et Signature</p>
                             {signatureUrl ? (
                                 <div className="h-20 w-40 flex items-center justify-center">
-                                    <img src={signatureUrl} alt="Signature Miravet" className="max-h-full max-w-full object-contain mix-blend-multiply" />
+                                    <img src={signatureUrl} alt="Signature Miravet" className="max-h-full max-w-full object-contain" />
                                 </div>
                             ) : (
                                 <div className="h-20 w-40 border border-gray-200 rounded-xl bg-gray-50/50"></div>

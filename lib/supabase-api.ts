@@ -28,6 +28,9 @@ export interface Product {
     how_to_use_ar: string | null
     sales_count: number
     warehouse_id: string | null
+    supplier_id: string | null
+    purchase_price: number | null
+    profit_margin_percentage: number | null
     created_at: string
     updated_at: string
 }
@@ -294,6 +297,7 @@ export async function getProducts(filters?: {
     search?: string
     brand_id?: string
     brand_slug?: string
+    supplier_id?: string
     limit?: number
     offset?: number
 }) {
@@ -305,6 +309,10 @@ export async function getProducts(filters?: {
     if (filters?.category) {
         // Use ilike to handle comma-separated categories in the text column
         query = query.ilike('category', `%${filters.category}%`)
+    }
+
+    if (filters?.supplier_id) {
+        query = query.or(`supplier_id.eq.${filters.supplier_id},supplier_id.is.null`)
     }
 
     if (filters?.brand_id) {
@@ -902,6 +910,20 @@ export async function getCurrentUserId(): Promise<string | null> {
     return session.user.id
 }
 
+export async function getUserRole(): Promise<string | null> {
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+    if (sessionError || !session?.user) return null
+
+    const { data, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .single()
+
+    if (error || !data) return null
+    return data.role
+}
+
 export async function getCurrentResellerTier(userId?: string): Promise<ResellerTier> {
     if (!userId) {
         const { data: { session }, error } = await supabase.auth.getSession()
@@ -926,15 +948,16 @@ export async function getCurrentResellerTier(userId?: string): Promise<ResellerT
     return (data as any).reseller_type || 'reseller'
 }
 
-// Analytics API
 export async function getDashboardStats() {
+    const VALID_STATUSES = ['processing', 'shipped', 'delivered']
+    
     // Get total revenue (Only DELIVERED orders)
     const { data: orders } = await supabase
         .from('orders')
         .select('total, status')
 
     const totalRevenue = orders
-        ?.filter(o => o.status !== 'cancelled')
+        ?.filter(o => VALID_STATUSES.includes(o.status))
         .reduce((sum, order) => sum + order.total, 0) || 0
 
     const completedOrders = orders?.filter(o => o.status === 'delivered').length || 0
@@ -963,7 +986,7 @@ export async function getDashboardStats() {
 
     return {
         totalRevenue,
-        totalOrders: orders?.length || 0,
+        totalOrders: orders?.filter(o => VALID_STATUSES.includes(o.status)).length || 0,
         completedOrders,
         pendingOrders,
         totalResellers: resellerCount || 0,
@@ -973,9 +996,11 @@ export async function getDashboardStats() {
 }
 
 export async function getRevenueAnalytics() {
+    const VALID_STATUSES = ['processing', 'shipped', 'delivered']
     const { data: orders } = await supabase
         .from('orders')
-        .select('total, created_at')
+        .select('total, created_at, status')
+        .in('status', VALID_STATUSES)
         .order('created_at', { ascending: true })
 
     if (!orders) return []
@@ -991,9 +1016,11 @@ export async function getRevenueAnalytics() {
 }
 
 export async function getTopProducts(limit = 5) {
+    const VALID_STATUSES = ['processing', 'shipped', 'delivered']
     const { data: items } = await supabase
         .from('order_items')
-        .select('product_title, quantity, subtotal')
+        .select('product_title, quantity, subtotal, orders!inner(status)')
+        .in('orders.status', VALID_STATUSES)
 
     if (!items) return []
 
@@ -1347,4 +1374,190 @@ export async function getAdvancedAnalytics() {
         lowSalesProducts: lowSalesProducts || [],
         accountManagerCount: accountManagerCount || 0
     };
+}
+
+export interface Supplier {
+    id: string;
+    name: string;
+    contact_name: string | null;
+    email: string | null;
+    phone: string | null;
+    address: string | null;
+    notes: string | null;
+    created_at: string;
+}
+
+export interface SupplierPurchase {
+    id: string;
+    supplier_id: string;
+    product_id: string;
+    quantity: number;
+    purchase_price: number;
+    bl_number: string | null;
+    invoice_number: string | null;
+    payment_method: 'cash' | 'cheque' | 'card' | 'transfer' | null;
+    payment_modality: string | null;
+    notes: string | null;
+    created_at: string;
+    product?: {
+        title: string;
+        images: string[];
+    };
+}
+
+export async function getSupplierById(id: string): Promise<Supplier | null> {
+    const { data, error } = await supabase
+        .from('suppliers')
+        .select('*')
+        .eq('id', id)
+        .single();
+    
+    if (error) {
+        console.error('Error fetching supplier:', error.message);
+        return null;
+    }
+    return data as Supplier;
+}
+
+export async function getSupplierPurchases(supplierId: string): Promise<SupplierPurchase[]> {
+    const { data, error } = await supabase
+        .from('supplier_purchases')
+        .select('*, product:products(title, images)')
+        .eq('supplier_id', supplierId)
+        .order('created_at', { ascending: false });
+    
+    if (error) {
+        console.error('Error fetching purchases:', error.message);
+        return [];
+    }
+    return data as SupplierPurchase[];
+}
+
+export async function createSupplierPurchase(purchase: {
+    supplier_id: string;
+    product_id: string;
+    quantity: number;
+    purchase_price: number;
+    bl_number?: string;
+    invoice_number?: string;
+    payment_method?: 'cash' | 'cheque' | 'card' | 'transfer';
+    payment_modality?: string;
+    notes?: string;
+    profit_margin_percentage?: number;
+    price?: number;
+}) {
+    // 1. Record the purchase
+    const { data, error } = await supabase
+        .from('supplier_purchases')
+        .insert({
+            supplier_id: purchase.supplier_id,
+            product_id: purchase.product_id,
+            quantity: purchase.quantity,
+            purchase_price: purchase.purchase_price,
+            bl_number: purchase.bl_number,
+            invoice_number: purchase.invoice_number,
+            payment_method: purchase.payment_method,
+            payment_modality: purchase.payment_modality,
+            notes: purchase.notes
+        })
+        .select()
+        .single();
+    
+    if (error) throw error;
+
+    // 2. Update product stock AND prices
+    const { error: stockError } = await supabase.rpc('increment_stock', {
+        x: purchase.quantity,
+        row_id: purchase.product_id
+    });
+
+    // 3. Update master product info (Prices)
+    const productUpdates: any = {
+        purchase_price: purchase.purchase_price
+    }
+    if (purchase.profit_margin_percentage !== undefined) productUpdates.profit_margin_percentage = purchase.profit_margin_percentage;
+    if (purchase.price !== undefined) productUpdates.price = purchase.price;
+
+    // Use a single update for stock if RPC failed, OR for prices only if RPC worked
+    if (stockError) {
+        console.warn('increment_stock RPC failed, using manual update');
+        const { data: currentProduct } = await supabase
+            .from('products')
+            .select('stock')
+            .eq('id', purchase.product_id)
+            .single();
+        
+        productUpdates.stock = (currentProduct?.stock || 0) + purchase.quantity;
+    }
+
+    const { error: productUpdateError } = await supabase
+        .from('products')
+        .update(productUpdates)
+        .eq('id', purchase.product_id);
+
+    if (productUpdateError) throw productUpdateError;
+
+    return data;
+}
+
+export async function getSupplierMetrics(supplierId: string) {
+    const { data: purchases, error: pError } = await supabase
+        .from('supplier_purchases')
+        .select('*, product:products(*)')
+        .eq('supplier_id', supplierId);
+    
+    if (pError || !purchases || purchases.length === 0) {
+        return { totalPurchased: 0, totalSpent: 0, totalSold: 0, currentStock: 0, products: [] };
+    }
+
+    const totalPurchased = purchases.reduce((sum, p) => sum + p.quantity, 0);
+    const totalSpent = purchases.reduce((sum, p) => sum + (p.quantity * p.purchase_price), 0);
+    
+    const productIds = [...new Set(purchases.map(p => p.product_id))];
+    
+    const VALID_STATUSES = ['processing', 'shipped', 'delivered'];
+    const { data: allSales } = await supabase
+        .from('order_items')
+        .select('product_id, quantity, orders!inner(status)')
+        .in('product_id', productIds)
+        .in('orders.status', VALID_STATUSES);
+    
+    const totalSold = allSales?.reduce((sum, s) => sum + s.quantity, 0) || 0;
+    const currentStock = Math.max(0, totalPurchased - totalSold);
+
+    // Group by product
+    const productMap: Record<string, any> = {};
+    purchases.forEach(p => {
+        if (!productMap[p.product_id]) {
+            productMap[p.product_id] = {
+                id: p.product_id,
+                title: p.product?.title || 'Unknown Product',
+                image: p.product?.images?.[0] || null,
+                purchasePrice: p.purchase_price, // Use last or average? Let's use last for now
+                totalPurchased: 0,
+                totalSpent: 0,
+                totalSold: 0,
+                currentStock: 0
+            };
+        }
+        productMap[p.product_id].totalPurchased += p.quantity;
+        productMap[p.product_id].totalSpent += (p.quantity * p.purchase_price);
+        // Update to the latest purchase price
+        productMap[p.product_id].purchasePrice = p.purchase_price;
+    });
+
+    allSales?.forEach(s => {
+        if (productMap[s.product_id]) {
+            productMap[s.product_id].totalSold += s.quantity;
+        }
+    });
+
+    // Calculate stock per product
+    Object.values(productMap).forEach((p: any) => {
+        p.currentStock = Math.max(0, p.totalPurchased - p.totalSold);
+    });
+
+    const products = Object.values(productMap).sort((a, b) => b.totalPurchased - a.totalPurchased);
+
+    return { totalPurchased, totalSpent, totalSold, currentStock, products };
 }

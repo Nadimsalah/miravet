@@ -39,14 +39,22 @@ export default function CheckoutPage() {
     })
     const [wantsInvoice, setWantsInvoice] = useState(false)
 
+    const [adminSettings, setAdminSettings] = useState<Record<string, string>>({})
+
     useEffect(() => {
         async function loadUserData() {
-            const [tier, uid] = await Promise.all([
+            const [tier, uid, settings] = await Promise.all([
                 getCurrentResellerTier(),
-                getCurrentUserId()
+                getCurrentUserId(),
+                supabase.from('admin_settings').select('key, value').then(res => {
+                    const obj: Record<string, string> = {}
+                    res.data?.forEach(item => obj[item.key] = item.value || "")
+                    return obj
+                })
             ])
             setResellerTier(tier)
             setUserId(uid)
+            setAdminSettings(settings)
 
             if (uid) {
                 // 1. Fetch from profiles
@@ -139,7 +147,8 @@ export default function CheckoutPage() {
         return sum + price * item.quantity
     }, 0)
 
-    const shipping = 50 // Fixed for now
+    const deliveryFeesEnabled = adminSettings.delivery_fees_enabled === "true"
+    const shipping = deliveryFeesEnabled ? parseFloat(adminSettings.delivery_fee_amount || "0") : 0
     const discount = wantsInvoice ? (subtotal * 0.05) : 0 // 5% discount for invoice
     const total = subtotal + shipping - discount
 
@@ -346,10 +355,12 @@ export default function CheckoutPage() {
                                         <span>Sous-total</span>
                                         <span className="font-bold text-white">{formatPrice(subtotal)} MAD</span>
                                     </div>
-                                    <div className="flex justify-between text-white/50">
-                                        <span>Frais de livraison</span>
-                                        <span className="font-bold text-emerald-400">+{formatPrice(shipping)} MAD</span>
-                                    </div>
+                                    {deliveryFeesEnabled && (
+                                        <div className="flex justify-between text-white/50">
+                                            <span>Frais de livraison</span>
+                                            <span className="font-bold text-emerald-400">+{formatPrice(shipping)} MAD</span>
+                                        </div>
+                                    )}
                                     {wantsInvoice && (
                                         <div className="flex justify-between text-emerald-400">
                                             <span>Remise Facturation (5%)</span>

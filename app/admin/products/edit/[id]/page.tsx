@@ -56,12 +56,9 @@ export default function EditProductPage() {
     const [selectedCategories, setSelectedCategories] = useState<string[]>([])
     const [expandedCategories, setExpandedCategories] = useState<string[]>([])
     const [price, setPrice] = useState("")
-    const [stock, setStock] = useState("")
-    const [sku, setSku] = useState("")
     const [status, setStatus] = useState("active")
     const [benefits, setBenefits] = useState<string[]>([])
     const [ingredients, setIngredients] = useState("")
-    const [howToUse, setHowToUse] = useState("")
     const [categories, setCategories] = useState<{ id: string, name: string, slug: string, parent_id?: string | null }[]>([])
     const [images, setImages] = useState<string[]>([])
     const [uploading, setUploading] = useState(false)
@@ -93,12 +90,9 @@ export default function EditProductPage() {
                     setSelectedCategories(product.category.split(', '))
                 }
                 setPrice(product.price.toString())
-                setStock(product.stock.toString())
-                setSku(product.sku)
                 setStatus(product.status)
                 setBenefits(product.benefits || [])
                 setIngredients(product.ingredients || "")
-                setHowToUse(product.how_to_use || "")
                 setImages(product.images || [])
                 setSelectedWarehouse(product.warehouse_id || "")
                 setSelectedWarehouse(product.warehouse_id || "")
@@ -254,12 +248,6 @@ export default function EditProductPage() {
         if (selectedWarehouse === id) setSelectedWarehouse("")
     }
 
-    const generateSku = () => {
-        const base = title.trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 4) || "PROD"
-        const random = Math.floor(1000 + Math.random() * 9000)
-        setSku(`${base}-${random}`)
-    }
-
     const toggleRelated = (id: string) => {
         if (selectedRelated.includes(id)) {
             setSelectedRelated(selectedRelated.filter(i => i !== id))
@@ -316,12 +304,9 @@ export default function EditProductPage() {
                 reseller_min_qty: null,
                 partner_min_qty: null,
                 wholesaler_min_qty: null,
-                stock: stock ? parseInt(stock) : 0,
-                sku,
                 status,
                 benefits,
                 ingredients,
-                how_to_use: howToUse,
                 images,
                 warehouse_id: selectedWarehouse || null
             })
@@ -574,7 +559,7 @@ export default function EditProductPage() {
                                 </div>
                             </div>
 
-                            <div className="space-y-4">
+                <div className="space-y-4">
                                 <div className="flex justify-between items-center">
                                     <label className="text-sm font-semibold text-gray-700">Spécifications Techniques</label>
                                     <div className="flex gap-2">
@@ -587,21 +572,8 @@ export default function EditProductPage() {
                                     className="min-h-[100px] text-sm bg-gray-50/50 border-gray-200 focus:bg-white transition-colors resize-none"
                                 />
                             </div>
-
-                            <div className="space-y-4">
-                                <div className="flex justify-between items-center">
-                                    <label className="text-sm font-semibold text-gray-700">Garantie & Support</label>
-                                    <div className="flex gap-2">
-                                    </div>
-                                </div>
-                                <Textarea
-                                    value={howToUse || ""}
-                                    onChange={(e) => setHowToUse(e.target.value)}
-                                    placeholder="Détails de la garantie et informations de support..."
-                                    className="min-h-[100px] text-sm bg-gray-50/50 border-gray-200 focus:bg-white transition-colors resize-none"
-                                />
-                            </div>
                         </section>
+
 
                     </div>
 
@@ -815,65 +787,6 @@ export default function EditProductPage() {
                                             HT ≈ <span className="text-slate-900">{((Number(price || 0) / 1.2) || 0).toFixed(2)} MAD</span> (TVA 20%)
                                         </p>
                                     </div>
-                                </div>
-                            </div>
-                        </section>
-
-                        {/* Inventory */}
-                        <section className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 space-y-6">
-                            <h3 className="text-lg font-bold text-gray-900 border-b border-gray-50 pb-4">Inventaire</h3>
-
-                            <div className="space-y-3">
-                                <label className="text-sm font-semibold text-gray-700">Quantité en stock</label>
-                                <Input
-                                    type="number"
-                                    value={stock || ""}
-                                    onChange={(e) => setStock(e.target.value)}
-                                    className="bg-white border-gray-200 h-12 text-lg font-mono rounded-xl shadow-sm focus:ring-blue-500/20 focus:border-blue-500 text-gray-900" />
-                            </div>
-
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <label className="text-sm font-semibold text-gray-700">
-                                        Emplacement du stock
-                                    </label>
-                                    <Link href="/admin/logisticiens" target="_blank">
-                                        <button className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
-                                            <Plus className="w-3 h-3" />
-                                            Gérer les logisticiens
-                                        </button>
-                                    </Link>
-                                </div>
-                                <div className="relative">
-                                    <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                    <select
-                                        value={selectedWarehouse}
-                                        onChange={(e) => setSelectedWarehouse(e.target.value)}
-                                        className="w-full h-12 rounded-xl border border-gray-200 bg-white pl-11 pr-4 text-base focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-gray-700 appearance-none shadow-sm"
-                                    >
-                                        <option value="">Sélectionner un emplacement</option>
-                                        {warehouses.map((wh) => (
-                                            <option key={wh.id} value={wh.id}>{wh.city ? `${wh.city} (${wh.name})` : wh.name}</option>
-                                        ))}
-                                    </select>
-                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                                </div>
-                            </div>
-
-                            <div className="space-y-3">
-                                <label className="text-sm font-semibold text-gray-700">
-                                    Référence (SKU)
-                                </label>
-                                <div className="flex gap-2">
-                                    <Input
-                                        value={sku || ""}
-                                        onChange={(e) => setSku(e.target.value)}
-                                        placeholder="Généré automatiquement"
-                                        className="bg-white border-gray-200 h-12 text-base font-mono rounded-xl uppercase tracking-wider shadow-sm focus:ring-blue-500/20 focus:border-blue-500 text-gray-900"
-                                    />
-                                    <Button onClick={generateSku} type="button" className="h-12 w-12 shrink-0 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-xl text-indigo-600">
-                                        <Wand2 className="w-5 h-5" />
-                                    </Button>
                                 </div>
                             </div>
                         </section>

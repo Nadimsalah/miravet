@@ -589,6 +589,9 @@ export default function HeroCarouselPage() {
                                                 <DialogContent>
                                                     <DialogHeader>
                                                         <DialogTitle>Edit Slide</DialogTitle>
+                                                        <DialogDescription className="sr-only">
+                                                            Modifier les détails de la diapositive du carrousel.
+                                                        </DialogDescription>
                                                     </DialogHeader>
                                                     <div className="space-y-4 py-4">
                                                         {/* Image Edit Section */}
