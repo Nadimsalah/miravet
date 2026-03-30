@@ -51,7 +51,7 @@ import {
 export default function NewProductPage() {
     // Workflow State
     const [currentStep, setCurrentStep] = useState(1)
-    
+
     // Form State
     const [title, setTitle] = useState("")
     const [sku, setSku] = useState("")
@@ -145,39 +145,39 @@ export default function NewProductPage() {
     const handlePurchasePriceChange = (v: string) => {
         setPurchasePrice(v)
         if (v && profitMargin) {
-             const cost = parseFloat(v)
-             const margin = parseFloat(profitMargin)
-             const p = cost + (cost * margin / 100)
-             setPrice(p.toFixed(2).toString())
+            const cost = parseFloat(v)
+            const margin = parseFloat(profitMargin)
+            const p = cost + (cost * margin / 100)
+            setPrice(p.toFixed(2).toString())
         }
     }
 
     const handleProfitMarginChange = (v: string) => {
         setProfitMargin(v)
         if (v && purchasePrice) {
-             const cost = parseFloat(purchasePrice)
-             const margin = parseFloat(v)
-             const p = cost + (cost * margin / 100)
-             setPrice(p.toFixed(2).toString())
+            const cost = parseFloat(purchasePrice)
+            const margin = parseFloat(v)
+            const p = cost + (cost * margin / 100)
+            setPrice(p.toFixed(2).toString())
         }
     }
 
     const handlePriceChange = (v: string) => {
         setPrice(v)
         if (v && purchasePrice) {
-             const p = parseFloat(v)
-             const cost = parseFloat(purchasePrice)
-             if (cost > 0) {
-                 const margin = ((p - cost) / cost) * 100
-                 setProfitMargin(margin.toFixed(0).toString())
-             }
+            const p = parseFloat(v)
+            const cost = parseFloat(purchasePrice)
+            if (cost > 0) {
+                const margin = ((p - cost) / cost) * 100
+                setProfitMargin(margin.toFixed(0).toString())
+            }
         }
     }
 
     const handlePublish = async () => {
         if (!price || parseFloat(price) <= 0) { alert("Le prix est obligatoire."); setCurrentStep(4); return }
         setIsPublishing(true)
-        
+
         let finalSku = sku
         if (!finalSku) {
             const base = title.trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 3) || "GEN"
@@ -210,7 +210,7 @@ export default function NewProductPage() {
     return (
         <div className="min-h-screen bg-[#F0F2F5] flex overflow-hidden font-sans">
             <AdminSidebar />
-            
+
             <main className="flex-1 lg:pl-72 relative flex flex-col items-center justify-start py-8 px-4 h-screen overflow-y-auto no-scrollbar">
                 {/* Background decorative elements */}
                 <div className="fixed top-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
@@ -228,7 +228,7 @@ export default function NewProductPage() {
                                     Nouveau Produit
                                 </h1>
                                 <p className="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                    {steps[currentStep-1].label}
+                                    {steps[currentStep - 1].label}
                                     <span className="w-1 h-1 rounded-full bg-slate-300" />
                                     Étape {currentStep}/{steps.length}
                                 </p>
@@ -245,7 +245,7 @@ export default function NewProductPage() {
 
                     {/* Progress Indicator: Modern Pill Line */}
                     <div className="relative h-1.5 w-full bg-white/40 rounded-full overflow-hidden shadow-inner">
-                        <motion.div 
+                        <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${(currentStep / steps.length) * 100}%` }}
                             transition={{ duration: 0.8, ease: "circOut" }}
@@ -265,20 +265,20 @@ export default function NewProductPage() {
                         >
                             {/* Icon Watermark */}
                             <div className="absolute top-10 right-10 text-slate-50 opacity-[0.03] group-hover/card:scale-110 group-hover/card:opacity-[0.05] transition-all duration-1000 select-none">
-                                {typeof window !== 'undefined' && window.innerWidth > 1024 && React.cloneElement(steps[currentStep-1].icon as React.ReactElement, { size: 300 } as any)}
+                                {typeof window !== 'undefined' && window.innerWidth > 1024 && React.cloneElement(steps[currentStep - 1].icon as React.ReactElement, { size: 300 } as any)}
                             </div>
 
                             <div className="relative z-10 max-w-2xl mx-auto w-full space-y-10">
                                 {/* Step Intro */}
                                 <div className="space-y-2 text-center">
                                     <div className="w-16 h-16 rounded-3xl bg-indigo-50 text-indigo-500 flex items-center justify-center mx-auto mb-4 shadow-xl shadow-indigo-100/50">
-                                        {React.cloneElement(steps[currentStep-1].icon as React.ReactElement, { size: 28, strokeWidth: 2.5 } as any)}
+                                        {React.cloneElement(steps[currentStep - 1].icon as React.ReactElement, { size: 28, strokeWidth: 2.5 } as any)}
                                     </div>
                                     <h2 className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tighter">
-                                        {steps[currentStep-1].label}
+                                        {steps[currentStep - 1].label}
                                     </h2>
                                     <p className="text-slate-400 font-medium text-lg italic">
-                                        {steps[currentStep-1].desc}
+                                        {steps[currentStep - 1].desc}
                                     </p>
                                 </div>
 
@@ -287,17 +287,17 @@ export default function NewProductPage() {
                                     {currentStep === 1 && (
                                         <div className="space-y-6">
                                             <div className="group">
-                                                <Input 
-                                                    value={title} 
-                                                    onChange={(e) => setTitle(e.target.value)} 
-                                                    placeholder="Titre accrocheur..." 
+                                                <Input
+                                                    value={title}
+                                                    onChange={(e) => setTitle(e.target.value)}
+                                                    placeholder="Titre accrocheur..."
                                                     className="w-full h-20 px-8 text-2xl font-black border-none bg-slate-50 rounded-[2rem] placeholder:text-slate-300 focus:bg-white focus:ring-[6px] focus:ring-indigo-50 transition-all shadow-sm"
                                                 />
                                             </div>
-                                            <textarea 
-                                                value={description} 
-                                                onChange={(e) => setDescription(e.target.value)} 
-                                                placeholder="Racontez l'histoire de ce produit..." 
+                                            <textarea
+                                                value={description}
+                                                onChange={(e) => setDescription(e.target.value)}
+                                                placeholder="Racontez l'histoire de ce produit..."
                                                 className="w-full min-h-[220px] p-8 text-lg font-medium border-none bg-slate-50 rounded-[2.5rem] placeholder:text-slate-300 focus:bg-white focus:ring-[6px] focus:ring-indigo-50 transition-all shadow-sm resize-none"
                                             />
                                         </div>
@@ -309,7 +309,7 @@ export default function NewProductPage() {
                                                 <div key={i} className="relative aspect-[4/5] rounded-[2.5rem] overflow-hidden group/img border-4 border-white shadow-xl hover:scale-105 transition-all">
                                                     <Image src={img} alt="" fill className="object-cover" />
                                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition-all backdrop-blur-sm">
-                                                        <button onClick={() => setImages(images.filter((_, idx)=>idx!==i))} className="w-10 h-10 rounded-full bg-white text-red-500 shadow-lg flex items-center justify-center hover:scale-110 active:scale-90 transition-all">
+                                                        <button onClick={() => setImages(images.filter((_, idx) => idx !== i))} className="w-10 h-10 rounded-full bg-white text-red-500 shadow-lg flex items-center justify-center hover:scale-110 active:scale-90 transition-all">
                                                             <Trash className="w-4 h-4" />
                                                         </button>
                                                     </div>
@@ -329,8 +329,8 @@ export default function NewProductPage() {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[400px] overflow-y-auto pr-4 no-scrollbar">
                                             {categories.filter(c => !c.parent_id).map(main => (
                                                 <div key={main.id} className="space-y-2">
-                                                    <button 
-                                                        onClick={() => setSelectedCategories(prev => prev.includes(main.name) ? prev.filter(n=>n!==main.name) : [...prev, main.name])}
+                                                    <button
+                                                        onClick={() => setSelectedCategories(prev => prev.includes(main.name) ? prev.filter(n => n !== main.name) : [...prev, main.name])}
                                                         className={`w-full p-5 rounded-[2rem] flex items-center justify-between border-2 transition-all active:scale-95 ${selectedCategories.includes(main.name) ? 'bg-indigo-600 border-indigo-600 text-white shadow-xl shadow-indigo-200' : 'bg-slate-50 border-transparent hover:border-slate-200'}`}
                                                     >
                                                         <div className="flex items-center gap-3">
@@ -339,13 +339,13 @@ export default function NewProductPage() {
                                                             </div>
                                                             <span className="font-black text-sm">{main.name}</span>
                                                         </div>
-                                                        <ChevronDown onClick={(e)=>{ e.stopPropagation(); setExpandedCategories(prev => prev.includes(main.id) ? prev.filter(id=>id!==main.id) : [...prev, main.id])}} className={`w-4 h-4 transition-transform ${expandedCategories.includes(main.id) ? 'rotate-180' : ''}`} />
+                                                        <ChevronDown onClick={(e) => { e.stopPropagation(); setExpandedCategories(prev => prev.includes(main.id) ? prev.filter(id => id !== main.id) : [...prev, main.id]) }} className={`w-4 h-4 transition-transform ${expandedCategories.includes(main.id) ? 'rotate-180' : ''}`} />
                                                     </button>
                                                     <AnimatePresence>
                                                         {expandedCategories.includes(main.id) && (
                                                             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="pl-6 space-y-2 overflow-hidden">
                                                                 {categories.filter(s => s.parent_id === main.id).map(sub => (
-                                                                    <button key={sub.id} onClick={() => setSelectedCategories(p => p.includes(sub.name) ? p.filter(n=>n!==sub.name) : [...p, sub.name])} className={`w-full p-4 rounded-2xl flex items-center gap-3 text-xs font-bold border transition-all ${selectedCategories.includes(sub.name) ? 'bg-white border-indigo-200 text-indigo-600 shadow-sm' : 'text-slate-400 border-transparent hover:bg-white/50'}`}>
+                                                                    <button key={sub.id} onClick={() => setSelectedCategories(p => p.includes(sub.name) ? p.filter(n => n !== sub.name) : [...p, sub.name])} className={`w-full p-4 rounded-2xl flex items-center gap-3 text-xs font-bold border transition-all ${selectedCategories.includes(sub.name) ? 'bg-white border-indigo-200 text-indigo-600 shadow-sm' : 'text-slate-400 border-transparent hover:bg-white/50'}`}>
                                                                         <div className={`w-2 h-2 rounded-full ${selectedCategories.includes(sub.name) ? 'bg-indigo-500' : 'bg-slate-200'}`} />
                                                                         {sub.name}
                                                                     </button>
@@ -360,10 +360,10 @@ export default function NewProductPage() {
 
                                     {currentStep === 4 && (
                                         <div className="max-w-md mx-auto space-y-6 text-center">
-                                            
+
                                             <div className="space-y-3 text-left">
                                                 <label className="text-xs font-black uppercase text-slate-400 tracking-widest pl-4">Fournisseur (Optionnel)</label>
-                                                <select 
+                                                <select
                                                     value={supplierId}
                                                     onChange={(e) => setSupplierId(e.target.value)}
                                                     className="w-full h-14 px-6 text-base font-bold border-none bg-slate-50 rounded-[2rem] focus:outline-none focus:ring-[4px] focus:ring-indigo-50 transition-all text-slate-700 appearance-none"
@@ -378,21 +378,21 @@ export default function NewProductPage() {
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div className="space-y-3 text-left">
                                                     <label className="text-xs font-black uppercase text-slate-400 tracking-widest pl-4">Prix d'achat (MAD)</label>
-                                                    <Input 
-                                                        type="number" 
-                                                        value={purchasePrice} 
-                                                        onChange={(e)=>handlePurchasePriceChange(e.target.value)} 
-                                                        placeholder="0.00" 
+                                                    <Input
+                                                        type="number"
+                                                        value={purchasePrice}
+                                                        onChange={(e) => handlePurchasePriceChange(e.target.value)}
+                                                        placeholder="0.00"
                                                         className="w-full h-14 border-none bg-emerald-50 text-emerald-700 rounded-[2rem] font-bold text-lg px-6"
                                                     />
                                                 </div>
                                                 <div className="space-y-3 text-left">
                                                     <label className="text-xs font-black uppercase text-slate-400 tracking-widest pl-4">Marge (%)</label>
-                                                    <Input 
-                                                        type="number" 
-                                                        value={profitMargin} 
-                                                        onChange={(e)=>handleProfitMarginChange(e.target.value)} 
-                                                        placeholder="Ex: 30" 
+                                                    <Input
+                                                        type="number"
+                                                        value={profitMargin}
+                                                        onChange={(e) => handleProfitMarginChange(e.target.value)}
+                                                        placeholder="Ex: 30"
                                                         className="w-full h-14 border-none bg-amber-50 text-amber-700 rounded-[2rem] font-bold text-lg px-6"
                                                     />
                                                 </div>
@@ -402,11 +402,11 @@ export default function NewProductPage() {
                                                 <label className="text-xs font-black uppercase text-indigo-400 tracking-widest pl-4">Prix de vente final (MAD)</label>
                                                 <div className="relative group">
                                                     <div className="absolute left-6 top-1/2 -translate-y-1/2 text-xl font-black text-indigo-300">MAD</div>
-                                                    <Input 
-                                                        type="number" 
-                                                        value={price} 
-                                                        onChange={(e)=>handlePriceChange(e.target.value)} 
-                                                        placeholder="0.00" 
+                                                    <Input
+                                                        type="number"
+                                                        value={price}
+                                                        onChange={(e) => handlePriceChange(e.target.value)}
+                                                        placeholder="0.00"
                                                         className="w-full h-24 pl-20 pr-6 text-4xl font-black text-indigo-600 border-none bg-indigo-50 rounded-[2.5rem] shadow-inner"
                                                     />
                                                 </div>
@@ -414,9 +414,9 @@ export default function NewProductPage() {
 
                                             <div className="inline-flex flex-col gap-1 p-4 bg-slate-50 rounded-2xl border-2 border-slate-100 border-dashed mt-4">
                                                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Estimation HT</span>
-                                                <span className="text-xl font-black text-slate-700">{((parseFloat(price)||0)/1.2).toFixed(2)} <span className="text-xs">MAD</span></span>
+                                                <span className="text-xl font-black text-slate-700">{((parseFloat(price) || 0) / 1.2).toFixed(2)} <span className="text-xs">MAD</span></span>
                                             </div>
-                                            
+
                                         </div>
                                     )}
 
@@ -424,11 +424,11 @@ export default function NewProductPage() {
                                         <div className="space-y-6">
                                             <div className="relative">
                                                 <Search className="absolute left-8 top-1/2 -translate-y-1/2 text-slate-400" />
-                                                <Input value={searchQuery} onChange={(e)=>setSearchQuery(e.target.value)} placeholder="Rattacher un produit existant..." className="w-full h-16 pl-16 rounded-full bg-slate-50 border-none focus:bg-white focus:ring-blue-100 shadow-inner font-bold" />
+                                                <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Rattacher un produit existant..." className="w-full h-16 pl-16 rounded-full bg-slate-50 border-none focus:bg-white focus:ring-blue-100 shadow-inner font-bold" />
                                             </div>
                                             <div className="grid grid-cols-1 gap-2 max-h-[300px] overflow-y-auto pr-2 no-scrollbar">
                                                 {relatedProducts.map(p => (
-                                                    <div key={p.id} onClick={()=>setSelectedRelated(prev=>prev.includes(p.id)?prev.filter(id=>id!==p.id):[...prev,p.id])} className={`p-4 rounded-3xl border-2 flex items-center gap-4 cursor-pointer transition-all ${selectedRelated.includes(p.id)?'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-200':'bg-white border-slate-50 hover:border-slate-100 hover:shadow-md'}`}>
+                                                    <div key={p.id} onClick={() => setSelectedRelated(prev => prev.includes(p.id) ? prev.filter(id => id !== p.id) : [...prev, p.id])} className={`p-4 rounded-3xl border-2 flex items-center gap-4 cursor-pointer transition-all ${selectedRelated.includes(p.id) ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-white border-slate-50 hover:border-slate-100 hover:shadow-md'}`}>
                                                         <div className="w-12 h-12 rounded-2xl bg-slate-100 relative overflow-hidden shrink-0">
                                                             {p.images?.[0] && <Image src={p.images[0]} alt="" fill className="object-cover" />}
                                                         </div>
@@ -445,8 +445,8 @@ export default function NewProductPage() {
                                             <div className="flex flex-col gap-4">
                                                 <label className="text-xs font-black uppercase text-slate-400">Statut de Visibilité</label>
                                                 <div className="grid grid-cols-2 gap-4 p-2 bg-slate-100 rounded-[2.5rem]">
-                                                    <button onClick={()=>setStatus('draft')} className={`py-5 rounded-[2rem] text-sm font-black transition-all ${status === 'draft'?'bg-white text-slate-900 shadow-xl':'text-slate-500 hover:text-slate-700'}`}>Brouillon</button>
-                                                    <button onClick={()=>setStatus('active')} className={`py-5 rounded-[2rem] text-sm font-black transition-all ${status === 'active'?'bg-slate-900 text-white shadow-xl shadow-black/20':'text-slate-500 hover:text-slate-700'}`}>Actif</button>
+                                                    <button onClick={() => setStatus('draft')} className={`py-5 rounded-[2rem] text-sm font-black transition-all ${status === 'draft' ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-500 hover:text-slate-700'}`}>Brouillon</button>
+                                                    <button onClick={() => setStatus('active')} className={`py-5 rounded-[2rem] text-sm font-black transition-all ${status === 'active' ? 'bg-slate-900 text-white shadow-xl shadow-black/20' : 'text-slate-500 hover:text-slate-700'}`}>Actif</button>
                                                 </div>
                                             </div>
 
@@ -457,7 +457,7 @@ export default function NewProductPage() {
                                                 </div>
                                                 <h3 className="text-xl font-bold">{title || "Produit sans nom"}</h3>
                                                 <p className="text-slate-400 text-sm font-medium opacity-60">Prêt à rejoindre la flotte Miravet</p>
-                                                
+
                                                 <Button onClick={handlePublish} disabled={isPublishing} className="w-full h-16 rounded-2xl bg-indigo-500 hover:bg-white hover:text-indigo-600 text-lg font-black transition-all group-hover/fin:scale-[1.02] shadow-xl shadow-indigo-500/30 border-none mt-4">
                                                     {isPublishing ? <Loader2 className="animate-spin" /> : "Publier l'Inspiration"}
                                                     {!isPublishing && <ChevronRight className="ml-2 w-5 h-5" />}
@@ -483,7 +483,7 @@ export default function NewProductPage() {
                                 <ArrowLeft className="w-5 h-5" />
                                 <span className="hidden sm:inline">Précédent</span>
                             </motion.button>
-                            
+
                             <div className="flex items-center gap-2">
                                 {steps.map((_, i) => (
                                     <div key={i} className={`w-1.5 h-1.5 rounded-full transition-all duration-500 ${currentStep === i + 1 ? 'bg-indigo-600 w-4' : 'bg-slate-200'}`} />
@@ -507,14 +507,14 @@ export default function NewProductPage() {
                 {/* Celebration Overlay */}
                 <AnimatePresence>
                     {showSuccess && (
-                        <motion.div 
-                            initial={{ opacity: 0 }} 
-                            animate={{ opacity: 1 }} 
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             className="fixed inset-0 z-[100] flex items-center justify-center bg-indigo-900/40 backdrop-blur-3xl"
                         >
-                            <motion.div 
-                                initial={{ scale: 0.5, y: 100 }} 
+                            <motion.div
+                                initial={{ scale: 0.5, y: 100 }}
                                 animate={{ scale: 1, y: 0 }}
                                 transition={{ type: "spring", damping: 15 }}
                                 className="bg-white p-14 rounded-[4rem] text-center shadow-2xl relative border-4 border-indigo-400"
@@ -524,7 +524,7 @@ export default function NewProductPage() {
                                 </div>
                                 <h3 className="text-4xl font-black text-slate-900 mb-2">Succès !</h3>
                                 <p className="text-slate-400 font-bold uppercase tracking-widest text-sm">Le produit est déployé</p>
-                                
+
                                 <div className="mt-8 flex items-center justify-center gap-2">
                                     <Loader2 className="w-4 h-4 text-indigo-500 animate-spin" />
                                     <span className="text-xs font-black text-slate-500 uppercase">Redirection...</span>

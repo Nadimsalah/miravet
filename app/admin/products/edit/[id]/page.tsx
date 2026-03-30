@@ -559,7 +559,7 @@ export default function EditProductPage() {
                                 </div>
                             </div>
 
-                <div className="space-y-4">
+                            <div className="space-y-4">
                                 <div className="flex justify-between items-center">
                                     <label className="text-sm font-semibold text-gray-700">Spécifications Techniques</label>
                                     <div className="flex gap-2">
@@ -625,12 +625,12 @@ export default function EditProductPage() {
                                 {selectedCategories.length > 0 && (
                                     <div className="flex flex-wrap gap-2 mb-4">
                                         {selectedCategories.map(catName => (
-                                            <Badge 
-                                                key={catName} 
+                                            <Badge
+                                                key={catName}
                                                 className="bg-indigo-600 text-white rounded-lg px-3 py-1.5 flex items-center gap-2 group transition-all hover:pr-1"
                                             >
                                                 <span className="text-xs font-bold leading-none">{catName}</span>
-                                                <button 
+                                                <button
                                                     onClick={() => setSelectedCategories(selectedCategories.filter(c => c !== catName))}
                                                     className="opacity-60 hover:opacity-100 transition-opacity p-0.5 rounded-full hover:bg-white/20"
                                                 >
@@ -643,17 +643,54 @@ export default function EditProductPage() {
 
                                 <div className="relative group/search">
                                     <div className="max-h-[400px] overflow-y-auto pr-2 custom-scrollbar space-y-3 p-1">
-                                            {categories.filter(c => !c.parent_id).map((mainCat) => {
-                                                const isExpanded = expandedCategories.includes(mainCat.id);
-                                                const hasSubcats = categories.some(sub => sub.parent_id === mainCat.id);
-                                                
-                                                return (
-                                                    <div key={mainCat.id} className="space-y-2">
-                                                        {/* Main Category Row */}
-                                                        <div 
-                                                            className={`group flex items-center justify-between p-3 rounded-2xl transition-all border-2 ${selectedCategories.includes(mainCat.name) ? 'bg-indigo-50 border-indigo-200 shadow-md shadow-indigo-100/50' : 'bg-white border-slate-100 hover:border-slate-200 hover:shadow-lg'}`}
+                                        {categories.filter(c => !c.parent_id).map((mainCat) => {
+                                            const isExpanded = expandedCategories.includes(mainCat.id);
+                                            const hasSubcats = categories.some(sub => sub.parent_id === mainCat.id);
+
+                                            return (
+                                                <div key={mainCat.id} className="space-y-2">
+                                                    {/* Main Category Row */}
+                                                    <div
+                                                        className={`group flex items-center justify-between p-3 rounded-2xl transition-all border-2 ${selectedCategories.includes(mainCat.name) ? 'bg-indigo-50 border-indigo-200 shadow-md shadow-indigo-100/50' : 'bg-white border-slate-100 hover:border-slate-200 hover:shadow-lg'}`}
+                                                    >
+                                                        <div
+                                                            onClick={() => {
+                                                                if (selectedCategories.includes(mainCat.name)) {
+                                                                    setSelectedCategories(selectedCategories.filter(c => c !== mainCat.name))
+                                                                } else {
+                                                                    setSelectedCategories([...selectedCategories, mainCat.name])
+                                                                }
+                                                            }}
+                                                            className="flex items-center gap-3 flex-1 cursor-pointer"
                                                         >
-                                                            <div 
+                                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl transition-all ${selectedCategories.includes(mainCat.name) ? 'bg-indigo-600 text-white rotate-6 scale-110 shadow-lg shadow-indigo-200' : 'bg-slate-50 text-slate-400 group-hover:scale-110 group-hover:rotate-3'}`}>
+                                                                {mainCat.name.includes('Vaccin') ? '💉' :
+                                                                    mainCat.name.includes('Para') ? '🦟' :
+                                                                        mainCat.name.includes('Infec') ? '💊' :
+                                                                            mainCat.name.includes('Anesth') ? '🧪' : '📦'}
+                                                            </div>
+                                                            <span className={`text-sm font-black transition-colors ${selectedCategories.includes(mainCat.name) ? 'text-indigo-900' : 'text-slate-700'}`}>
+                                                                {mainCat.name}
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="flex items-center gap-2">
+                                                            {hasSubcats && (
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        if (isExpanded) {
+                                                                            setExpandedCategories(expandedCategories.filter(id => id !== mainCat.id))
+                                                                        } else {
+                                                                            setExpandedCategories([...expandedCategories, mainCat.id])
+                                                                        }
+                                                                    }}
+                                                                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${isExpanded ? 'bg-indigo-100 text-indigo-600 rotate-180' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
+                                                                >
+                                                                    <ChevronDown className="w-4 h-4" />
+                                                                </button>
+                                                            )}
+                                                            <div
                                                                 onClick={() => {
                                                                     if (selectedCategories.includes(mainCat.name)) {
                                                                         setSelectedCategories(selectedCategories.filter(c => c !== mainCat.name))
@@ -661,81 +698,44 @@ export default function EditProductPage() {
                                                                         setSelectedCategories([...selectedCategories, mainCat.name])
                                                                     }
                                                                 }}
-                                                                className="flex items-center gap-3 flex-1 cursor-pointer"
+                                                                className={`w-6 h-6 rounded-full flex items-center justify-center transition-all cursor-pointer ${selectedCategories.includes(mainCat.name) ? 'bg-indigo-600 scale-100' : 'bg-slate-100 scale-50 opacity-0 group-hover:opacity-100'}`}
                                                             >
-                                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl transition-all ${selectedCategories.includes(mainCat.name) ? 'bg-indigo-600 text-white rotate-6 scale-110 shadow-lg shadow-indigo-200' : 'bg-slate-50 text-slate-400 group-hover:scale-110 group-hover:rotate-3'}`}>
-                                                                    {mainCat.name.includes('Vaccin') ? '💉' : 
-                                                                        mainCat.name.includes('Para') ? '🦟' : 
-                                                                        mainCat.name.includes('Infec') ? '💊' : 
-                                                                        mainCat.name.includes('Anesth') ? '🧪' : '📦'}
-                                                                </div>
-                                                                <span className={`text-sm font-black transition-colors ${selectedCategories.includes(mainCat.name) ? 'text-indigo-900' : 'text-slate-700'}`}>
-                                                                    {mainCat.name}
-                                                                </span>
-                                                            </div>
-
-                                                            <div className="flex items-center gap-2">
-                                                                {hasSubcats && (
-                                                                    <button 
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            if (isExpanded) {
-                                                                                setExpandedCategories(expandedCategories.filter(id => id !== mainCat.id))
-                                                                            } else {
-                                                                                setExpandedCategories([...expandedCategories, mainCat.id])
-                                                                            }
-                                                                        }}
-                                                                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${isExpanded ? 'bg-indigo-100 text-indigo-600 rotate-180' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
-                                                                    >
-                                                                        <ChevronDown className="w-4 h-4" />
-                                                                    </button>
-                                                                )}
-                                                                <div 
-                                                                    onClick={() => {
-                                                                        if (selectedCategories.includes(mainCat.name)) {
-                                                                            setSelectedCategories(selectedCategories.filter(c => c !== mainCat.name))
-                                                                        } else {
-                                                                            setSelectedCategories([...selectedCategories, mainCat.name])
-                                                                        }
-                                                                    }}
-                                                                    className={`w-6 h-6 rounded-full flex items-center justify-center transition-all cursor-pointer ${selectedCategories.includes(mainCat.name) ? 'bg-indigo-600 scale-100' : 'bg-slate-100 scale-50 opacity-0 group-hover:opacity-100'}`}
-                                                                >
-                                                                    <Check className="w-3 h-3 text-white" />
-                                                                </div>
+                                                                <Check className="w-3 h-3 text-white" />
                                                             </div>
                                                         </div>
-
-                                                        {/* Subcategories (Nested) - Only shown when expanded */}
-                                                        {isExpanded && (
-                                                            <div className="grid grid-cols-1 gap-2 pl-4 animate-in slide-in-from-top-2 duration-300">
-                                                                {categories.filter(sub => sub.parent_id === mainCat.id).map(subCat => (
-                                                                    <div 
-                                                                        key={subCat.id}
-                                                                        onClick={() => {
-                                                                            if (selectedCategories.includes(subCat.name)) {
-                                                                                setSelectedCategories(selectedCategories.filter(c => c !== subCat.name))
-                                                                            } else {
-                                                                                setSelectedCategories([...selectedCategories, subCat.name])
-                                                                            }
-                                                                        }}
-                                                                        className={`group flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-all border ${selectedCategories.includes(subCat.name) ? 'bg-white border-indigo-200 shadow-sm shadow-indigo-100' : 'bg-slate-50/30 border-transparent hover:border-slate-200 hover:bg-white'}`}
-                                                                    >
-                                                                        <div className="flex items-center gap-3">
-                                                                            <div className={`w-1.5 h-1.5 rounded-full transition-all ${selectedCategories.includes(subCat.name) ? 'bg-indigo-600 scale-150 shadow-[0_0_8px_rgba(79,70,229,0.5)]' : 'bg-slate-300 group-hover:bg-slate-400'}`} />
-                                                                            <span className={`text-xs font-bold transition-colors ${selectedCategories.includes(subCat.name) ? 'text-indigo-600' : 'text-slate-500 group-hover:text-slate-700'}`}>
-                                                                                {subCat.name}
-                                                                            </span>
-                                                                        </div>
-                                                                        {selectedCategories.includes(subCat.name) && (
-                                                                            <div className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-pulse" />
-                                                                        )}
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        )}
                                                     </div>
-                                                );
-                                            })}
+
+                                                    {/* Subcategories (Nested) - Only shown when expanded */}
+                                                    {isExpanded && (
+                                                        <div className="grid grid-cols-1 gap-2 pl-4 animate-in slide-in-from-top-2 duration-300">
+                                                            {categories.filter(sub => sub.parent_id === mainCat.id).map(subCat => (
+                                                                <div
+                                                                    key={subCat.id}
+                                                                    onClick={() => {
+                                                                        if (selectedCategories.includes(subCat.name)) {
+                                                                            setSelectedCategories(selectedCategories.filter(c => c !== subCat.name))
+                                                                        } else {
+                                                                            setSelectedCategories([...selectedCategories, subCat.name])
+                                                                        }
+                                                                    }}
+                                                                    className={`group flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-all border ${selectedCategories.includes(subCat.name) ? 'bg-white border-indigo-200 shadow-sm shadow-indigo-100' : 'bg-slate-50/30 border-transparent hover:border-slate-200 hover:bg-white'}`}
+                                                                >
+                                                                    <div className="flex items-center gap-3">
+                                                                        <div className={`w-1.5 h-1.5 rounded-full transition-all ${selectedCategories.includes(subCat.name) ? 'bg-indigo-600 scale-150 shadow-[0_0_8px_rgba(79,70,229,0.5)]' : 'bg-slate-300 group-hover:bg-slate-400'}`} />
+                                                                        <span className={`text-xs font-bold transition-colors ${selectedCategories.includes(subCat.name) ? 'text-indigo-600' : 'text-slate-500 group-hover:text-slate-700'}`}>
+                                                                            {subCat.name}
+                                                                        </span>
+                                                                    </div>
+                                                                    {selectedCategories.includes(subCat.name) && (
+                                                                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-pulse" />
+                                                                    )}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                                 <p className="text-[10px] text-slate-400 font-bold italic">
@@ -751,9 +751,9 @@ export default function EditProductPage() {
                                 </label>
                                 <div className="relative group/type">
                                     <Tags className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within/type:text-indigo-500 transition-colors" />
-                                    <Input 
-                                        placeholder="ex: Antibiotique, Complément..." 
-                                        className="bg-white border-2 border-slate-100 h-14 pl-12 text-sm font-bold rounded-2xl shadow-sm focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all placeholder:text-slate-300" 
+                                    <Input
+                                        placeholder="ex: Antibiotique, Complément..."
+                                        className="bg-white border-2 border-slate-100 h-14 pl-12 text-sm font-bold rounded-2xl shadow-sm focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all placeholder:text-slate-300"
                                     />
                                 </div>
                             </div>

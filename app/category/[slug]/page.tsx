@@ -8,6 +8,7 @@ import { formatPrice } from "@/lib/utils"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { useCart } from "@/components/cart-provider"
 import { 
     ChevronLeft, 
     ShoppingBag, 
@@ -29,6 +30,7 @@ export default function CategoryPage() {
     const [loading, setLoading] = useState(true)
     const [activeSubCategory, setActiveSubCategory] = useState("all")
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+    const { addItem, cartCount } = useCart()
 
     useEffect(() => {
         async function loadData() {
@@ -128,7 +130,16 @@ export default function CategoryPage() {
                         </Link>
                         <Link href="/cart" className="relative text-slate-400 hover:text-slate-900 transition-colors">
                             <ShoppingBag className="w-5 h-5" />
-                            <span className="absolute -top-2 -right-2 w-4 h-4 bg-indigo-600 text-white text-[10px] flex items-center justify-center rounded-full font-bold">0</span>
+                            {cartCount > 0 && (
+                                <motion.span 
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    key={cartCount}
+                                    className="absolute -top-2 -right-2 w-4 h-4 bg-indigo-600 text-white text-[10px] flex items-center justify-center rounded-full font-bold shadow-lg shadow-indigo-600/20"
+                                >
+                                    {cartCount}
+                                </motion.span>
+                            )}
                         </Link>
                     </div>
                 </div>
@@ -226,18 +237,35 @@ export default function CategoryPage() {
                                     className={`group relative ${viewMode === 'list' ? 'flex flex-row gap-8 items-center bg-white p-4 rounded-3xl border border-slate-50' : ''}`}
                                 >
                                     <div className={`relative overflow-hidden rounded-[2.5rem] bg-slate-50 aspect-square ${viewMode === 'list' ? 'w-48 h-48' : 'w-full mb-6'}`}>
-                                        <Image
-                                            src={product.images?.[0] || "/placeholder.svg"}
-                                            alt={product.title}
-                                            fill
-                                            className="object-cover transition-transform duration-700 group-hover:scale-110"
-                                        />
-                                        <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        <Link href={`/product/${product.id}`} className="block w-full h-full">
+                                            <Image
+                                                src={product.images?.[0] || "/placeholder.svg"}
+                                                alt={product.title}
+                                                fill
+                                                className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                            />
+                                        </Link>
+                                        <div className="absolute inset-0 bg-black/5 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity" />
                                         
                                         {/* Quick Add Button Overlay */}
-                                        <button className="absolute bottom-6 right-6 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-2xl translate-y-20 group-hover:translate-y-0 transition-transform duration-500 active:scale-90">
-                                            <ShoppingBag className="w-5 h-5 text-indigo-600" />
-                                        </button>
+                                        <motion.button 
+                                            whileTap={{ scale: 0.9 }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                addItem({
+                                                    id: product.id,
+                                                    name: product.title,
+                                                    price: product.price,
+                                                    image: product.images?.[0] || "/placeholder.svg",
+                                                    quantity: 1,
+                                                    inStock: true,
+                                                    stock: product.stock || 0
+                                                });
+                                            }}
+                                            className="absolute bottom-6 right-6 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-2xl translate-y-20 group-hover:translate-y-0 transition-all duration-500 hover:bg-indigo-600 hover:text-white"
+                                        >
+                                            <ShoppingBag className="w-5 h-5" />
+                                        </motion.button>
                                     </div>
 
                                     <div className="space-y-3">

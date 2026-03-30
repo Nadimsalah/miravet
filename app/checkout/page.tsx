@@ -10,9 +10,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { 
-    ChevronLeft, CreditCard, Truck, ShieldCheck, 
-    Lock, CheckCircle2, AlertCircle, ShoppingBag, 
-    Phone, Mail, User, MapPin, Building2, Package, FileText
+    Phone, Mail, User, MapPin, Building2, Package, FileText, Loader2, 
+    Lock, ShoppingBag, ChevronLeft, Truck, CreditCard, CheckCircle2, ShieldCheck
 } from "lucide-react"
 import { formatPrice } from "@/lib/utils"
 import { getCurrentUserId, getCurrentResellerTier, type ResellerTier } from "@/lib/supabase-api"
@@ -38,8 +37,9 @@ export default function CheckoutPage() {
         address: ""
     })
     const [wantsInvoice, setWantsInvoice] = useState(false)
-
     const [adminSettings, setAdminSettings] = useState<Record<string, string>>({})
+    const [isSummaryExpanded, setIsSummaryExpanded] = useState(false)
+    const [activeStep, setActiveStep] = useState(1) // 1: Shipping, 2: Payment/Review
 
     useEffect(() => {
         async function loadUserData() {
@@ -183,11 +183,9 @@ export default function CheckoutPage() {
             const data = await response.json()
 
             if (!response.ok) {
-                // If it's an RLS error, we should probably warn the user but the API might have handled it
                 throw new Error(data.error || "Une erreur est survenue lors de la validation de votre commande.")
             }
 
-            // Success!
             clearCart()
             router.push(`/checkout/success?orderId=${data.orderId}`)
         } catch (error: any) {
@@ -198,220 +196,372 @@ export default function CheckoutPage() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50">
-            {/* Minimal Header */}
-            <header className="bg-white border-b border-slate-200 py-6">
-                <div className="container max-w-6xl mx-auto px-4 flex items-center justify-between">
-                    <Link href="/cart" className="flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-black transition-colors">
-                        <ChevronLeft className="w-4 h-4" />
-                        Retour au panier
+        <div className="min-h-screen bg-[#f8fafc]">
+            {/* Minimal Modern Header */}
+            <header className="sticky top-0 z-50 bg-white/70 backdrop-blur-xl border-b border-slate-100 py-4 px-4 sm:px-6">
+                <div className="max-w-7xl mx-auto flex items-center justify-between">
+                    <Link href="/cart" className="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all">
+                        <ChevronLeft className="w-5 h-5" />
                     </Link>
-                    <Link href="/">
-                        <Image src="/logo.png" alt="Miravet" width={180} height={54} className="h-10 w-auto" />
+                    <Link href="/" className="flex items-center justify-center">
+                        <Image src="/logo.png" alt="Miravet" width={140} height={42} className="h-8 sm:h-10 w-auto" />
                     </Link>
-                    <div className="w-24 hidden sm:block" />
+                    <div className="flex items-center gap-2 text-slate-400">
+                        <Lock className="w-4 h-4 text-emerald-500" />
+                        <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest hidden sm:inline">Paiement Sécurisé</span>
+                    </div>
                 </div>
             </header>
 
-            <main className="container max-w-6xl mx-auto px-4 py-8 sm:py-12">
-                <form onSubmit={handleSubmit} className="grid lg:grid-cols-12 gap-8 lg:gap-12">
+            {/* Mobile Order Summary Toggle */}
+            <div className="lg:hidden sticky top-[65px] z-40 bg-[#0f172a] text-white border-b border-indigo-500/20">
+                <button 
+                    type="button"
+                    onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
+                    className="w-full px-6 py-4 flex items-center justify-between transition-colors hover:bg-slate-800"
+                >
+                    <div className="flex items-center gap-2">
+                        <ShoppingBag className="w-5 h-5 text-indigo-400" />
+                        <span className="text-sm font-bold">
+                            {isSummaryExpanded ? "Masquer le résumé" : "Afficher le résumé"}
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="text-lg font-black text-indigo-400">{formatPrice(total)} MAD</span>
+                        <motion.div
+                            animate={{ rotate: isSummaryExpanded ? 180 : 0 }}
+                            transition={{ duration: 0.3 }}
+                        >
+                            <ChevronLeft className="w-4 h-4 -rotate-90" />
+                        </motion.div>
+                    </div>
+                </button>
+                
+                <AnimatePresence>
+                    {isSummaryExpanded && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="px-6 pb-6 space-y-4 overflow-hidden border-t border-white/5 bg-slate-900/50"
+                        >
+                            <div className="pt-4 space-y-3">
+                                {cartItems.map((item) => {
+                                    const price = (resellerTier && item.resellerPrice) ? item.resellerPrice : item.price
+                                    return (
+                                        <div key={item.id} className="flex gap-4 items-center">
+                                            <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-white/5 shrink-0">
+                                                <Image src={item.image} alt={item.name} fill className="object-cover" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-xs font-bold truncate">{language === 'ar' && item.nameAr ? item.nameAr : item.name}</p>
+                                                <p className="text-[10px] text-white/40">{item.quantity} x {formatPrice(price)} MAD</p>
+                                            </div>
+                                            <p className="text-xs font-black">{formatPrice(price * item.quantity)} MAD</p>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                            <div className="pt-4 border-t border-white/5 space-y-2 text-xs">
+                                <div className="flex justify-between text-white/50">
+                                    <span>Sous-total</span>
+                                    <span>{formatPrice(subtotal)} MAD</span>
+                                </div>
+                                {deliveryFeesEnabled && (
+                                    <div className="flex justify-between text-white/50">
+                                        <span>Frais de livraison</span>
+                                        <span className="text-emerald-400">+{formatPrice(shipping)} MAD</span>
+                                    </div>
+                                )}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-16">
+                <form onSubmit={handleSubmit} className="grid lg:grid-cols-[1fr_400px] gap-8 lg:gap-16 items-start">
                     
-                    {/* Left: Shipping Info */}
-                    <div className="lg:col-span-7 space-y-8">
-                        <section className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-100">
-                            <div className="flex items-center gap-3 mb-8">
-                                <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-                                    <MapPin className="w-5 h-5" />
-                                </div>
-                                <h1 className="text-xl font-black text-slate-900">Information de Livraison</h1>
-                            </div>
-
-                            <div className="grid gap-6">
-                                <div className="space-y-2">
-                                    <Label htmlFor="fullName" className="text-xs font-bold uppercase tracking-wider text-slate-400">Nom Complet</Label>
-                                    <div className="relative">
-                                        <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                        <Input 
-                                            id="fullName" name="fullName" required 
-                                            placeholder="Ex: Ahmed Alaoui"
-                                            value={formData.fullName} onChange={handleInputChange}
-                                            className="h-12 pl-12 rounded-xl bg-slate-50 border-slate-100 focus:bg-white focus:ring-primary/20 transition-all font-medium"
-                                        />
+                    {/* Left Side: Steps & Form */}
+                    <div className="space-y-10">
+                        {/* Stepper HUD */}
+                        <div className="flex items-center gap-4 mb-2">
+                             {[1, 2].map((step) => (
+                                <div key={step} className="flex items-center gap-2">
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black transition-all ${activeStep === step ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-600/20 scale-110' : 'bg-slate-200 text-slate-400'}`}>
+                                        {step}
                                     </div>
+                                    <span className={`text-xs font-black uppercase tracking-widest ${activeStep === step ? 'text-indigo-600' : 'text-slate-400'}`}>
+                                        {step === 1 ? "Informations" : "Paiement"}
+                                    </span>
+                                    {step === 1 && <div className="w-12 h-[2px] bg-slate-100 mx-2" />}
                                 </div>
+                             ))}
+                        </div>
 
-                                <div className="grid sm:grid-cols-2 gap-6">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-slate-400">E-mail</Label>
-                                        <div className="relative">
-                                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                            <Input 
-                                                id="email" name="email" type="email" required
-                                                placeholder="ahmed@example.com"
-                                                value={formData.email} onChange={handleInputChange}
-                                                className="h-12 pl-12 rounded-xl bg-slate-50 border-slate-100 focus:bg-white transition-all font-medium"
-                                            />
+                        <AnimatePresence mode="wait">
+                            {activeStep === 1 ? (
+                                <motion.section 
+                                    key="step1"
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: 20 }}
+                                    className="space-y-8"
+                                >
+                                    <div className="glass-strong rounded-[2.5rem] p-8 sm:p-10">
+                                        <div className="flex items-center gap-4 mb-10">
+                                            <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                                                <MapPin className="w-6 h-6" />
+                                            </div>
+                                            <div>
+                                                <h1 className="text-2xl font-black text-slate-900 tracking-tight">Détails de Livraison</h1>
+                                                <p className="text-sm text-slate-400 font-medium">Où devons-nous envoyer votre commande ?</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid gap-6">
+                                            <div className="space-y-3">
+                                                <Label htmlFor="fullName" className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-4">Nom Complet</Label>
+                                                <div className="relative group">
+                                                    <User className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-indigo-600 transition-colors" />
+                                                    <Input 
+                                                        id="fullName" name="fullName" required 
+                                                        placeholder="Ahmed Alaoui"
+                                                        value={formData.fullName} onChange={handleInputChange}
+                                                        className="h-16 pl-16 rounded-2xl bg-slate-50/50 border-slate-100 focus:bg-white focus:ring-4 focus:ring-indigo-600/5 transition-all font-bold text-lg"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="grid sm:grid-cols-2 gap-8">
+                                                <div className="space-y-3">
+                                                    <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-4">E-mail</Label>
+                                                    <div className="relative group">
+                                                        <Mail className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-indigo-600 transition-colors" />
+                                                        <Input 
+                                                            id="email" name="email" type="email" required
+                                                            placeholder="ahmed@example.com"
+                                                            value={formData.email} onChange={handleInputChange}
+                                                            className="h-16 pl-16 rounded-2xl bg-slate-50/50 border-slate-100 focus:bg-white transition-all font-bold text-lg"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-3">
+                                                    <Label htmlFor="phone" className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-4">Téléphone</Label>
+                                                    <div className="relative group">
+                                                        <Phone className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-indigo-600 transition-colors" />
+                                                        <Input 
+                                                            id="phone" name="phone" type="tel" required
+                                                            placeholder="06 00 00 00 00"
+                                                            value={formData.phone} onChange={handleInputChange}
+                                                            className="h-16 pl-16 rounded-2xl bg-slate-50/50 border-slate-100 focus:bg-white transition-all font-bold text-lg"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="grid sm:grid-cols-2 gap-8">
+                                                <div className="space-y-3">
+                                                    <Label htmlFor="city" className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-4">Ville</Label>
+                                                    <div className="relative group">
+                                                        <Building2 className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-indigo-600 transition-colors" />
+                                                        <Input 
+                                                            id="city" name="city" required
+                                                            placeholder="Casablanca"
+                                                            value={formData.city} onChange={handleInputChange}
+                                                            className="h-16 pl-16 rounded-2xl bg-slate-50/50 border-slate-100 focus:bg-white transition-all font-bold text-lg"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-3">
+                                                    <Label htmlFor="address" className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-4">Adresse Précise</Label>
+                                                    <div className="relative group">
+                                                        <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-indigo-600 transition-colors" />
+                                                        <Input 
+                                                            id="address" name="address" required
+                                                            placeholder="N°, Rue, Quartier"
+                                                            value={formData.address} onChange={handleInputChange}
+                                                            className="h-16 pl-16 rounded-2xl bg-slate-50/50 border-slate-100 focus:bg-white transition-all font-bold text-lg"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Invoice Toggle */}
+                                        <div 
+                                            onClick={() => setWantsInvoice(!wantsInvoice)}
+                                            className={`mt-8 bg-white rounded-2xl p-4 border transition-all cursor-pointer flex items-start gap-4 ${wantsInvoice ? 'border-indigo-600 bg-indigo-50/50 shadow-md' : 'border-slate-100 hover:border-slate-300'}`}
+                                        >
+                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${wantsInvoice ? 'bg-indigo-600 text-white' : 'bg-slate-50 text-slate-400'}`}>
+                                                <FileText className="w-5 h-5" />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-sm font-bold text-slate-900">Demander une Facture</p>
+                                                <p className="text-xs text-slate-500 leading-relaxed">
+                                                    En choisissant l'option facture, vous bénéficiez d'une remise exceptionnelle de 5% sur votre commande.
+                                                </p>
+                                            </div>
+                                            <div className={`ml-auto w-6 h-6 border-2 rounded-lg flex items-center justify-center transition-all ${wantsInvoice ? 'bg-indigo-600 border-indigo-600' : 'border-slate-200'}`}>
+                                                {wantsInvoice && <CheckCircle2 className="w-4 h-4 text-white" />}
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="mt-12 flex justify-end">
+                                            <Button 
+                                                type="button" 
+                                                onClick={() => setActiveStep(2)}
+                                                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl px-12 h-16 text-lg font-black shadow-xl shadow-indigo-600/20 group"
+                                            >
+                                                Continuer 
+                                                <ChevronLeft className="w-5 h-5 ml-2 rotate-180 group-hover:translate-x-1 transition-transform" />
+                                            </Button>
                                         </div>
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="phone" className="text-xs font-bold uppercase tracking-wider text-slate-400">Téléphone</Label>
-                                        <div className="relative">
-                                            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                            <Input 
-                                                id="phone" name="phone" type="tel" required
-                                                placeholder="06 00 00 00 00"
-                                                value={formData.phone} onChange={handleInputChange}
-                                                className="h-12 pl-12 rounded-xl bg-slate-50 border-slate-100 focus:bg-white transition-all font-medium"
-                                            />
+                                </motion.section>
+                            ) : (
+                                <motion.section 
+                                    key="step2"
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    className="space-y-8"
+                                >
+                                    <div className="glass-strong rounded-[2.5rem] p-10">
+                                        <div className="flex items-center gap-4 mb-10">
+                                            <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+                                                <CreditCard className="w-6 h-6" />
+                                            </div>
+                                            <div>
+                                                <h2 className="text-2xl font-black text-slate-900 tracking-tight">Mode de Paiement</h2>
+                                                <p className="text-sm text-slate-400 font-medium">Toutes nos commandes sont payées à la livraison.</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-slate-50/50 rounded-3xl p-6 border-2 border-indigo-600/20 flex items-center justify-between">
+                                            <div className="flex items-center gap-6">
+                                                <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-sm">
+                                                    <Truck className="w-8 h-8 text-indigo-600" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-lg font-black text-slate-900">Paiement Cash à la livraison</p>
+                                                    <p className="text-xs text-slate-500 font-medium">Simple, sûr et rapide.</p>
+                                                </div>
+                                            </div>
+                                            <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white">
+                                                <CheckCircle2 className="w-5 h-5" />
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-12 flex items-center justify-between pt-8 border-t border-slate-100">
+                                            <button 
+                                                type="button" 
+                                                onClick={() => setActiveStep(1)}
+                                                className="text-slate-400 font-black uppercase text-[10px] tracking-widest hover:text-indigo-600 transition-colors"
+                                            >
+                                                Retour aux infos
+                                            </button>
+                                            
+                                            <div className="flex items-center gap-4 text-emerald-600 bg-emerald-50 px-6 py-3 rounded-2xl">
+                                                <ShieldCheck className="w-5 h-5" />
+                                                <span className="text-sm font-black uppercase tracking-widest">Transaction Gratuite</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="city" className="text-xs font-bold uppercase tracking-wider text-slate-400">Ville / Governorate</Label>
-                                    <div className="relative">
-                                        <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                        <Input 
-                                            id="city" name="city" required
-                                            placeholder="Ex: Casablanca"
-                                            value={formData.city} onChange={handleInputChange}
-                                            className="h-12 pl-12 rounded-xl bg-slate-50 border-slate-100 focus:bg-white transition-all font-medium"
-                                        />
+                                    
+                                    <div className="lg:hidden mt-8">
+                                        <Button 
+                                            type="submit" 
+                                            disabled={loading}
+                                            className="w-full h-18 rounded-[2rem] bg-[#0f172a] text-white font-black text-xl shadow-2xl shadow-black/20"
+                                        >
+                                            {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : "Confirmer ma Commande"}
+                                        </Button>
                                     </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="address" className="text-xs font-bold uppercase tracking-wider text-slate-400">Adresse de Livraison</Label>
-                                    <div className="relative">
-                                        <MapPin className="absolute left-4 top-4 w-4 h-4 text-slate-400" />
-                                        <Input 
-                                            id="address" name="address" required
-                                            placeholder="Rue, Appt, Bureau, etc."
-                                            value={formData.address} onChange={handleInputChange}
-                                            className="h-20 pl-12 rounded-xl bg-slate-50 border-slate-100 focus:bg-white transition-all font-medium align-top"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
-
-                        <section className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-100">
-                             <div className="flex items-center gap-3 mb-6">
-                                <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
-                                    <CreditCard className="w-5 h-5" />
-                                </div>
-                                <h1 className="text-xl font-black text-slate-900">Paiement</h1>
-                            </div>
-                            
-                            <div className="bg-slate-50 rounded-2xl p-4 border-2 border-primary/20 flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm">
-                                        <Truck className="w-6 h-6 text-primary" />
-                                    </div>
-                                    <div>
-                                        <p className="font-bold text-slate-900">Paiement à la livraison (Cash)</p>
-                                        <p className="text-xs text-slate-500">Payez en espèces dès réception de votre colis.</p>
-                                    </div>
-                                </div>
-                                <CheckCircle2 className="w-6 h-6 text-primary" />
-                            </div>
-                        </section>
+                                </motion.section>
+                            )}
+                        </AnimatePresence>
                     </div>
 
-                    {/* Right: Summary */}
-                    <div className="lg:col-span-5">
-                        <div className="sticky top-24 space-y-6">
-                            <div className="bg-slate-900 rounded-[2rem] p-6 sm:p-8 text-white shadow-2xl overflow-hidden relative">
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-3xl" />
-                                
-                                <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
-                                    <Package className="w-5 h-5 text-primary" />
-                                    Résumé de la commande
-                                </h2>
+                    {/* Right Side: Order Summary Card (Desktop) */}
+                    <div className="hidden lg:block sticky top-32">
+                        <div className="glass-strong rounded-[2.5rem] p-8 sm:p-10 shadow-2xl overflow-hidden relative">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-600/5 rounded-full blur-3xl" />
+                            
+                            <h2 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 mb-8 flex items-center gap-3">
+                                <ShoppingBag className="w-5 h-5" />
+                                Votre Commande
+                            </h2>
 
-                                <div className="space-y-4 mb-8 max-h-[300px] overflow-y-auto no-scrollbar">
-                                    {cartItems.map((item) => {
-                                        const price = (resellerTier && item.resellerPrice) ? item.resellerPrice : item.price
-                                        return (
-                                            <div key={item.id} className="flex gap-4 items-center">
-                                                <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-white/10 shrink-0 border border-white/5">
-                                                    <Image src={item.image} alt={item.name} fill className="object-cover" />
-                                                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                                                        {item.quantity}
-                                                    </span>
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="text-sm font-bold truncate">{language === 'ar' && item.nameAr ? item.nameAr : item.name}</p>
-                                                    <p className="text-[10px] text-white/40 uppercase font-black">{formatPrice(price)} MAD / unité</p>
-                                                </div>
-                                                <p className="text-sm font-black whitespace-nowrap">{formatPrice(price * item.quantity)} MAD</p>
+                            <div className="space-y-6 mb-10 max-h-[400px] overflow-y-auto no-scrollbar pr-2">
+                                {cartItems.map((item) => {
+                                    const price = (resellerTier && item.resellerPrice) ? item.resellerPrice : item.price
+                                    return (
+                                        <div key={item.id} className="flex gap-5 items-center group">
+                                            <div className="relative w-20 h-20 rounded-2xl overflow-hidden bg-slate-100 shrink-0">
+                                                <Image src={item.image} alt={item.name} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
+                                                <span className="absolute -top-1 -right-1 w-6 h-6 bg-indigo-600 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-lg">
+                                                    {item.quantity}
+                                                </span>
                                             </div>
-                                        )
-                                    })}
-                                </div>
-
-                                <div className="space-y-3 pt-6 border-t border-white/10 text-sm">
-                                    <div className="flex justify-between text-white/50">
-                                        <span>Sous-total</span>
-                                        <span className="font-bold text-white">{formatPrice(subtotal)} MAD</span>
-                                    </div>
-                                    {deliveryFeesEnabled && (
-                                        <div className="flex justify-between text-white/50">
-                                            <span>Frais de livraison</span>
-                                            <span className="font-bold text-emerald-400">+{formatPrice(shipping)} MAD</span>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-xs font-black text-slate-900 line-clamp-2 leading-relaxed mb-1">
+                                                    {language === 'ar' && item.nameAr ? item.nameAr : item.name}
+                                                </p>
+                                                <p className="text-[10px] text-slate-400 font-bold tracking-widest">{formatPrice(price)} MAD</p>
+                                            </div>
+                                            <p className="text-sm font-black text-slate-900">{formatPrice(price * item.quantity)}</p>
                                         </div>
-                                    )}
-                                    {wantsInvoice && (
-                                        <div className="flex justify-between text-emerald-400">
-                                            <span>Remise Facturation (5%)</span>
-                                            <span className="font-bold">-{formatPrice(discount)} MAD</span>
-                                        </div>
-                                    )}
-                                    <div className="flex justify-between items-center pt-2">
-                                        <span className="text-base font-black">Total à payer</span>
-                                        <div className="text-right">
-                                            <span className="text-3xl font-black text-primary">{formatPrice(total)}</span>
-                                            <span className="text-xs ml-1 opacity-50">MAD</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <Button 
-                                    type="submit" 
-                                    disabled={loading}
-                                    className="w-full h-16 rounded-2xl mt-8 bg-primary hover:bg-primary/90 text-white font-black text-lg shadow-xl shadow-primary/20 flex items-center justify-center gap-3 active:scale-[0.98] transition-all"
-                                >
-                                    {loading ? (
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                                            <span>Traitement...</span>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <span>Valider ma commande</span>
-                                            <ChevronLeft className="w-5 h-5 rotate-180" />
-                                        </>
-                                    )}
-                                </Button>
+                                    )
+                                })}
                             </div>
 
-                            {/* Guard/Trust */}
-                            <div 
-                                onClick={() => setWantsInvoice(!wantsInvoice)}
-                                className={`bg-white rounded-2xl p-4 border transition-all cursor-pointer flex items-start gap-4 ${wantsInvoice ? 'border-primary bg-primary/5 shadow-md' : 'border-slate-100 hover:border-slate-300'}`}
-                            >
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${wantsInvoice ? 'bg-primary text-white' : 'bg-slate-50 text-slate-400'}`}>
-                                    <FileText className="w-5 h-5" />
+                            <div className="space-y-4 pt-8 border-t border-slate-100">
+                                <div className="flex justify-between items-center text-slate-500 text-xs font-bold">
+                                    <span className="uppercase tracking-widest">Sous-total</span>
+                                    <span className="text-slate-900">{formatPrice(subtotal)} MAD</span>
                                 </div>
-                                <div className="space-y-1">
-                                    <p className="text-sm font-bold text-slate-900">Demander une Facture</p>
-                                    <p className="text-xs text-slate-500 leading-relaxed">
-                                        En choisissant l'option facture, vous bénéficiez d'une remise exceptionnelle de 5% sur votre commande.
-                                    </p>
+                                {deliveryFeesEnabled && (
+                                    <div className="flex justify-between items-center text-slate-500 text-xs font-bold">
+                                        <span className="uppercase tracking-widest">Livraison</span>
+                                        <span className="text-emerald-500">+{formatPrice(shipping)} MAD</span>
+                                    </div>
+                                )}
+                                {wantsInvoice && (
+                                    <div className="flex justify-between items-center text-xs font-black text-emerald-500 bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
+                                        <span className="uppercase tracking-widest">Remise Facture (5%)</span>
+                                        <span>-{formatPrice(discount)} MAD</span>
+                                    </div>
+                                )}
+                                
+                                <div className="pt-6">
+                                    <div className="flex justify-between items-end mb-8">
+                                        <div className="space-y-1">
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Total à payer</span>
+                                            <p className="text-4xl font-black text-[#0f172a] tracking-tight">{formatPrice(total)}</p>
+                                        </div>
+                                        <span className="text-xs font-black text-slate-400 mb-1">MAD</span>
+                                    </div>
+
+                                    <Button 
+                                        type="submit" 
+                                        disabled={loading || activeStep === 1}
+                                        className={`w-full h-20 rounded-3xl text-lg font-black shadow-2xl transition-all flex items-center justify-center gap-3 ${activeStep === 1 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-[#0f172a] text-white hover:bg-slate-800 shadow-indigo-600/10 active:scale-[0.98]'}`}
+                                    >
+                                        {loading ? (
+                                            <Loader2 className="w-6 h-6 animate-spin" />
+                                        ) : (
+                                            <>
+                                                <span>Confirmer la Commande</span>
+                                                <ChevronLeft className="w-5 h-5 rotate-180" />
+                                            </>
+                                        )}
+                                    </Button>
                                 </div>
-                                <div className={`ml-auto w-6 h-6 border-2 rounded-lg flex items-center justify-center transition-all ${wantsInvoice ? 'bg-primary border-primary' : 'border-slate-200'}`}>
-                                    {wantsInvoice && <CheckCircle2 className="w-4 h-4 text-white" />}
-                                </div>
+                            </div>
+
+                            <div className="mt-8 flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-emerald-600/60 justify-center">
+                                <ShieldCheck className="w-4 h-4" />
+                                <span>Checkout Sécurisé</span>
                             </div>
                         </div>
                     </div>
