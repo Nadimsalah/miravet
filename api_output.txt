@@ -1,0 +1,5 @@
+﻿Testing API: http://localhost:3000/api/manager/orders?amId=a54217ae-50fc-4680-8a48-15d9eac0ad1c
+Status: 500
+Data: {
+  "error": "Could not find a relationship between 'account_manager_assignments' and 'resellers' in the schema cache"
+}

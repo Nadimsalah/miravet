@@ -1,0 +1,7 @@
+﻿Resellers Columns: [
+  'id',           'user_id',
+  'company_name', 'phone',
+  'status',       'created_at',
+  'updated_at',   'ice',
+  'website',      'city'
+]

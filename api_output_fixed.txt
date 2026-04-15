@@ -1,0 +1,46 @@
+﻿Testing API: http://localhost:3000/api/manager/orders?amId=a54217ae-50fc-4680-8a48-15d9eac0ad1c
+Status: 200
+Data: {
+  "orders": [
+    {
+      "id": "60d09a7c-bf77-497c-a524-9b993a885581",
+      "order_number": "ORD-1805",
+      "customer_id": "3759b086-f0ce-493f-a98d-478cc98d1978",
+      "customer_name": "tarik",
+      "customer_email": "tarikelkalkolii@gmail.com",
+      "customer_phone": "87878789222",
+      "address_line1": "rue saada 02 fes ",
+      "address_line2": null,
+      "city": "Fes",
+      "governorate": "Morocco",
+      "postal_code": null,
+      "status": "processing",
+      "subtotal": 28749,
+      "shipping_cost": 20,
+      "total": 28769,
+      "ip_address": null,
+      "notes": null,
+      "created_at": "2026-03-06T03:47:58.361185+00:00",
+      "updated_at": "2026-03-06T03:49:40.047+00:00",
+      "payment_method": "cod",
+      "reseller_id": "c37d1bb4-67c6-44cf-af29-b72265aff978",
+      "delivery_man_id": null,
+      "delivery_failed_reason": null,
+      "delivered_at": null,
+      "delivery_assigned_at": null,
+      "delivery_proof": null,
+      "reseller": {
+        "id": "c37d1bb4-67c6-44cf-af29-b72265aff978",
+        "ice": "554848484",
+        "city": "rabat",
+        "phone": "87878789",
+        "status": "pending",
+        "user_id": "3759b086-f0ce-493f-a98d-478cc98d1978",
+        "website": "",
+        "created_at": "2026-03-06T03:38:08.948263+00:00",
+        "updated_at": "2026-03-06T03:38:08.948263+00:00",
+        "company_name": "Microintegrale"
+      }
+    }
+  ]
+}

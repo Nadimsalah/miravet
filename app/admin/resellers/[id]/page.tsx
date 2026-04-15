@@ -1,0 +1,434 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { useParams, useRouter } from "next/navigation"
+import { AdminSidebar } from "@/components/admin/admin-sidebar"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import {
+    ArrowLeft,
+    Package,
+    TrendingUp,
+    Building2,
+    Mail,
+    Phone,
+    Globe,
+    MapPin,
+    Calendar,
+    ShoppingBag,
+    Eye,
+    ChevronRight,
+    Ban,
+    UserCheck,
+    CreditCard
+} from "lucide-react"
+import { 
+    getCustomerById, 
+    getCustomerOrders, 
+    getResellerByUserId,
+    type Customer, 
+    type Order, 
+    updateCustomerStatus,
+    updateResellerStatus
+} from "@/lib/supabase-api"
+import { supabase } from "@/lib/supabase"
+import { Input } from "@/components/ui/input"
+import { toast } from "sonner"
+import Link from "next/link"
+import { formatPrice } from "@/lib/utils"
+import { useLanguage } from "@/components/language-provider"
+
+export default function ResellerProfilePage() {
+    const { t } = useLanguage()
+    const params = useParams()
+    const router = useRouter()
+    const resellerId = params.id as string
+
+    const [reseller, setReseller] = useState<Customer | null>(null)
+    const [orders, setOrders] = useState<Order[]>([])
+    const [loading, setLoading] = useState(true)
+
+    const handleUpdateStatus = async (newStatus: string) => {
+        if (!reseller) return
+        
+        setLoading(true)
+        try {
+            // Use resellerId (from params) which is the actual user_id (UUID)
+            // This ensures both tables get updated correctly even if their IDs differ
+            const [resellerResult, customerResult] = await Promise.all([
+                updateResellerStatus(resellerId, newStatus),
+                updateCustomerStatus(resellerId, newStatus)
+            ])
+            
+            // Also update the profile role if activating
+            if (newStatus === 'active') {
+                await supabase.from('profiles').update({ role: 'RESELLER' }).eq('id', resellerId)
+            }
+            
+            if (resellerResult || customerResult) {
+                toast.success(`Reseller status updated to ${newStatus}`)
+                setReseller(prev => prev ? { ...prev, status: newStatus } : null)
+            } else {
+                toast.error("Failed to update status")
+            }
+        } catch (err) {
+            console.error("Error updating status:", err)
+            toast.error("Error updating status")
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        async function loadData() {
+            if (!resellerId) return
+            setLoading(true)
+            const [resellerData, ordersData] = await Promise.all([
+                getResellerByUserId(resellerId),
+                getCustomerOrders(resellerId)
+            ])
+
+            let finalReseller = resellerData
+            if (!finalReseller) {
+                // Fallback to customer table check
+                finalReseller = await getCustomerById(resellerId)
+            }
+
+            setReseller(finalReseller)
+            setOrders(ordersData)
+            setLoading(false)
+        }
+        loadData()
+    }, [resellerId])
+
+    const [editMode, setEditMode] = useState(false)
+    const [editData, setEditData] = useState({
+        company_name: "",
+        ice: ""
+    })
+
+    useEffect(() => {
+        if (reseller) {
+            setEditData({
+                company_name: reseller.company_name || "",
+                ice: reseller.ice || ""
+            })
+        }
+    }, [reseller])
+
+    const handleSaveBilling = async () => {
+        if (!reseller) return
+        setLoading(true)
+        const { data, error } = await supabase
+            .from('customers')
+            .update({
+                company_name: editData.company_name,
+                ice: editData.ice
+            })
+            .eq('id', reseller.id)
+            .select()
+            .single()
+
+        if (error) {
+            toast.error("Failed to update billing info")
+        } else {
+            toast.success("Billing information updated")
+            setReseller(data)
+            setEditMode(false)
+        }
+        setLoading(false)
+    }
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <div className="text-center">
+                    <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+                    <p className="text-muted-foreground font-medium">Synchronisation des données...</p>
+                </div>
+            </div>
+        )
+    }
+
+    if (!reseller) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center p-8">
+                <main className="lg:pl-72 w-full text-center">
+                    <h2 className="text-2xl font-bold mb-4">Revendeur introuvable</h2>
+                    <Button onClick={() => router.back()}>Retour</Button>
+                </main>
+            </div>
+        )
+    }
+
+    const totalSpent = orders.reduce((acc, order) => acc + (Number(order.total) || 0), 0)
+    const totalOrdersCount = orders.length
+
+    return (
+        <div className="min-h-screen bg-background relative overflow-hidden font-sans">
+            {/* Ambient Background */}
+            <div className="fixed inset-0 pointer-events-none">
+                <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px]" />
+                <div className="absolute bottom-[-10%] left-[-5%] w-[600px] h-[600px] bg-secondary/5 rounded-full blur-[120px]" />
+            </div>
+
+            <AdminSidebar />
+
+            <main className="lg:pl-72 p-4 sm:p-6 lg:p-8 min-h-screen relative z-10 transition-all duration-300">
+                {/* Navigation & Header */}
+                <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => router.back()}
+                            className="rounded-xl hover:bg-white/5"
+                        >
+                            <ArrowLeft className="w-6 h-6" />
+                        </Button>
+                        <div>
+                            <div className="flex items-center gap-3">
+                                <h1 className="text-4xl font-black bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent tracking-tight">
+                                    {reseller.name}
+                                </h1>
+                                <Badge className={`rounded-xl h-7 px-3 border-0 font-bold shadow-sm ${
+                                    reseller.status === 'active' 
+                                        ? 'bg-emerald-500/10 text-emerald-500' 
+                                        : 'bg-amber-500/10 text-amber-500'
+                                    }`}>
+                                    {reseller.status === 'pending_approval' ? t("admin.resellers.pending_approval") : reseller.status?.replace('_', ' ')}
+                                </Badge>
+                            </div>
+                            <p className="text-muted-foreground/60 font-bold mt-2 flex items-center gap-2">
+                                <span className="w-1 h-1 rounded-full bg-primary" />
+                                ID Partenaire : {reseller.id.substring(0, 8).toUpperCase()}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        {(reseller.status === 'pending' || reseller.status === 'pending_approval') && (
+                            <Button
+                                onClick={() => handleUpdateStatus('active')}
+                                className="rounded-2xl h-12 px-6 bg-green-500 hover:bg-green-600 text-white gap-2 font-bold shadow-lg shadow-green-500/20"
+                            >
+                                <UserCheck className="w-5 h-5" />
+                                Approuver le compte
+                            </Button>
+                        )}
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-12">
+                    {/* Metrics Grid */}
+                    <div className="xl:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div className="glass-strong p-8 rounded-[3rem] border border-white/10 shadow-2xl group transition-all duration-500 hover:border-blue-500/30">
+                            <div className="w-14 h-14 rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center mb-6 transition-transform group-hover:scale-110 group-hover:rotate-3">
+                                <ShoppingBag className="w-7 h-7" />
+                            </div>
+                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">
+                                Commandes totales
+                            </p>
+                            <h3 className="text-4xl font-black text-foreground tracking-tighter">{totalOrdersCount}</h3>
+                        </div>
+
+                        <div className="glass-strong p-8 rounded-[3rem] border border-white/10 shadow-2xl group transition-all duration-500 hover:border-emerald-500/30">
+                            <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-6 transition-transform group-hover:scale-110 group-hover:-rotate-3">
+                                <CreditCard className="w-7 h-7" />
+                            </div>
+                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-2">
+                                Volume total
+                            </p>
+                            <h3 className="text-4xl font-black text-foreground tracking-tighter">MAD {formatPrice(totalSpent)}</h3>
+                        </div>
+
+                    </div>
+
+                    {/* Quick Info & Controls Card */}
+                    <div className="glass-strong p-8 rounded-[2.5rem] border border-white/10 shadow-xl relative overflow-hidden group space-y-6">
+                        <div className="absolute top-0 right-0 p-8 opacity-5">
+                            <Building2 className="w-24 h-24" />
+                        </div>
+                        <h4 className="text-lg font-bold flex items-center gap-2 relative z-10">
+                            <Building2 className="w-5 h-5 text-primary" />
+                            Détails de l'entreprise
+                        </h4>
+                        <div className="space-y-6 relative z-10">
+                            <div>
+                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest block mb-1.5">
+                                    Nom de l'entreprise
+                                </label>
+                                <p className="font-bold text-foreground">{reseller.company_name || "N/A"}</p>
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest block mb-1.5">
+                                    Numéro ICE
+                                </label>
+                                <p className="font-mono text-foreground tracking-tighter text-lg">{reseller.ice || "N/A"}</p>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
+                                <div>
+                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest block mb-1.5">
+                                        Ville
+                                    </label>
+                                    <p className="font-bold text-foreground text-sm flex items-center gap-1.5">
+                                        <MapPin className="w-3.5 h-3.5 text-primary" />
+                                        {reseller.city || "N/A"}
+                                    </p>
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest block mb-1.5">
+                                        Site
+                                    </label>
+                                    {reseller.website ? (
+                                        <a href={reseller.website} target="_blank" className="font-bold text-primary text-sm hover:underline flex items-center gap-1.5">
+                                            <Globe className="w-3.5 h-3.5" />
+                                            Visiter
+                                        </a>
+                                    ) : <p className="font-bold text-muted-foreground/40 text-sm italic">Aucun site</p>}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Main Content Area */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-20">
+                    {/* Orders History List */}
+                    <div className="lg:col-span-2 space-y-6">
+                        <div className="flex items-center justify-between pr-4">
+                            <h3 className="text-xl font-black text-foreground flex items-center gap-3">
+                                <Package className="w-6 h-6 text-primary" />
+                                Historique des commandes
+                            </h3>
+                            <Badge variant="outline" className="rounded-lg bg-primary/5 text-primary border-none font-bold">
+                                {orders.length} au total
+                            </Badge>
+                        </div>
+
+                        <div className="space-y-4">
+                            {orders.length === 0 ? (
+                                <div className="glass-strong p-12 text-center rounded-[2rem] border-white/5">
+                                    <p className="text-muted-foreground font-medium">
+                                        Aucune transaction enregistrée pour ce revendeur pour le moment.
+                                    </p>
+                                </div>
+                            ) : (
+                                orders.map((order) => (
+                                    <div key={order.id} className="glass-strong p-6 rounded-[2rem] border border-white/5 group hover:border-white/20 transition-all duration-300">
+                                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-foreground font-mono font-bold border border-white/5">
+                                                    #{order.order_number}
+                                                </div>
+                                                <div>
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <span className="font-bold text-foreground">MAD {formatPrice(order.total)}</span>
+                                                        <Badge variant="outline" className="text-[10px] rounded-md px-1.5 py-0 border-white/10 uppercase font-black text-muted-foreground">
+                                                            {order.status === 'pending_approval' ? t("admin.resellers.pending_approval") : order.status}
+                                                        </Badge>
+                                                    </div>
+                                                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                                                        <div className="flex items-center gap-1">
+                                                            <Calendar className="w-3 h-3" />
+                                                            {new Date(order.created_at).toLocaleDateString()}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <Link href={`/admin/orders/${order.id}`}>
+                                                <Button size="sm" variant="outline" className="rounded-xl h-10 px-4 bg-white/5 border-white/10 font-bold group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+                                                    Voir la facture
+                                                    <ChevronRight className="w-4 h-4 ml-1" />
+                                                </Button>
+                                            </Link>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Contact & Support Section */}
+                    <div className="space-y-6">
+                        <h3 className="text-xl font-black text-foreground px-2">Coordonnées</h3>
+                        <div className="glass-strong p-8 rounded-[2.5rem] border border-white/10 h-fit space-y-8 shadow-xl">
+                            <div className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors group">
+                                <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                    <Mail className="w-5 h-5" />
+                                </div>
+                                <div className="overflow-hidden">
+                                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">
+                                        E-mail direct
+                                    </p>
+                                    <p className="font-bold text-foreground text-sm truncate">{reseller.email}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors group">
+                                <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center shrink-0">
+                                    <Phone className="w-5 h-5" />
+                                </div>
+                                <div className="overflow-hidden">
+                                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">
+                                        Contact mobile
+                                    </p>
+                                    <p className="font-bold text-foreground text-sm truncate">{reseller.phone || "+212 XXX XXX XXX"}</p>
+                                </div>
+                            </div>
+
+                            <div className="pt-4 space-y-3">
+                                {editMode ? (
+                                    <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                                                Nom de l'entreprise
+                                            </label>
+                                            <Input
+                                                value={editData.company_name}
+                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditData({ ...editData, company_name: e.target.value })}
+                                                className="bg-white/5 border-white/10 rounded-xl"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                                                Numéro ICE
+                                            </label>
+                                            <Input
+                                                value={editData.ice}
+                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditData({ ...editData, ice: e.target.value })}
+                                                className="bg-white/5 border-white/10 rounded-xl font-mono"
+                                            />
+                                        </div>
+                                        <div className="flex gap-2 pt-2">
+                                            <Button
+                                                onClick={handleSaveBilling}
+                                                className="flex-1 h-12 rounded-2xl font-bold bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all"
+                                            >
+                                                Enregistrer les informations
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                onClick={() => setEditMode(false)}
+                                                className="h-12 rounded-2xl px-4 hover:bg-white/5"
+                                            >
+                                                Annuler
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <Button
+                                        onClick={() => setEditMode(true)}
+                                        className="w-full h-12 rounded-2xl font-bold bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
+                                    >
+                                        Mettre à jour les informations de facturation
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    )
+}

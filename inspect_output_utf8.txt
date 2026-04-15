@@ -1,0 +1,18 @@
+﻿Account Managers: [
+  {
+    "id": "a54217ae-50fc-4680-8a48-15d9eac0ad1c",
+    "name": "SOUMIYA",
+    "email": "soumiya@didali.ma"
+  },
+  {
+    "id": "8c07ee7c-a118-40bf-9cf1-fff9192e57fc",
+    "name": "SIHAM",
+    "email": "siham@didali.ma"
+  },
+  {
+    "id": "a6bfcb97-ce1c-4829-a246-ad4e3374cd51",
+    "name": "Zineb",
+    "email": "zineb@gmail.com"
+  }
+]
+Found 2 assignments for soumiya@didali.ma
